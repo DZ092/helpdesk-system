@@ -69,13 +69,23 @@ Acesse em `http://127.0.0.1:5000`
 
 | Perfil | Permissões |
 |---|---|
-| Usuário | Abre chamados, visualiza o próprio histórico |
-| Técnico | Visualiza todos os chamados, altera status, adiciona comentários |
+| Usuário | Abre chamados e visualiza o histórico, mas não pode alterar status nem comentar |
+| Técnico | Visualiza todos os chamados, assume, altera status e adiciona comentários internos |
 | Administrador | Mesmas permissões de Técnico |
 
-## 📸 Prints do sistema
+## 🎥 Demonstração
 
-*(adicionar aqui: tela de login, dashboard, abertura de chamado, histórico e detalhe do chamado)*
+**Usuário comum** — abre chamado e acompanha status:
+
+https://github.com/user-attachments/assets/7660a055-f4c3-4855-9f9f-6203c0f05648
+
+**Técnico** — atende, atualiza e resolve chamados:
+
+https://github.com/user-attachments/assets/73b39249-7663-4c63-9df0-67f2d30e7677
+
+**Administrador** — mesmas permissões de Técnico:
+
+https://github.com/user-attachments/assets/cbdb6652-dc39-408b-9c74-736d42d47b45
 
 ## 🔧 Possíveis melhorias futuras
 
