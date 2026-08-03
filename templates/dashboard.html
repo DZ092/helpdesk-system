@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Dashboard Help Desk</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<div class="usuario-logado">
+Olá, <strong>{{ session['usuario_nome'] }}</strong> ({{ session['tipo_usuario'] }})
+<a href="/logout" class="sair">Sair</a>
+</div>
+
+
+<h1>
+🖥 Dashboard Help Desk
+</h1>
+
+
+<div class="cards">
+
+
+<div class="card">
+<h2>{{ total }}</h2>
+<p>📋 Total de Chamados</p>
+</div>
+
+
+<div class="card aberto">
+<h2>{{ abertos }}</h2>
+<p>🔴 Abertos</p>
+</div>
+
+
+<div class="card andamento">
+<h2>{{ andamento }}</h2>
+<p>🟡 Em andamento</p>
+</div>
+
+
+<div class="card resolvido">
+<h2>{{ resolvidos }}</h2>
+<p>🟢 Resolvidos</p>
+</div>
+
+
+</div>
+
+
+
+<h2 class="titulo-tabela">
+Últimos Chamados
+</h2>
+
+
+<table class="tabela-chamados">
+
+
+<tr>
+
+<th>ID</th>
+<th>Usuário</th>
+<th>Título</th>
+<th>Prioridade</th>
+<th>Status</th>
+<th>Ações</th>
+
+</tr>
+
+
+{% for chamado in chamados %}
+
+<tr>
+
+<td>{{ chamado.id }}</td>
+
+<td>
+{{ chamado.usuario }}
+</td>
+
+
+<td>
+{{ chamado.titulo }}
+</td>
+
+
+<td>
+
+{% if chamado.prioridade == "Baixa" %}
+<span class="prioridade prioridade-baixa">Baixa</span>
+{% elif chamado.prioridade == "Alta" %}
+<span class="prioridade prioridade-alta">Alta</span>
+{% elif chamado.prioridade == "Crítica" %}
+<span class="prioridade prioridade-critica">Crítica</span>
+{% else %}
+<span class="prioridade prioridade-media">Média</span>
+{% endif %}
+
+</td>
+
+
+<td>
+
+
+{% if chamado.status == "Aberto" %}
+
+<span class="status status-aberto">
+🔴 Aberto
+</span>
+
+
+{% elif chamado.status == "Em andamento" %}
+
+<span class="status status-andamento">
+🟡 Em andamento
+</span>
+
+
+{% else %}
+
+<span class="status status-resolvido">
+🟢 Resolvido
+</span>
+
+
+{% endif %}
+
+
+</td>
+
+
+<td>
+
+{% if session['tipo_usuario'] in ['Técnico', 'Administrador'] %}
+
+    {% if chamado.status == "Aberto" %}
+
+    <a class="acao" href="/chamados/{{ chamado.id }}">
+    ▶ Iniciar
+    </a>
+
+    {% elif chamado.status == "Em andamento" %}
+
+    <a class="acao" href="/chamados/{{ chamado.id }}">
+    ✅ Resolver
+    </a>
+
+    {% else %}
+
+    <span class="finalizado">☑ Finalizado</span>
+
+    {% endif %}
+
+{% else %}
+
+    <span class="finalizado">—</span>
+
+{% endif %}
+
+</td>
+
+
+</tr>
+
+{% endfor %}
+
+
+</table>
+
+
+<br>
+
+
+<a class="botao"
+href="/chamados">
+
+📋 Ver chamados
+
+</a>
+
+
+</div>
+
+
+</body>
+
+</html>

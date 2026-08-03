@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Abrir Chamado</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>📋 Abrir Novo Chamado</h1>
+
+<p class="subtitulo">
+Informe os dados do problema técnico
+</p>
+
+
+{% with mensagens = get_flashed_messages() %}
+{% if mensagens %}
+<p class="sucesso">{{ mensagens[0] }}</p>
+{% endif %}
+{% endwith %}
+
+
+
+<form method="POST" class="formulario">
+
+
+<div class="campo">
+
+<label>Usuário</label>
+
+<input 
+type="text"
+name="usuario"
+placeholder="Nome do usuário"
+required>
+
+</div>
+
+
+
+<div class="campo">
+
+<label>Setor</label>
+
+<input 
+type="text"
+name="setor"
+placeholder="Ex: TI, RH, Financeiro"
+required>
+
+</div>
+
+
+
+<div class="campo">
+
+<label>Título do problema</label>
+
+<input 
+type="text"
+name="titulo"
+placeholder="Título do problema"
+required>
+
+</div>
+
+
+
+<div class="campo">
+
+<label>Descrição</label>
+
+<textarea
+name="descricao"
+placeholder="Descreva o problema encontrado"
+rows="5"
+required></textarea>
+
+</div>
+
+
+
+<div class="campo">
+
+<label>Prioridade</label>
+
+<select name="prioridade" required>
+<option value="Baixa">Baixa</option>
+<option value="Média" selected>Média</option>
+<option value="Alta">Alta</option>
+<option value="Crítica">Crítica</option>
+</select>
+
+</div>
+
+
+
+<button class="botao" type="submit">
+
+🚀 Enviar chamado
+
+</button>
+
+
+</form>
+
+
+<p class="link-secundario">
+É da equipe técnica? <a href="/login">Fazer login</a>
+</p>
+
+
+</div>
+
+
+</body>
+
+</html>

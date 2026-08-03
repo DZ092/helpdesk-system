@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Cadastro - Help Desk</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>📝 Criar Conta</h1>
+
+<p class="subtitulo">
+Cadastro de acesso ao sistema
+</p>
+
+
+{% if erro %}
+<p class="erro">{{ erro }}</p>
+{% endif %}
+
+
+<form method="POST" class="formulario">
+
+
+<div class="campo">
+
+<label>Nome</label>
+
+<input 
+type="text"
+name="nome"
+placeholder="Seu nome completo"
+required>
+
+</div>
+
+
+
+<div class="campo">
+
+<label>E-mail</label>
+
+<input 
+type="email"
+name="email"
+placeholder="seuemail@exemplo.com"
+required>
+
+</div>
+
+
+
+<div class="campo">
+
+<label>Senha</label>
+
+<input 
+type="password"
+name="senha"
+placeholder="Crie uma senha"
+required>
+
+</div>
+
+
+
+<div class="campo">
+
+<label>Tipo de usuário</label>
+
+<select name="tipo_usuario" required>
+<option value="Usuário">Usuário</option>
+<option value="Técnico">Técnico</option>
+<option value="Administrador">Administrador</option>
+</select>
+
+</div>
+
+
+
+<button class="botao" type="submit">
+
+Cadastrar
+
+</button>
+
+
+</form>
+
+
+<p class="link-secundario">
+Já tem conta? <a href="/login">Fazer login</a>
+</p>
+
+
+</div>
+
+
+</body>
+
+</html>

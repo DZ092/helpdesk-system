@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Login - Help Desk</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>🔐 Login</h1>
+
+<p class="subtitulo">
+Acesse o painel de suporte técnico
+</p>
+
+
+{% if erro %}
+<p class="erro">{{ erro }}</p>
+{% endif %}
+
+
+<form method="POST" class="formulario">
+
+
+<div class="campo">
+
+<label>E-mail</label>
+
+<input 
+type="email"
+name="email"
+placeholder="seuemail@exemplo.com"
+required>
+
+</div>
+
+
+
+<div class="campo">
+
+<label>Senha</label>
+
+<input 
+type="password"
+name="senha"
+placeholder="Sua senha"
+required>
+
+</div>
+
+
+
+<button class="botao" type="submit">
+
+Entrar
+
+</button>
+
+
+</form>
+
+
+<p class="link-secundario">
+Não tem conta? <a href="/cadastro">Cadastre-se</a>
+</p>
+
+
+</div>
+
+
+</body>
+
+</html>
