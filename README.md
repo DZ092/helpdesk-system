@@ -15,6 +15,7 @@ Projeto desenvolvido como parte do meu portfólio, durante meus estudos de Anál
 - **Prioridade** — Baixa, Média, Alta e Crítica
 - **Atendimento** — técnicos podem assumir, atualizar e resolver chamados
 - **Comentários internos** — histórico de atualizações dentro de cada chamado, com autor e data
+- **Notificação por e-mail** — técnicos e administradores recebem um e-mail automático sempre que um novo chamado é aberto
 - **Controle de acesso** — apenas Técnicos e Administradores podem alterar status e comentar
 
 ## 🛠️ Tecnologias
@@ -22,13 +23,13 @@ Projeto desenvolvido como parte do meu portfólio, durante meus estudos de Anál
 - Python
 - Flask
 - Flask-SQLAlchemy
+- Flask-Mail
 - SQLite
 - Jinja2
 - HTML5 / CSS3
 
 ## 📁 Estrutura do projeto
 
-```
 helpdesk-system/
 │
 ├── app.py
@@ -47,11 +48,9 @@ helpdesk-system/
     ├── chamado.html
     ├── chamados.html
     └── detalhe_chamado.html
-```
 
 ## 🚀 Como rodar localmente
 
-```bash
 git clone https://github.com/DZ092/helpdesk-system.git
 cd helpdesk-system
 
@@ -60,10 +59,17 @@ venv\Scripts\activate
 
 pip install -r requirements.txt
 
-python app.py
-```
+Crie um arquivo .env na raiz do projeto com suas próprias credenciais:
 
-Acesse em `http://127.0.0.1:5000`
+SECRET_KEY=uma-chave-aleatoria-qualquer-aqui
+MAIL_USERNAME=seu-email@gmail.com
+MAIL_PASSWORD=sua-senha-de-app-do-gmail
+
+Depois, rode:
+
+python app.py
+
+Acesse em http://127.0.0.1:5000
 
 ## 👤 Perfis de usuário
 
@@ -89,7 +95,6 @@ https://github.com/user-attachments/assets/cbdb6652-dc39-408b-9c74-736d42d47b45
 
 ## 🔧 Possíveis melhorias futuras
 
-- Notificações por e-mail
 - Exportação de relatórios
 - Anexo de arquivos nos chamados
 - Deploy em produção
