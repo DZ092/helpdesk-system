@@ -341,6 +341,10 @@ O administrador possui as mesmas permissões operacionais do Técnico:
 
 https://github.com/user-attachments/assets/cbdb6652-dc39-408b-9c74-736d42d47b45
 
+**Notificação por e-mail** — login, abertura de um novo chamado e notificação automática chegando por e-mail. No vídeo também aparece um retorno de erro (bounce) de um dos destinatários de teste com endereço inválido — mostra que, quando o e-mail não pode ser entregue, o próprio provedor avisa sobre a falha:
+
+https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
+
 ---
 
 ## 🔧 Melhorias futuras
