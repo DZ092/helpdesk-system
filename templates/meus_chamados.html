@@ -5,7 +5,7 @@
 
     <meta charset="UTF-8">
 
-    <title>Histórico de Chamados</title>
+    <title>Meus Chamados</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
@@ -25,11 +25,11 @@
 
 
     <h1>
-        📋 Histórico de Chamados
+        🙋 Meus Chamados
     </h1>
 
 
-    <form method="GET" action="/chamados" class="filtro-form">
+    <form method="GET" action="/meus-chamados" class="filtro-form">
 
         <input
         type="text"
@@ -52,33 +52,16 @@
             <option value="Crítica" {% if prioridade_filtro == "Crítica" %}selected{% endif %}>Crítica</option>
         </select>
 
-        <select name="responsavel">
-            <option value="">Todos os responsáveis</option>
-            <option value="nenhum" {% if responsavel_filtro == "nenhum" %}selected{% endif %}>Aguardando atribuição</option>
-            {% for tecnico in tecnicos %}
-                <option value="{{ tecnico.id }}" {% if responsavel_filtro == tecnico.id|string %}selected{% endif %}>{{ tecnico.nome }}</option>
-            {% endfor %}
-        </select>
-
         <button class="botao-filtro" type="submit">Filtrar</button>
 
-        <a href="/chamados" class="limpar-filtro">Limpar</a>
+        <a href="/meus-chamados" class="limpar-filtro">Limpar</a>
 
     </form>
 
 
-    <a class="novo-chamado" href="/chamado">
-        ➕ Novo Chamado
+    <a class="novo-chamado" href="/chamados">
+        📋 Ver todos os chamados
     </a>
-
-
-    {% if session['tipo_usuario'] in ['Técnico', 'Administrador'] %}
-
-        <a class="novo-chamado" href="/meus-chamados">
-            🙋 Meus Chamados
-        </a>
-
-    {% endif %}
 
 
 
@@ -102,8 +85,6 @@
                 <th>Prioridade</th>
 
                 <th>Status</th>
-
-                <th>Responsável</th>
 
                 <th>Ação</th>
 
@@ -197,63 +178,40 @@
 
                 <td>
 
-                    {% if chamado.responsavel %}
-                        {{ chamado.responsavel.nome }}
-                    {% else %}
-                        <span class="finalizado">Aguardando atribuição</span>
-                    {% endif %}
 
-                </td>
+                    {% if chamado.status == "Aberto" %}
 
 
+                        <a class="acao"
+                           href="/chamados/{{ chamado.id }}">
 
-                <td>
+                           ▶ Iniciar
 
-
-
-                    {% if session['tipo_usuario'] in ['Técnico', 'Administrador'] %}
-
-
-                        {% if chamado.status == "Aberto" %}
-
-
-                            <a class="acao"
-                               href="/chamados/{{ chamado.id }}">
-
-                               ▶ Iniciar
-
-                            </a>
+                        </a>
 
 
 
-                        {% elif chamado.status == "Em andamento" %}
+                    {% elif chamado.status == "Em andamento" %}
 
 
-                            <a class="acao"
-                               href="/chamados/{{ chamado.id }}">
+                        <a class="acao"
+                           href="/chamados/{{ chamado.id }}">
 
-                               ✅ Resolver
+                           ✅ Resolver
 
-                            </a>
+                        </a>
 
-
-
-                        {% else %}
-
-
-                            <span class="finalizado">
-
-                                ☑ Finalizado
-
-                            </span>
-
-
-                        {% endif %}
 
 
                     {% else %}
 
-                        <span class="finalizado">—</span>
+
+                        <span class="finalizado">
+
+                            ☑ Finalizado
+
+                        </span>
+
 
                     {% endif %}
 
@@ -264,6 +222,16 @@
 
             </tr>
 
+
+
+        {% else %}
+
+
+            <tr>
+                <td colspan="8" class="finalizado">
+                    Nenhum chamado atribuído a você no momento.
+                </td>
+            </tr>
 
 
         {% endfor %}

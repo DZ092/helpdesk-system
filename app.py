@@ -221,21 +221,64 @@ def chamado():
 def lista_chamados():
     busca = request.args.get("busca", "").strip()
     status_filtro = request.args.get("status", "")
+    prioridade_filtro = request.args.get("prioridade", "")
+    responsavel_filtro = request.args.get("responsavel", "")
 
     stmt = db.select(Chamado)
     if busca:
         stmt = stmt.where(Chamado.titulo.ilike(f"%{busca}%"))
     if status_filtro:
         stmt = stmt.where(Chamado.status == status_filtro)
+    if prioridade_filtro:
+        stmt = stmt.where(Chamado.prioridade == prioridade_filtro)
+    if responsavel_filtro == "nenhum":
+        stmt = stmt.where(Chamado.responsavel_id.is_(None))
+    elif responsavel_filtro:
+        stmt = stmt.where(Chamado.responsavel_id == int(responsavel_filtro))
 
     stmt = stmt.order_by(Chamado.id.desc())
     chamados = db.session.execute(stmt).scalars().all()
+
+    tecnicos = db.session.execute(
+        db.select(Usuario)
+        .where(Usuario.tipo_usuario.in_(["Técnico", "Administrador"]))
+        .order_by(Usuario.nome)
+    ).scalars().all()
 
     return render_template(
         "chamados.html",
         chamados=chamados,
         busca=busca,
-        status_filtro=status_filtro
+        status_filtro=status_filtro,
+        prioridade_filtro=prioridade_filtro,
+        responsavel_filtro=responsavel_filtro,
+        tecnicos=tecnicos
+    )
+
+@app.route("/meus-chamados")
+@tecnico_required
+def meus_chamados():
+    busca = request.args.get("busca", "").strip()
+    status_filtro = request.args.get("status", "")
+    prioridade_filtro = request.args.get("prioridade", "")
+
+    stmt = db.select(Chamado).where(Chamado.responsavel_id == session["usuario_id"])
+    if busca:
+        stmt = stmt.where(Chamado.titulo.ilike(f"%{busca}%"))
+    if status_filtro:
+        stmt = stmt.where(Chamado.status == status_filtro)
+    if prioridade_filtro:
+        stmt = stmt.where(Chamado.prioridade == prioridade_filtro)
+
+    stmt = stmt.order_by(Chamado.id.desc())
+    chamados = db.session.execute(stmt).scalars().all()
+
+    return render_template(
+        "meus_chamados.html",
+        chamados=chamados,
+        busca=busca,
+        status_filtro=status_filtro,
+        prioridade_filtro=prioridade_filtro
     )
 
 @app.route("/chamados/<int:id>")
