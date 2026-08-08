@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Painel Administrativo</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <div class="usuario-logado">
+    Olá, <strong>{{ session['usuario_nome'] }}</strong> ({{ session['tipo_usuario'] }})
+    <a href="/logout" class="sair">Sair</a>
+    </div>
+
+
+    <h1>
+        🛠 Painel Administrativo — Usuários
+    </h1>
+
+
+    {% with mensagens = get_flashed_messages() %}
+        {% if mensagens %}<p class="sucesso">{{ mensagens[0] }}</p>{% endif %}
+    {% endwith %}
+
+
+    <a class="voltar" href="/dashboard">
+        ← Voltar ao Dashboard
+    </a>
+
+
+    <table class="tabela-chamados">
+
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Nome</th>
+
+                <th>E-mail</th>
+
+                <th>Perfil</th>
+
+                <th>Ações</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+
+        {% for usuario in usuarios %}
+
+
+            <tr>
+
+
+                <td>
+                    {{ usuario.id }}
+                </td>
+
+
+                <td>
+                    {{ usuario.nome }}
+                </td>
+
+
+                <td>
+                    {{ usuario.email }}
+                </td>
+
+
+                <td>
+
+                    <form method="POST" action="/admin/usuarios/{{ usuario.id }}/tipo" class="form-tipo-usuario">
+
+                        <select name="tipo_usuario">
+                            <option value="Usuário" {% if usuario.tipo_usuario == "Usuário" %}selected{% endif %}>Usuário</option>
+                            <option value="Técnico" {% if usuario.tipo_usuario == "Técnico" %}selected{% endif %}>Técnico</option>
+                            <option value="Administrador" {% if usuario.tipo_usuario == "Administrador" %}selected{% endif %}>Administrador</option>
+                        </select>
+
+                        <button class="botao-filtro" type="submit">Salvar</button>
+
+                    </form>
+
+                </td>
+
+
+                <td>
+
+                    {% if usuario.id != session['usuario_id'] %}
+
+                        <form method="POST"
+                              action="/admin/usuarios/{{ usuario.id }}/excluir"
+                              onsubmit="return confirm('Tem certeza que deseja excluir {{ usuario.nome }}?');">
+
+                            <button class="botao-perigo" type="submit">Excluir</button>
+
+                        </form>
+
+                    {% else %}
+
+                        <span class="finalizado">Você</span>
+
+                    {% endif %}
+
+                </td>
+
+
+            </tr>
+
+
+        {% endfor %}
+
+
+        </tbody>
+
+
+    </table>
+
+
+</div>
+
+
+</body>
+
+</html>

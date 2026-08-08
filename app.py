@@ -86,6 +86,17 @@ def tecnico_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "usuario_id" not in session:
+            return redirect("/login")
+        if session.get("tipo_usuario") != "Administrador":
+            flash("Essa área é restrita a Administradores.")
+            return redirect("/dashboard")
+        return f(*args, **kwargs)
+    return decorated_function
+
 # ==============================================================================
 # NOTIFICAÇÕES POR E-MAIL
 # ==============================================================================
@@ -221,64 +232,21 @@ def chamado():
 def lista_chamados():
     busca = request.args.get("busca", "").strip()
     status_filtro = request.args.get("status", "")
-    prioridade_filtro = request.args.get("prioridade", "")
-    responsavel_filtro = request.args.get("responsavel", "")
 
     stmt = db.select(Chamado)
     if busca:
         stmt = stmt.where(Chamado.titulo.ilike(f"%{busca}%"))
     if status_filtro:
         stmt = stmt.where(Chamado.status == status_filtro)
-    if prioridade_filtro:
-        stmt = stmt.where(Chamado.prioridade == prioridade_filtro)
-    if responsavel_filtro == "nenhum":
-        stmt = stmt.where(Chamado.responsavel_id.is_(None))
-    elif responsavel_filtro:
-        stmt = stmt.where(Chamado.responsavel_id == int(responsavel_filtro))
 
     stmt = stmt.order_by(Chamado.id.desc())
     chamados = db.session.execute(stmt).scalars().all()
-
-    tecnicos = db.session.execute(
-        db.select(Usuario)
-        .where(Usuario.tipo_usuario.in_(["Técnico", "Administrador"]))
-        .order_by(Usuario.nome)
-    ).scalars().all()
 
     return render_template(
         "chamados.html",
         chamados=chamados,
         busca=busca,
-        status_filtro=status_filtro,
-        prioridade_filtro=prioridade_filtro,
-        responsavel_filtro=responsavel_filtro,
-        tecnicos=tecnicos
-    )
-
-@app.route("/meus-chamados")
-@tecnico_required
-def meus_chamados():
-    busca = request.args.get("busca", "").strip()
-    status_filtro = request.args.get("status", "")
-    prioridade_filtro = request.args.get("prioridade", "")
-
-    stmt = db.select(Chamado).where(Chamado.responsavel_id == session["usuario_id"])
-    if busca:
-        stmt = stmt.where(Chamado.titulo.ilike(f"%{busca}%"))
-    if status_filtro:
-        stmt = stmt.where(Chamado.status == status_filtro)
-    if prioridade_filtro:
-        stmt = stmt.where(Chamado.prioridade == prioridade_filtro)
-
-    stmt = stmt.order_by(Chamado.id.desc())
-    chamados = db.session.execute(stmt).scalars().all()
-
-    return render_template(
-        "meus_chamados.html",
-        chamados=chamados,
-        busca=busca,
-        status_filtro=status_filtro,
-        prioridade_filtro=prioridade_filtro
+        status_filtro=status_filtro
     )
 
 @app.route("/chamados/<int:id>")
@@ -305,6 +273,10 @@ def atualizar_status_chamado(id):
         return redirect(f"/chamados/{id}")
 
     chamado.status = novo_status
+
+    if chamado.responsavel_id is None:
+        chamado.responsavel_id = session["usuario_id"]
+
     db.session.commit()
 
     flash(f"Status do chamado atualizado para '{novo_status}'.")
@@ -330,6 +302,75 @@ def adicionar_comentario(id):
 
     flash("Atualização adicionada com sucesso.")
     return redirect(f"/chamados/{id}")
+
+@app.route("/meus-chamados")
+@tecnico_required
+def meus_chamados():
+    chamados = db.session.execute(
+        db.select(Chamado)
+        .where(Chamado.responsavel_id == session["usuario_id"])
+        .order_by(Chamado.id.desc())
+    ).scalars().all()
+
+    return render_template("meus_chamados.html", chamados=chamados)
+
+@app.route("/admin/usuarios")
+@admin_required
+def admin_usuarios():
+    usuarios = db.session.execute(
+        db.select(Usuario).order_by(Usuario.nome)
+    ).scalars().all()
+
+    return render_template("admin_usuarios.html", usuarios=usuarios)
+
+@app.route("/admin/usuarios/<int:id>/tipo", methods=["POST"])
+@admin_required
+def admin_alterar_tipo(id):
+    usuario = db.get_or_404(Usuario, id)
+
+    novo_tipo = request.form.get("tipo_usuario")
+    tipos_validos = ("Usuário", "Técnico", "Administrador")
+
+    if novo_tipo not in tipos_validos:
+        flash("Tipo de usuário inválido.")
+        return redirect("/admin/usuarios")
+
+    if usuario.id == session["usuario_id"] and novo_tipo != "Administrador":
+        flash("Você não pode remover seu próprio acesso de Administrador.")
+        return redirect("/admin/usuarios")
+
+    usuario.tipo_usuario = novo_tipo
+    db.session.commit()
+
+    flash(f"Perfil de {usuario.nome} atualizado para '{novo_tipo}'.")
+    return redirect("/admin/usuarios")
+
+@app.route("/admin/usuarios/<int:id>/excluir", methods=["POST"])
+@admin_required
+def admin_excluir_usuario(id):
+    usuario = db.get_or_404(Usuario, id)
+
+    if usuario.id == session["usuario_id"]:
+        flash("Você não pode excluir a própria conta.")
+        return redirect("/admin/usuarios")
+
+    possui_comentarios = db.session.execute(
+        db.select(db.func.count(Comentario.id)).where(Comentario.autor_id == usuario.id)
+    ).scalar_one() > 0
+
+    possui_chamados = db.session.execute(
+        db.select(db.func.count(Chamado.id)).where(Chamado.responsavel_id == usuario.id)
+    ).scalar_one() > 0
+
+    if possui_comentarios or possui_chamados:
+        flash("Esse usuário já possui chamados ou comentários associados e não pode ser excluído. Altere o perfil dele em vez de excluir.")
+        return redirect("/admin/usuarios")
+
+    db.session.delete(usuario)
+    db.session.commit()
+
+    flash(f"Usuário {usuario.nome} excluído com sucesso.")
+    return redirect("/admin/usuarios")
 
 # ==============================================================================
 # EXECUÇÃO DA APLICAÇÃO

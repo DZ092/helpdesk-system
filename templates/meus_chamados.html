@@ -29,40 +29,12 @@
     </h1>
 
 
-    <form method="GET" action="/meus-chamados" class="filtro-form">
-
-        <input
-        type="text"
-        name="busca"
-        placeholder="Buscar por título..."
-        value="{{ busca }}">
-
-        <select name="status">
-            <option value="">Todos os status</option>
-            <option value="Aberto" {% if status_filtro == "Aberto" %}selected{% endif %}>Aberto</option>
-            <option value="Em andamento" {% if status_filtro == "Em andamento" %}selected{% endif %}>Em andamento</option>
-            <option value="Resolvido" {% if status_filtro == "Resolvido" %}selected{% endif %}>Resolvido</option>
-        </select>
-
-        <select name="prioridade">
-            <option value="">Todas as prioridades</option>
-            <option value="Baixa" {% if prioridade_filtro == "Baixa" %}selected{% endif %}>Baixa</option>
-            <option value="Média" {% if prioridade_filtro == "Média" %}selected{% endif %}>Média</option>
-            <option value="Alta" {% if prioridade_filtro == "Alta" %}selected{% endif %}>Alta</option>
-            <option value="Crítica" {% if prioridade_filtro == "Crítica" %}selected{% endif %}>Crítica</option>
-        </select>
-
-        <button class="botao-filtro" type="submit">Filtrar</button>
-
-        <a href="/meus-chamados" class="limpar-filtro">Limpar</a>
-
-    </form>
-
-
-    <a class="novo-chamado" href="/chamados">
-        📋 Ver todos os chamados
+    <a class="voltar" href="/dashboard">
+        ← Voltar ao Dashboard
     </a>
 
+
+    {% if chamados %}
 
 
     <table class="tabela-chamados">
@@ -80,8 +52,6 @@
 
                 <th>Título</th>
 
-                <th>Descrição</th>
-
                 <th>Prioridade</th>
 
                 <th>Status</th>
@@ -91,7 +61,6 @@
             </tr>
 
         </thead>
-
 
 
         <tbody>
@@ -124,11 +93,6 @@
 
 
                 <td>
-                    {{ chamado.descricao }}
-                </td>
-
-
-                <td>
 
                     {% if chamado.prioridade == "Baixa" %}
                         <span class="prioridade prioridade-baixa">Baixa</span>
@@ -141,7 +105,6 @@
                     {% endif %}
 
                 </td>
-
 
 
                 <td>
@@ -171,66 +134,26 @@
                     {% endif %}
 
 
-
                 </td>
-
 
 
                 <td>
 
+                    {% if chamado.status == "Resolvido" %}
 
-                    {% if chamado.status == "Aberto" %}
-
-
-                        <a class="acao"
-                           href="/chamados/{{ chamado.id }}">
-
-                           ▶ Iniciar
-
-                        </a>
-
-
-
-                    {% elif chamado.status == "Em andamento" %}
-
-
-                        <a class="acao"
-                           href="/chamados/{{ chamado.id }}">
-
-                           ✅ Resolver
-
-                        </a>
-
-
+                        <span class="finalizado">☑ Finalizado</span>
 
                     {% else %}
 
-
-                        <span class="finalizado">
-
-                            ☑ Finalizado
-
-                        </span>
-
+                        <a class="acao" href="/chamados/{{ chamado.id }}">
+                            Ver detalhes
+                        </a>
 
                     {% endif %}
 
-
-
                 </td>
 
 
-            </tr>
-
-
-
-        {% else %}
-
-
-            <tr>
-                <td colspan="8" class="finalizado">
-                    Nenhum chamado atribuído a você no momento.
-                </td>
             </tr>
 
 
@@ -243,8 +166,18 @@
     </table>
 
 
-</div>
+    {% else %}
 
+
+    <p class="vazio">
+        Você ainda não é responsável por nenhum chamado. Assuma um chamado na lista geral para que ele apareça aqui.
+    </p>
+
+
+    {% endif %}
+
+
+</div>
 
 
 </body>

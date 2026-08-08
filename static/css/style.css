@@ -771,3 +771,50 @@ h1 {
         grid-template-columns: 1fr;
     }
 }
+/* PAINEL ADMINISTRATIVO */
+
+.botao-perigo {
+
+    background: #dc2626;
+
+    border: none;
+
+    border-radius: 8px;
+
+    color: white;
+
+    cursor: pointer;
+
+    font-weight: bold;
+
+    padding: 10px 15px;
+
+}
+
+.botao-perigo:hover {
+
+    background: #b91c1c;
+
+}
+
+.form-tipo-usuario {
+
+    align-items: center;
+
+    display: flex;
+
+    gap: 8px;
+
+    justify-content: center;
+
+}
+
+.form-tipo-usuario select {
+
+    padding: 8px;
+
+    border-radius: 8px;
+
+    border: 1px solid #cbd5e1;
+
+}

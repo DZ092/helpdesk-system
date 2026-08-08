@@ -2,7 +2,7 @@
 
 Sistema web para gerenciamento de chamados técnicos, desenvolvido para simular um ambiente real de suporte de TI.
 
-A aplicação possui controle de acesso por perfil de usuário, dashboard com indicadores, histórico de chamados com busca e filtros, definição de prioridades, atendimento técnico, comentários internos e notificações automáticas por e-mail.
+A aplicação possui controle de acesso por perfil de usuário, dashboard com indicadores, histórico de chamados com busca e filtros, definição de prioridades, atendimento técnico, comentários internos, notificações automáticas por e-mail e um painel administrativo para gerenciamento de usuários.
 
 Este projeto foi desenvolvido para compor meu portfólio durante os estudos no curso de **Análise e Desenvolvimento de Sistemas**.
 
@@ -52,8 +52,11 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - **Notificação por e-mail**  
   Técnicos e administradores recebem uma notificação automática quando um novo chamado é aberto.
 
+- **Painel administrativo**  
+  Administradores podem visualizar todos os usuários cadastrados, alterar o perfil de acesso de cada um (Usuário, Técnico ou Administrador) e excluir contas. O sistema impede que um administrador remova o próprio acesso ou exclua a própria conta, e bloqueia a exclusão de usuários que já possuem chamados ou comentários registrados.
+
 - **Controle de acesso**  
-  Apenas Técnicos e Administradores podem assumir chamados, alterar status e adicionar comentários internos.
+  Apenas Técnicos e Administradores podem assumir chamados, alterar status e adicionar comentários internos. Apenas Administradores podem acessar o painel administrativo.
 
 ---
 
@@ -97,7 +100,8 @@ helpdesk-system/
     ├── dashboard.html
     ├── chamado.html
     ├── chamados.html
-    └── detalhe_chamado.html
+    ├── detalhe_chamado.html
+    └── admin_usuarios.html
 ```
 
 > O arquivo `chamados.db` é criado automaticamente quando o banco de dados é inicializado.
@@ -225,7 +229,7 @@ http://127.0.0.1:5000
 |---|---|
 | **Usuário** | Visualiza o dashboard e o histórico de chamados, mas não pode assumir chamados, alterar status ou adicionar comentários internos |
 | **Técnico** | Visualiza todos os chamados, assume atendimentos, altera status e adiciona comentários internos |
-| **Administrador** | Possui as mesmas permissões operacionais do Técnico e pode administrar o sistema |
+| **Administrador** | Possui as mesmas permissões operacionais do Técnico e pode administrar usuários pelo painel administrativo |
 
 ---
 
@@ -354,7 +358,6 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 - Recuperação de senha por e-mail
 - Paginação da lista de chamados
 - Filtros por prioridade, setor, responsável e período
-- Painel administrativo para gerenciamento de usuários
 - Registro de logs e auditoria
 - Testes automatizados
 - API REST
