@@ -818,3 +818,16 @@ h1 {
     border: 1px solid #cbd5e1;
 
 }
+/* FILTRO DE PERÍODO */
+
+.filtro-label {
+
+    align-items: center;
+
+    display: flex;
+
+    font-size: 14px;
+
+    gap: 6px;
+
+}

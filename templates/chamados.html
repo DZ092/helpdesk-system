@@ -52,6 +52,13 @@
             <option value="Crítica" {% if prioridade_filtro == "Crítica" %}selected{% endif %}>Crítica</option>
         </select>
 
+        <select name="setor">
+            <option value="">Todos os setores</option>
+            {% for setor in setores %}
+                <option value="{{ setor }}" {% if setor_filtro == setor %}selected{% endif %}>{{ setor }}</option>
+            {% endfor %}
+        </select>
+
         <select name="responsavel">
             <option value="">Todos os responsáveis</option>
             <option value="nenhum" {% if responsavel_filtro == "nenhum" %}selected{% endif %}>Aguardando atribuição</option>
@@ -59,6 +66,20 @@
                 <option value="{{ tecnico.id }}" {% if responsavel_filtro == tecnico.id|string %}selected{% endif %}>{{ tecnico.nome }}</option>
             {% endfor %}
         </select>
+
+        <label class="filtro-label">De:
+            <input
+            type="date"
+            name="data_inicio"
+            value="{{ data_inicio }}">
+        </label>
+
+        <label class="filtro-label">Até:
+            <input
+            type="date"
+            name="data_fim"
+            value="{{ data_fim }}">
+        </label>
 
         <button class="botao-filtro" type="submit">Filtrar</button>
 
