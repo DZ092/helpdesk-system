@@ -189,6 +189,28 @@ href="/chamados">
 
 </a>
 
+{% if session['tipo_usuario'] in ['Técnico', 'Administrador'] %}
+
+    <a class="botao"
+    href="/meus-chamados">
+
+    🙋 Meus Chamados
+
+    </a>
+
+{% endif %}
+
+{% if session['tipo_usuario'] == 'Administrador' %}
+
+<a class="botao"
+href="/admin/usuarios">
+
+🛠 Painel Admin
+
+</a>
+
+{% endif %}
+
 
 </div>
 

@@ -771,3 +771,60 @@ h1 {
         grid-template-columns: 1fr;
     }
 }
+/* PAGINAÇÃO */
+
+.paginacao {
+
+    align-items: center;
+
+    display: flex;
+
+    gap: 8px;
+
+    margin-top: 15px;
+
+}
+
+.pagina-link {
+
+    background: white;
+
+    border: 1px solid #cbd5e1;
+
+    border-radius: 8px;
+
+    color: #1e3a5f;
+
+    padding: 8px 12px;
+
+    text-decoration: none;
+
+}
+
+.pagina-link:hover {
+
+    background: #f1f5f9;
+
+}
+
+.pagina-atual {
+
+    background: #1e3a5f;
+
+    border-radius: 8px;
+
+    color: white;
+
+    font-weight: bold;
+
+    padding: 8px 12px;
+
+}
+
+.pagina-reticencias {
+
+    color: #94a3b8;
+
+    padding: 0 4px;
+
+}

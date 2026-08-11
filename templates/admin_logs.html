@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Logs de Auditoria</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <div class="usuario-logado">
+    Olá, <strong>{{ session['usuario_nome'] }}</strong> ({{ session['tipo_usuario'] }})
+    <a href="/logout" class="sair">Sair</a>
+    </div>
+
+
+    <h1>
+        🧾 Logs de Auditoria
+    </h1>
+
+
+    <a class="voltar" href="/admin/usuarios">
+        ← Voltar ao Painel Admin
+    </a>
+
+
+    <p class="vazio">
+        Mostrando os 200 registros mais recentes.
+    </p>
+
+
+    <table class="tabela-chamados">
+
+
+        <thead>
+
+            <tr>
+
+                <th>Data/Hora</th>
+
+                <th>Usuário</th>
+
+                <th>Ação</th>
+
+                <th>Detalhes</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+
+        {% for log in logs %}
+
+
+            <tr>
+
+
+                <td>
+                    {{ log.criado_em.strftime("%d/%m/%Y %H:%M") }}
+                </td>
+
+
+                <td>
+                    {{ log.usuario_nome }}
+                </td>
+
+
+                <td>
+                    {{ log.acao }}
+                </td>
+
+
+                <td>
+                    {{ log.detalhes or "—" }}
+                </td>
+
+
+            </tr>
+
+
+        {% endfor %}
+
+
+        </tbody>
+
+
+    </table>
+
+
+</div>
+
+
+</body>
+
+</html>

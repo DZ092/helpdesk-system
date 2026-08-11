@@ -29,6 +29,11 @@
     </h1>
 
 
+    <a class="voltar" href="/dashboard">
+        ← Voltar ao Dashboard
+    </a>
+
+
     <form method="GET" action="/chamados" class="filtro-form">
 
         <input
@@ -44,6 +49,43 @@
             <option value="Resolvido" {% if status_filtro == "Resolvido" %}selected{% endif %}>Resolvido</option>
         </select>
 
+        <select name="prioridade">
+            <option value="">Todas as prioridades</option>
+            <option value="Baixa" {% if prioridade_filtro == "Baixa" %}selected{% endif %}>Baixa</option>
+            <option value="Média" {% if prioridade_filtro == "Média" %}selected{% endif %}>Média</option>
+            <option value="Alta" {% if prioridade_filtro == "Alta" %}selected{% endif %}>Alta</option>
+            <option value="Crítica" {% if prioridade_filtro == "Crítica" %}selected{% endif %}>Crítica</option>
+        </select>
+
+        <select name="setor">
+            <option value="">Todos os setores</option>
+            {% for setor in setores %}
+                <option value="{{ setor }}" {% if setor_filtro == setor %}selected{% endif %}>{{ setor }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="responsavel">
+            <option value="">Todos os responsáveis</option>
+            <option value="nenhum" {% if responsavel_filtro == "nenhum" %}selected{% endif %}>Aguardando atribuição</option>
+            {% for tecnico in tecnicos %}
+                <option value="{{ tecnico.id }}" {% if responsavel_filtro == tecnico.id|string %}selected{% endif %}>{{ tecnico.nome }}</option>
+            {% endfor %}
+        </select>
+
+        <label class="filtro-label">De:
+            <input
+            type="date"
+            name="data_inicio"
+            value="{{ data_inicio }}">
+        </label>
+
+        <label class="filtro-label">Até:
+            <input
+            type="date"
+            name="data_fim"
+            value="{{ data_fim }}">
+        </label>
+
         <button class="botao-filtro" type="submit">Filtrar</button>
 
         <a href="/chamados" class="limpar-filtro">Limpar</a>
@@ -54,6 +96,15 @@
     <a class="novo-chamado" href="/chamado">
         ➕ Novo Chamado
     </a>
+
+
+    {% if session['tipo_usuario'] in ['Técnico', 'Administrador'] %}
+
+        <a class="novo-chamado" href="/meus-chamados">
+            🙋 Meus Chamados
+        </a>
+
+    {% endif %}
 
 
 
@@ -77,6 +128,8 @@
                 <th>Prioridade</th>
 
                 <th>Status</th>
+
+                <th>Responsável</th>
 
                 <th>Ação</th>
 
@@ -170,6 +223,18 @@
 
                 <td>
 
+                    {% if chamado.responsavel %}
+                        {{ chamado.responsavel.nome }}
+                    {% else %}
+                        <span class="finalizado">Aguardando atribuição</span>
+                    {% endif %}
+
+                </td>
+
+
+
+                <td>
+
 
 
                     {% if session['tipo_usuario'] in ['Técnico', 'Administrador'] %}
@@ -234,6 +299,56 @@
 
 
     </table>
+
+
+    {% if paginacao.total > 0 %}
+
+        <p class="vazio">
+            Mostrando {{ chamados|length }} de {{ paginacao.total }} chamado(s) — página {{ paginacao.page }} de {{ paginacao.pages }}
+        </p>
+
+    {% else %}
+
+        <p class="vazio">
+            Nenhum chamado encontrado com os filtros selecionados.
+        </p>
+
+    {% endif %}
+
+
+    {% if paginacao.pages > 1 %}
+
+        <div class="paginacao">
+
+            {% if paginacao.has_prev %}
+                <a class="botao-filtro" href="{{ url_for('lista_chamados', **dict(request.args, pagina=paginacao.prev_num)) }}">← Anterior</a>
+            {% endif %}
+
+            {% for numero in paginacao.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+
+                {% if numero %}
+
+                    {% if numero == paginacao.page %}
+                        <span class="pagina-atual">{{ numero }}</span>
+                    {% else %}
+                        <a class="pagina-link" href="{{ url_for('lista_chamados', **dict(request.args, pagina=numero)) }}">{{ numero }}</a>
+                    {% endif %}
+
+                {% else %}
+
+                    <span class="pagina-reticencias">…</span>
+
+                {% endif %}
+
+            {% endfor %}
+
+            {% if paginacao.has_next %}
+                <a class="botao-filtro" href="{{ url_for('lista_chamados', **dict(request.args, pagina=paginacao.next_num)) }}">Próxima →</a>
+            {% endif %}
+
+        </div>
+
+    {% endif %}
 
 
 </div>

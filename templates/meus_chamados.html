@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Meus Chamados</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <div class="usuario-logado">
+    Olá, <strong>{{ session['usuario_nome'] }}</strong> ({{ session['tipo_usuario'] }})
+    <a href="/logout" class="sair">Sair</a>
+    </div>
+
+
+    <h1>
+        🙋 Meus Chamados
+    </h1>
+
+
+    <a class="voltar" href="/dashboard">
+        ← Voltar ao Dashboard
+    </a>
+
+
+    {% if chamados %}
+
+
+    <table class="tabela-chamados">
+
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Usuário</th>
+
+                <th>Setor</th>
+
+                <th>Título</th>
+
+                <th>Prioridade</th>
+
+                <th>Status</th>
+
+                <th>Ação</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+
+        {% for chamado in chamados %}
+
+
+            <tr>
+
+
+                <td>
+                    {{ chamado.id }}
+                </td>
+
+
+                <td>
+                    {{ chamado.usuario }}
+                </td>
+
+
+                <td>
+                    {{ chamado.setor }}
+                </td>
+
+
+                <td>
+                    {{ chamado.titulo }}
+                </td>
+
+
+                <td>
+
+                    {% if chamado.prioridade == "Baixa" %}
+                        <span class="prioridade prioridade-baixa">Baixa</span>
+                    {% elif chamado.prioridade == "Alta" %}
+                        <span class="prioridade prioridade-alta">Alta</span>
+                    {% elif chamado.prioridade == "Crítica" %}
+                        <span class="prioridade prioridade-critica">Crítica</span>
+                    {% else %}
+                        <span class="prioridade prioridade-media">Média</span>
+                    {% endif %}
+
+                </td>
+
+
+                <td>
+
+
+                    {% if chamado.status == "Aberto" %}
+
+                        <span class="status status-aberto">
+                            🔴 Aberto
+                        </span>
+
+
+                    {% elif chamado.status == "Em andamento" %}
+
+                        <span class="status status-andamento">
+                            🟡 Em andamento
+                        </span>
+
+
+                    {% else %}
+
+                        <span class="status status-resolvido">
+                            🟢 Resolvido
+                        </span>
+
+
+                    {% endif %}
+
+
+                </td>
+
+
+                <td>
+
+                    {% if chamado.status == "Resolvido" %}
+
+                        <span class="finalizado">☑ Finalizado</span>
+
+                    {% else %}
+
+                        <a class="acao" href="/chamados/{{ chamado.id }}">
+                            Ver detalhes
+                        </a>
+
+                    {% endif %}
+
+                </td>
+
+
+            </tr>
+
+
+        {% endfor %}
+
+
+        </tbody>
+
+
+    </table>
+
+
+    {% else %}
+
+
+    <p class="vazio">
+        Você ainda não é responsável por nenhum chamado. Assuma um chamado na lista geral para que ele apareça aqui.
+    </p>
+
+
+    {% endif %}
+
+
+</div>
+
+
+</body>
+
+</html>

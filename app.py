@@ -64,6 +64,14 @@ class Comentario(db.Model):
     )
     autor = db.relationship("Usuario", backref="comentarios")
 
+class LogAuditoria(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=True)
+    usuario_nome = db.Column(db.String(100), nullable=False)
+    acao = db.Column(db.String(100), nullable=False)
+    detalhes = db.Column(db.Text, nullable=True)
+    criado_em = db.Column(db.DateTime, default=obter_data_utc, nullable=False)
+
 # ==============================================================================
 # DECORADORES DE CONTROLE DE ACESSO
 # ==============================================================================
@@ -86,21 +94,41 @@ def tecnico_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "usuario_id" not in session:
+            return redirect("/login")
+        if session.get("tipo_usuario") != "Administrador":
+            flash("Essa área é restrita a Administradores.")
+            return redirect("/dashboard")
+        return f(*args, **kwargs)
+    return decorated_function
+
+# ==============================================================================
+# REGISTRO DE LOGS E AUDITORIA
+# ==============================================================================
+def registrar_log(acao, detalhes=None):
+    log = LogAuditoria(
+        usuario_id=session.get("usuario_id"),
+        usuario_nome=session.get("usuario_nome", "Público"),
+        acao=acao,
+        detalhes=detalhes,
+    )
+    db.session.add(log)
+    db.session.commit()
+
 # ==============================================================================
 # NOTIFICAÇÕES POR E-MAIL
 # ==============================================================================
 def notificar_tecnicos_novo_chamado(chamado):
-    print("[DEBUG] Função de notificação iniciada.", flush=True)
-
     tecnicos = db.session.execute(
         db.select(Usuario).where(Usuario.tipo_usuario.in_(["Técnico", "Administrador"]))
     ).scalars().all()
 
     destinatarios = [tecnico.email for tecnico in tecnicos]
-    print(f"[DEBUG] Destinatários encontrados: {destinatarios}", flush=True)
 
     if not destinatarios:
-        print("[DEBUG] Nenhum destinatário — e-mail não foi enviado.", flush=True)
         return
 
     corpo = (
@@ -119,10 +147,8 @@ def notificar_tecnicos_novo_chamado(chamado):
         body=corpo,
     )
 
-    print("[DEBUG] Tentando enviar e-mail...", flush=True)
     try:
         mail.send(mensagem)
-        print("[DEBUG] E-mail enviado sem erros!", flush=True)
     except Exception as erro:
         print(f"[DEBUG] Erro ao enviar e-mail de notificação: {erro}", flush=True)
 
@@ -153,6 +179,7 @@ def cadastro():
         )
         db.session.add(novo_usuario)
         db.session.commit()
+        registrar_log("Cadastro de usuário", f"Novo usuário: {novo_usuario.email} ({novo_usuario.tipo_usuario})")
         return redirect("/login")
     return render_template("cadastro.html")
 
@@ -168,6 +195,7 @@ def login():
             session["usuario_id"] = usuario.id
             session["usuario_nome"] = usuario.nome
             session["tipo_usuario"] = usuario.tipo_usuario
+            registrar_log("Login realizado")
             return redirect("/dashboard")
         return render_template("login.html", erro="E-mail ou senha inválidos.")
     return render_template("login.html")
@@ -211,6 +239,7 @@ def chamado():
         )
         db.session.add(novo_chamado)
         db.session.commit()
+        registrar_log("Abertura de chamado", f"Chamado #{novo_chamado.id}: {novo_chamado.titulo}")
         notificar_tecnicos_novo_chamado(novo_chamado)
         flash("Chamado enviado com sucesso! Nossa equipe vai analisar em breve.")
         return redirect("/chamado")
@@ -221,21 +250,76 @@ def chamado():
 def lista_chamados():
     busca = request.args.get("busca", "").strip()
     status_filtro = request.args.get("status", "")
+    prioridade_filtro = request.args.get("prioridade", "")
+    setor_filtro = request.args.get("setor", "")
+    responsavel_filtro = request.args.get("responsavel", "")
+    data_inicio = request.args.get("data_inicio", "")
+    data_fim = request.args.get("data_fim", "")
+    pagina = request.args.get("pagina", 1, type=int)
 
     stmt = db.select(Chamado)
+
     if busca:
         stmt = stmt.where(Chamado.titulo.ilike(f"%{busca}%"))
+
     if status_filtro:
         stmt = stmt.where(Chamado.status == status_filtro)
 
+    if prioridade_filtro:
+        stmt = stmt.where(Chamado.prioridade == prioridade_filtro)
+
+    if setor_filtro:
+        stmt = stmt.where(Chamado.setor == setor_filtro)
+
+    if responsavel_filtro == "nenhum":
+        stmt = stmt.where(Chamado.responsavel_id.is_(None))
+    elif responsavel_filtro:
+        stmt = stmt.where(Chamado.responsavel_id == int(responsavel_filtro))
+
+    if data_inicio:
+        try:
+            inicio = datetime.strptime(data_inicio, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            stmt = stmt.where(Chamado.criado_em >= inicio)
+        except ValueError:
+            pass
+
+    if data_fim:
+        try:
+            fim = datetime.strptime(data_fim, "%Y-%m-%d").replace(
+                hour=23, minute=59, second=59, tzinfo=timezone.utc
+            )
+            stmt = stmt.where(Chamado.criado_em <= fim)
+        except ValueError:
+            pass
+
     stmt = stmt.order_by(Chamado.id.desc())
-    chamados = db.session.execute(stmt).scalars().all()
+
+    paginacao = db.paginate(stmt, page=pagina, per_page=15, error_out=False)
+    chamados = paginacao.items
+
+    tecnicos = db.session.execute(
+        db.select(Usuario)
+        .where(Usuario.tipo_usuario.in_(["Técnico", "Administrador"]))
+        .order_by(Usuario.nome)
+    ).scalars().all()
+
+    setores = db.session.execute(
+        db.select(Chamado.setor).distinct().order_by(Chamado.setor)
+    ).scalars().all()
 
     return render_template(
         "chamados.html",
         chamados=chamados,
         busca=busca,
-        status_filtro=status_filtro
+        status_filtro=status_filtro,
+        prioridade_filtro=prioridade_filtro,
+        setor_filtro=setor_filtro,
+        responsavel_filtro=responsavel_filtro,
+        data_inicio=data_inicio,
+        data_fim=data_fim,
+        tecnicos=tecnicos,
+        setores=setores,
+        paginacao=paginacao,
     )
 
 @app.route("/chamados/<int:id>")
@@ -262,7 +346,13 @@ def atualizar_status_chamado(id):
         return redirect(f"/chamados/{id}")
 
     chamado.status = novo_status
+
+    if chamado.responsavel_id is None:
+        chamado.responsavel_id = session["usuario_id"]
+
     db.session.commit()
+
+    registrar_log("Atualização de status", f"Chamado #{chamado.id} alterado para '{novo_status}'")
 
     flash(f"Status do chamado atualizado para '{novo_status}'.")
     return redirect(f"/chamados/{id}")
@@ -285,8 +375,95 @@ def adicionar_comentario(id):
     db.session.add(novo_comentario)
     db.session.commit()
 
+    registrar_log("Comentário adicionado", f"Comentário adicionado ao chamado #{chamado.id}")
+
     flash("Atualização adicionada com sucesso.")
     return redirect(f"/chamados/{id}")
+
+@app.route("/meus-chamados")
+@tecnico_required
+def meus_chamados():
+    chamados = db.session.execute(
+        db.select(Chamado)
+        .where(Chamado.responsavel_id == session["usuario_id"])
+        .order_by(Chamado.id.desc())
+    ).scalars().all()
+
+    return render_template("meus_chamados.html", chamados=chamados)
+
+@app.route("/admin/usuarios")
+@admin_required
+def admin_usuarios():
+    usuarios = db.session.execute(
+        db.select(Usuario).order_by(Usuario.nome)
+    ).scalars().all()
+
+    return render_template("admin_usuarios.html", usuarios=usuarios)
+
+@app.route("/admin/usuarios/<int:id>/tipo", methods=["POST"])
+@admin_required
+def admin_alterar_tipo(id):
+    usuario = db.get_or_404(Usuario, id)
+
+    novo_tipo = request.form.get("tipo_usuario")
+    tipos_validos = ("Usuário", "Técnico", "Administrador")
+
+    if novo_tipo not in tipos_validos:
+        flash("Tipo de usuário inválido.")
+        return redirect("/admin/usuarios")
+
+    if usuario.id == session["usuario_id"] and novo_tipo != "Administrador":
+        flash("Você não pode remover seu próprio acesso de Administrador.")
+        return redirect("/admin/usuarios")
+
+    usuario.tipo_usuario = novo_tipo
+    db.session.commit()
+
+    registrar_log("Alteração de perfil", f"Perfil de {usuario.nome} alterado para '{novo_tipo}'")
+
+    flash(f"Perfil de {usuario.nome} atualizado para '{novo_tipo}'.")
+    return redirect("/admin/usuarios")
+
+@app.route("/admin/usuarios/<int:id>/excluir", methods=["POST"])
+@admin_required
+def admin_excluir_usuario(id):
+    usuario = db.get_or_404(Usuario, id)
+
+    if usuario.id == session["usuario_id"]:
+        flash("Você não pode excluir a própria conta.")
+        return redirect("/admin/usuarios")
+
+    possui_comentarios = db.session.execute(
+        db.select(db.func.count(Comentario.id)).where(Comentario.autor_id == usuario.id)
+    ).scalar_one() > 0
+
+    possui_chamados = db.session.execute(
+        db.select(db.func.count(Chamado.id)).where(Chamado.responsavel_id == usuario.id)
+    ).scalar_one() > 0
+
+    if possui_comentarios or possui_chamados:
+        flash("Esse usuário já possui chamados ou comentários associados e não pode ser excluído. Altere o perfil dele em vez de excluir.")
+        return redirect("/admin/usuarios")
+
+    nome_excluido = usuario.nome
+    email_excluido = usuario.email
+
+    db.session.delete(usuario)
+    db.session.commit()
+
+    registrar_log("Exclusão de usuário", f"Usuário {nome_excluido} ({email_excluido}) excluído")
+
+    flash(f"Usuário {nome_excluido} excluído com sucesso.")
+    return redirect("/admin/usuarios")
+
+@app.route("/admin/logs")
+@admin_required
+def admin_logs():
+    logs = db.session.execute(
+        db.select(LogAuditoria).order_by(LogAuditoria.id.desc()).limit(200)
+    ).scalars().all()
+
+    return render_template("admin_logs.html", logs=logs)
 
 # ==============================================================================
 # EXECUÇÃO DA APLICAÇÃO
