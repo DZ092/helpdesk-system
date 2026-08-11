@@ -283,17 +283,25 @@ h1 {
 .acao {
 
 
+    align-items: center;
+
     background: #2563eb;
+
+    border-radius: 50%;
 
     color: white;
 
-    padding: 10px 15px;
+    display: inline-flex;
 
-    border-radius: 8px;
+    font-size: 16px;
+
+    height: 36px;
+
+    justify-content: center;
 
     text-decoration: none;
 
-    font-weight: bold;
+    width: 36px;
 
 }
 
@@ -771,6 +779,72 @@ h1 {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* PAINEL ADMINISTRATIVO */
+
+.botao-perigo {
+
+    background: #dc2626;
+
+    border: none;
+
+    border-radius: 8px;
+
+    color: white;
+
+    cursor: pointer;
+
+    font-weight: bold;
+
+    padding: 10px 15px;
+
+}
+
+.botao-perigo:hover {
+
+    background: #b91c1c;
+
+}
+
+.form-tipo-usuario {
+
+    align-items: center;
+
+    display: flex;
+
+    gap: 8px;
+
+    justify-content: center;
+
+}
+
+.form-tipo-usuario select {
+
+    padding: 8px;
+
+    border-radius: 8px;
+
+    border: 1px solid #cbd5e1;
+
+}
+
+
+/* FILTRO DE PERÍODO */
+
+.filtro-label {
+
+    align-items: center;
+
+    display: flex;
+
+    font-size: 14px;
+
+    gap: 6px;
+
+}
+
+
 /* PAGINAÇÃO */
 
 .paginacao {

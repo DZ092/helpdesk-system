@@ -146,14 +146,14 @@ Olá, <strong>{{ session['usuario_nome'] }}</strong> ({{ session['tipo_usuario']
 
     {% if chamado.status == "Aberto" %}
 
-    <a class="acao" href="/chamados/{{ chamado.id }}">
-    ▶ Iniciar
+    <a class="acao" href="/chamados/{{ chamado.id }}" title="Iniciar atendimento">
+    ▶
     </a>
 
     {% elif chamado.status == "Em andamento" %}
 
-    <a class="acao" href="/chamados/{{ chamado.id }}">
-    ✅ Resolver
+    <a class="acao" href="/chamados/{{ chamado.id }}" title="Marcar como resolvido">
+    ✓
     </a>
 
     {% else %}
