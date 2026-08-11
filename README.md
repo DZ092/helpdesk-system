@@ -2,7 +2,7 @@
 
 Sistema web para gerenciamento de chamados técnicos, desenvolvido para simular um ambiente real de suporte de TI.
 
-A aplicação possui controle de acesso por perfil de usuário, dashboard com indicadores, histórico de chamados com busca e filtros, definição de prioridades, atendimento técnico, comentários internos, notificações automáticas por e-mail, um painel administrativo para gerenciamento de usuários e testes automatizados.
+A aplicação possui controle de acesso por perfil de usuário, dashboard com indicadores, histórico de chamados com busca, filtros e paginação, definição de prioridades, atendimento técnico, comentários internos, notificações automáticas por e-mail, um painel administrativo para gerenciamento de usuários, registro de logs e auditoria, e testes automatizados.
 
 Este projeto foi desenvolvido para compor meu portfólio durante os estudos no curso de **Análise e Desenvolvimento de Sistemas**.
 
@@ -30,10 +30,10 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   Listagem dos últimos chamados cadastrados diretamente no dashboard.
 
 - **Histórico de chamados**  
-  Visualização de todos os chamados registrados no sistema.
+  Visualização de todos os chamados registrados no sistema, com paginação (15 chamados por página).
 
 - **Busca e filtros**  
-  Pesquisa por título e filtragem dos chamados por status.
+  Pesquisa por título e filtragem dos chamados por status, prioridade, setor, responsável e período (data inicial/final).
 
 - **Controle de prioridade**  
   Cada chamado pode possuir uma das seguintes prioridades:
@@ -58,8 +58,11 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - **Painel administrativo**  
   Administradores podem visualizar todos os usuários cadastrados, alterar o perfil de acesso de cada um (Usuário, Técnico ou Administrador) e excluir contas. O sistema impede que um administrador remova o próprio acesso ou exclua a própria conta, e bloqueia a exclusão de usuários que já possuem chamados ou comentários registrados.
 
+- **Registro de logs e auditoria**  
+  O sistema registra automaticamente ações importantes (cadastro de usuário, login, abertura de chamado, mudança de status, comentário adicionado, alteração de perfil e exclusão de usuário), com data/hora e autor de cada ação. Administradores podem consultar esse histórico em uma tela dedicada.
+
 - **Controle de acesso**  
-  Apenas Técnicos e Administradores podem assumir chamados, alterar status, adicionar comentários internos e acessar "Meus Chamados". Apenas Administradores podem acessar o painel administrativo.
+  Apenas Técnicos e Administradores podem assumir chamados, alterar status, adicionar comentários internos e acessar "Meus Chamados". Apenas Administradores podem acessar o painel administrativo e os logs de auditoria.
 
 - **Testes automatizados**  
   Suíte de testes com pytest cobrindo autenticação, controle de acesso por perfil e a lógica de responsável do chamado.
@@ -109,6 +112,7 @@ helpdesk-system/
 │   ├── chamados.html
 │   ├── detalhe_chamado.html
 │   ├── admin_usuarios.html
+│   ├── admin_logs.html
 │   └── meus_chamados.html
 │
 └── tests/
@@ -249,7 +253,7 @@ python -m pytest -v
 |---|---|
 | **Usuário** | Visualiza o dashboard e o histórico de chamados, mas não pode assumir chamados, alterar status ou adicionar comentários internos |
 | **Técnico** | Visualiza todos os chamados, assume atendimentos, altera status, adiciona comentários internos e acessa "Meus Chamados" |
-| **Administrador** | Possui as mesmas permissões operacionais do Técnico e pode administrar usuários pelo painel administrativo |
+| **Administrador** | Possui as mesmas permissões operacionais do Técnico e pode administrar usuários e consultar os logs de auditoria pelo painel administrativo |
 
 ---
 
@@ -380,9 +384,6 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 - Exportação de relatórios em PDF ou Excel
 - Upload de anexos nos chamados
 - Recuperação de senha por e-mail
-- Paginação da lista de chamados
-- Filtros por prioridade, setor, responsável e período
-- Registro de logs e auditoria
 - API REST
 - Responsividade para dispositivos móveis
 - Deploy em ambiente de produção
@@ -403,6 +404,7 @@ As seguintes práticas são aplicadas ou recomendadas no projeto:
 - Arquivo `.env` ignorado pelo Git
 - Uso de uma chave secreta segura
 - Senha de aplicativo específica para envio de e-mails
+- Registro de logs e auditoria das ações administrativas
 
 ---
 
