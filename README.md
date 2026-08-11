@@ -2,7 +2,7 @@
 
 Sistema web para gerenciamento de chamados técnicos, desenvolvido para simular um ambiente real de suporte de TI.
 
-A aplicação possui controle de acesso por perfil de usuário, dashboard com indicadores, histórico de chamados com busca e filtros, definição de prioridades, atendimento técnico, comentários internos e notificações automáticas por e-mail.
+A aplicação possui controle de acesso por perfil de usuário, dashboard com indicadores, histórico de chamados com busca e filtros, definição de prioridades, atendimento técnico, comentários internos, notificações automáticas por e-mail, um painel administrativo para gerenciamento de usuários e testes automatizados.
 
 Este projeto foi desenvolvido para compor meu portfólio durante os estudos no curso de **Análise e Desenvolvimento de Sistemas**.
 
@@ -44,7 +44,10 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   - Crítica
 
 - **Atendimento técnico**  
-  Técnicos e administradores podem assumir chamados e atualizar o status do atendimento.
+  Técnicos e administradores podem assumir chamados e atualizar o status do atendimento. Ao assumir um chamado, o técnico ou administrador é automaticamente registrado como responsável.
+
+- **Meus Chamados**  
+  Técnicos e administradores possuem uma tela dedicada mostrando apenas os chamados sob sua responsabilidade.
 
 - **Comentários internos**  
   Registro do histórico de atendimento, contendo mensagem, autor e data do comentário.
@@ -52,8 +55,14 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - **Notificação por e-mail**  
   Técnicos e administradores recebem uma notificação automática quando um novo chamado é aberto.
 
+- **Painel administrativo**  
+  Administradores podem visualizar todos os usuários cadastrados, alterar o perfil de acesso de cada um (Usuário, Técnico ou Administrador) e excluir contas. O sistema impede que um administrador remova o próprio acesso ou exclua a própria conta, e bloqueia a exclusão de usuários que já possuem chamados ou comentários registrados.
+
 - **Controle de acesso**  
-  Apenas Técnicos e Administradores podem assumir chamados, alterar status e adicionar comentários internos.
+  Apenas Técnicos e Administradores podem assumir chamados, alterar status, adicionar comentários internos e acessar "Meus Chamados". Apenas Administradores podem acessar o painel administrativo.
+
+- **Testes automatizados**  
+  Suíte de testes com pytest cobrindo autenticação, controle de acesso por perfil e a lógica de responsável do chamado.
 
 ---
 
@@ -71,6 +80,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - Jinja2
 - HTML5
 - CSS3
+- Pytest
 
 ---
 
@@ -90,14 +100,20 @@ helpdesk-system/
 │   └── css/
 │       └── style.css
 │
-└── templates/
-    ├── index.html
-    ├── login.html
-    ├── cadastro.html
-    ├── dashboard.html
-    ├── chamado.html
-    ├── chamados.html
-    └── detalhe_chamado.html
+├── templates/
+│   ├── index.html
+│   ├── login.html
+│   ├── cadastro.html
+│   ├── dashboard.html
+│   ├── chamado.html
+│   ├── chamados.html
+│   ├── detalhe_chamado.html
+│   ├── admin_usuarios.html
+│   └── meus_chamados.html
+│
+└── tests/
+    ├── conftest.py
+    └── test_app.py
 ```
 
 > O arquivo `chamados.db` é criado automaticamente quando o banco de dados é inicializado.
@@ -219,13 +235,21 @@ http://127.0.0.1:5000
 
 ---
 
+### 7. Execute os testes automatizados (opcional)
+
+```bash
+python -m pytest -v
+```
+
+---
+
 ## 👤 Perfis de usuário
 
 | Perfil | Permissões |
 |---|---|
 | **Usuário** | Visualiza o dashboard e o histórico de chamados, mas não pode assumir chamados, alterar status ou adicionar comentários internos |
-| **Técnico** | Visualiza todos os chamados, assume atendimentos, altera status e adiciona comentários internos |
-| **Administrador** | Possui as mesmas permissões operacionais do Técnico e pode administrar o sistema |
+| **Técnico** | Visualiza todos os chamados, assume atendimentos, altera status, adiciona comentários internos e acessa "Meus Chamados" |
+| **Administrador** | Possui as mesmas permissões operacionais do Técnico e pode administrar usuários pelo painel administrativo |
 
 ---
 
@@ -283,6 +307,7 @@ Flask-WTF
 python-dotenv
 SQLAlchemy
 Werkzeug
+pytest
 ```
 
 Para gerar uma lista com as versões instaladas no seu ambiente:
@@ -309,6 +334,9 @@ venv/
 # Cache do Python
 __pycache__/
 *.py[cod]
+
+# Cache do pytest
+.pytest_cache/
 
 # Arquivos de IDE
 .vscode/
@@ -354,9 +382,7 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 - Recuperação de senha por e-mail
 - Paginação da lista de chamados
 - Filtros por prioridade, setor, responsável e período
-- Painel administrativo para gerenciamento de usuários
 - Registro de logs e auditoria
-- Testes automatizados
 - API REST
 - Responsividade para dispositivos móveis
 - Deploy em ambiente de produção
