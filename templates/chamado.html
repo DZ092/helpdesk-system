@@ -4,6 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Abrir Chamado</title>
 
@@ -32,8 +33,14 @@ Informe os dados do problema técnico
 {% endwith %}
 
 
+{% if erro %}
+<p class="erro">{{ erro }}</p>
+{% endif %}
+
+
 
 <form method="POST" class="formulario" id="form-chamado">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 
 <div class="campo">

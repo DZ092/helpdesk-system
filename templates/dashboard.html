@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Dashboard Help Desk</title>
 
@@ -18,7 +19,7 @@
 
 
 <div class="usuario-logado">
-Olá, <strong>{{ session['usuario_nome'] }}</strong> ({{ session['tipo_usuario'] }})
+Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }})
 <a href="/logout" class="sair">Sair</a>
 </div>
 
@@ -26,6 +27,13 @@ Olá, <strong>{{ session['usuario_nome'] }}</strong> ({{ session['tipo_usuario']
 <h1>
 🖥 Dashboard Help Desk
 </h1>
+
+
+{% with mensagens = get_flashed_messages() %}
+{% if mensagens %}
+<p class="sucesso">{{ mensagens[0] }}</p>
+{% endif %}
+{% endwith %}
 
 
 <div class="cards">
@@ -142,7 +150,7 @@ Olá, <strong>{{ session['usuario_nome'] }}</strong> ({{ session['tipo_usuario']
 
 <td>
 
-{% if session['tipo_usuario'] in ['Técnico', 'Administrador'] %}
+{% if usuario_logado.eh_tecnico %}
 
     {% if chamado.status == "Aberto" %}
 
@@ -189,7 +197,14 @@ href="/chamados">
 
 </a>
 
-{% if session['tipo_usuario'] in ['Técnico', 'Administrador'] %}
+<a class="botao"
+href="/senha">
+
+🔑 Alterar senha
+
+</a>
+
+{% if usuario_logado.eh_tecnico %}
 
     <a class="botao"
     href="/meus-chamados">
@@ -200,7 +215,7 @@ href="/chamados">
 
 {% endif %}
 
-{% if session['tipo_usuario'] == 'Administrador' %}
+{% if usuario_logado.eh_admin %}
 
 <a class="botao"
 href="/admin/usuarios">

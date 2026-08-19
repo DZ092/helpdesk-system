@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Alterar senha - Help Desk</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<div class="usuario-logado">
+Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }})
+<a href="/logout" class="sair">Sair</a>
+</div>
+
+
+<h1>🔑 Alterar senha</h1>
+
+<p class="subtitulo">
+Trocar a senha encerra as sessões abertas em outros dispositivos
+</p>
+
+
+<a class="voltar" href="/dashboard">
+    ← Voltar ao Dashboard
+</a>
+
+
+{% if erro %}
+<p class="erro">{{ erro }}</p>
+{% endif %}
+
+
+<form method="POST" class="formulario" autocomplete="off">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+
+<div class="campo">
+
+<label for="senha_atual">Senha atual</label>
+
+<input
+type="password"
+id="senha_atual"
+name="senha_atual"
+autocomplete="current-password"
+required>
+
+</div>
+
+
+
+<div class="campo">
+
+<label for="nova_senha">Nova senha</label>
+
+<input
+type="password"
+id="nova_senha"
+name="nova_senha"
+placeholder="Mínimo de 8 caracteres"
+minlength="8"
+maxlength="128"
+autocomplete="new-password"
+required>
+
+</div>
+
+
+
+<div class="campo">
+
+<label for="confirmacao">Repita a nova senha</label>
+
+<input
+type="password"
+id="confirmacao"
+name="confirmacao"
+minlength="8"
+maxlength="128"
+autocomplete="new-password"
+required>
+
+</div>
+
+
+<p class="vazio">
+A senha precisa ter no mínimo 8 caracteres, misturar letras com números ou
+símbolos, e não pode conter seu nome nem seu e-mail.
+</p>
+
+
+<button class="botao" type="submit">
+
+Alterar senha
+
+</button>
+
+
+</form>
+
+
+</div>
+
+
+</body>
+
+</html>

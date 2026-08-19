@@ -4,6 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Login - Help Desk</title>
 
@@ -25,12 +26,20 @@ Acesse o painel de suporte técnico
 </p>
 
 
+{% with mensagens = get_flashed_messages() %}
+{% if mensagens %}
+<p class="sucesso">{{ mensagens[0] }}</p>
+{% endif %}
+{% endwith %}
+
+
 {% if erro %}
 <p class="erro">{{ erro }}</p>
 {% endif %}
 
 
 <form method="POST" class="formulario">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 
 <div class="campo">

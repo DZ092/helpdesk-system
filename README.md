@@ -58,6 +58,14 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - **Painel administrativo**  
   Administradores podem visualizar todos os usuários cadastrados, alterar o perfil de acesso de cada um (Usuário, Técnico ou Administrador) e excluir contas. O sistema impede que um administrador remova o próprio acesso ou exclua a própria conta, e bloqueia a exclusão de usuários que já possuem chamados ou comentários registrados.
 
+- **Troca de senha pelo próprio usuário**  
+  Tela dedicada onde o usuário informa a senha atual e define uma nova. A troca
+  encerra automaticamente as sessões abertas em outros dispositivos.
+
+- **Redefinição de senha por linha de comando**  
+  Script `redefinir_senha.py` para o caso clássico de suporte: o usuário esqueceu
+  a senha e não consegue entrar para trocá-la sozinho.
+
 - **Registro de logs e auditoria**  
   O sistema registra automaticamente ações importantes (cadastro de usuário, login, abertura de chamado, mudança de status, comentário adicionado, alteração de perfil e exclusão de usuário), com data/hora e autor de cada ação. Administradores podem consultar esse histórico em uma tela dedicada.
 
@@ -65,7 +73,10 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   Apenas Técnicos e Administradores podem assumir chamados, alterar status, adicionar comentários internos e acessar "Meus Chamados". Apenas Administradores podem acessar o painel administrativo e os logs de auditoria.
 
 - **Testes automatizados**  
-  Suíte de testes com pytest cobrindo autenticação, controle de acesso por perfil e a lógica de responsável do chamado.
+  Suíte com 24 testes em pytest cobrindo autenticação, controle de acesso por
+  perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
+  responsável do chamado. Boa parte deles são testes de regressão, escritos para
+  que falhas já corrigidas não voltem despercebidas.
 
 ---
 
@@ -93,11 +104,16 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 helpdesk-system/
 │
 ├── app.py
-├── chamados.db
+├── promover_admin.py
+├── redefinir_senha.py
 ├── requirements.txt
-├── .env
+├── requirements-dev.txt
+├── .env.example
 ├── .gitignore
 ├── README.md
+│
+├── instance/
+│   └── chamados.db
 │
 ├── static/
 │   └── css/
@@ -113,6 +129,7 @@ helpdesk-system/
 │   ├── detalhe_chamado.html
 │   ├── admin_usuarios.html
 │   ├── admin_logs.html
+│   ├── alterar_senha.html
 │   └── meus_chamados.html
 │
 └── tests/
@@ -120,7 +137,8 @@ helpdesk-system/
     └── test_app.py
 ```
 
-> O arquivo `chamados.db` é criado automaticamente quando o banco de dados é inicializado.
+> A pasta `instance/` e o arquivo `chamados.db` são criados automaticamente na
+> primeira execução. Ambos ficam fora do controle de versão.
 
 ---
 
@@ -176,7 +194,13 @@ pip install -r requirements.txt
 
 ### 4. Configure as variáveis de ambiente
 
-Crie um arquivo chamado `.env` na raiz do projeto:
+Copie o modelo `.env.example` para `.env` e preencha os valores:
+
+```bash
+cp .env.example .env      # Windows: copy .env.example .env
+```
+
+O conteúdo esperado é:
 
 ```env
 SECRET_KEY=adicione-uma-chave-secreta-segura
@@ -231,6 +255,15 @@ exit()
 python app.py
 ```
 
+O modo debug fica **desligado** por padrão. Para ligá-lo durante o
+desenvolvimento, defina `FLASK_DEBUG=1` no `.env`. Nunca ligue o debug em
+produção: o debugger do Werkzeug permite execução remota de código.
+
+> Com o debug desligado, o Jinja compila cada template uma única vez, na subida
+> da aplicação. Isso significa que editar um `.html` não muda nada até reiniciar
+> o servidor — ligar `FLASK_DEBUG=1` durante o desenvolvimento evita essa
+> confusão, porque o servidor recarrega sozinho a cada arquivo salvo.
+
 Acesse no navegador:
 
 ```text
@@ -239,11 +272,38 @@ http://127.0.0.1:5000
 
 ---
 
-### 7. Execute os testes automatizados (opcional)
+### 7. Crie o primeiro administrador
+
+O cadastro público sempre cria contas com o perfil **Usuário** — o formulário
+não escolhe o perfil. Para promover a primeira conta a Administrador, use o
+script auxiliar:
 
 ```bash
+python promover_admin.py
+```
+
+A partir daí, os demais perfis são definidos pelo painel administrativo.
+
+Se alguém esquecer a senha, use:
+
+```bash
+python redefinir_senha.py
+```
+
+---
+
+### 8. Execute os testes automatizados (opcional)
+
+```bash
+pip install -r requirements-dev.txt
 python -m pytest -v
 ```
+
+Esperado: **24 passed**.
+
+Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
+`instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
+suíte se detectar que a engine aponta para um arquivo real.
 
 ---
 
@@ -251,7 +311,7 @@ python -m pytest -v
 
 | Perfil | Permissões |
 |---|---|
-| **Usuário** | Visualiza o dashboard e o histórico de chamados, mas não pode assumir chamados, alterar status ou adicionar comentários internos |
+| **Usuário** | Visualiza o dashboard e o histórico de chamados e troca a própria senha, mas não pode assumir chamados, alterar status ou adicionar comentários internos |
 | **Técnico** | Visualiza todos os chamados, assume atendimentos, altera status, adiciona comentários internos e acessa "Meus Chamados" |
 | **Administrador** | Possui as mesmas permissões operacionais do Técnico e pode administrar usuários e consultar os logs de auditoria pelo painel administrativo |
 
@@ -301,6 +361,40 @@ Nunca adicione credenciais reais diretamente no código ou no repositório.
 
 ---
 
+## 🔒 Decisões de segurança
+
+- **Perfil nunca vem do formulário.** O cadastro é público, então aceitar o
+  campo `tipo_usuario` do cliente permitiria que qualquer visitante criasse a
+  própria conta de Administrador. Toda conta nova nasce como Usuário.
+- **CSRF em todos os formulários.** O Flask-WTF valida um token em cada POST,
+  o que impede que outro site force ações na sessão de um usuário logado.
+- **Perfil relido do banco a cada requisição.** O cookie de sessão guarda só o
+  id do usuário; o perfil vem do banco, então rebaixar ou excluir uma conta
+  passa a valer na hora, sem esperar o logout.
+- **`SECRET_KEY` obrigatória.** Sem uma chave imprevisível é possível forjar o
+  cookie de sessão, então a aplicação se recusa a subir sem ela em vez de usar
+  um valor padrão conhecido.
+- **Cookie de sessão endurecido:** `HttpOnly`, `SameSite=Lax`, expiração em 8
+  horas e `Secure` quando `SESSION_COOKIE_SECURE=1`.
+- **Nada de HTML montado por concatenação em JavaScript.** Valores vindos do
+  banco vão para atributos `data-*` e são lidos pelo script, o que evita XSS
+  armazenado via nome de usuário.
+- **Trocar a senha derruba as outras sessões.** O cookie carrega uma assinatura
+  HMAC derivada do hash da senha; ao trocar a senha o hash muda, a assinatura
+  deixa de bater e os cookies antigos param de valer. Sem isso, trocar a senha
+  porque ela vazou não adiantaria nada — quem já estivesse logado continuaria
+  dentro.
+- **Senha atual exigida para trocar de senha.** Impede que alguém com a sessão
+  sequestrada — ou diante de um computador destravado — tome a conta.
+- **Política de senha no servidor.** Mínimo de 8 caracteres, nunca só números
+  nem só letras, bloqueio das senhas mais comuns e recusa de senhas que contenham
+  o nome ou o e-mail do próprio usuário.
+- **Limite de tentativas na troca de senha.** Cinco erros da senha atual
+  bloqueiam a operação por 5 minutos, e cada tentativa vai para os logs.
+- **Senhas com hash `scrypt`** (padrão do Werkzeug), nunca em texto puro.
+
+---
+
 ## 📦 Exemplo de `requirements.txt`
 
 ```text
@@ -325,30 +419,16 @@ pip freeze > requirements.txt
 ## 🔐 Exemplo de `.gitignore`
 
 ```gitignore
-# Ambiente virtual
 venv/
 .venv/
-
-# Variáveis de ambiente
-.env
-
-# Banco de dados local
-*.db
-
-# Cache do Python
 __pycache__/
-*.py[cod]
-
-# Cache do pytest
+*.pyc
 .pytest_cache/
-
-# Arquivos de IDE
+instance/
+chamados.db
 .vscode/
-.idea/
-
-# Sistema operacional
-.DS_Store
-Thumbs.db
+.env
+*.7z
 ```
 
 ---
@@ -385,7 +465,9 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 - Upload de anexos nos chamados
 - Recuperação de senha por e-mail
 - API REST
-- Responsividade para dispositivos móveis
+- Responsividade completa para dispositivos móveis
+- Limite de tentativas de login (rate limiting)
+- Migrações de banco com Flask-Migrate
 - Deploy em ambiente de produção
 - Utilização de PostgreSQL em produção
 - Integração com serviços de armazenamento em nuvem

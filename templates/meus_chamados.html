@@ -4,6 +4,7 @@
 <head>
 
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Meus Chamados</title>
 
@@ -19,7 +20,7 @@
 
 
     <div class="usuario-logado">
-    Olá, <strong>{{ session['usuario_nome'] }}</strong> ({{ session['tipo_usuario'] }})
+    Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }})
     <a href="/logout" class="sair">Sair</a>
     </div>
 

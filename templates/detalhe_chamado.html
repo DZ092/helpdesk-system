@@ -2,12 +2,13 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Chamado #{{ chamado.id }} - Help Desk</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 <main class="container detalhe-container">
-    <div class="usuario-logado">Olá, <strong>{{ session['usuario_nome'] }}</strong> ({{ session['tipo_usuario'] }}) <a href="/logout" class="sair">Sair</a></div>
+    <div class="usuario-logado">Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }}) <a href="/logout" class="sair">Sair</a></div>
     <a class="voltar" href="/chamados">← Voltar para chamados</a>
     <div class="cabecalho-chamado">
         <div><p class="eyebrow">Chamado #{{ chamado.id }}</p><h1>{{ chamado.titulo }}</h1></div>
@@ -22,23 +23,25 @@
         <div class="bloco-detalhe"><span>Setor</span><strong>{{ chamado.setor }}</strong></div>
         <div class="bloco-detalhe"><span>Prioridade</span><strong>{{ chamado.prioridade }}</strong></div>
         <div class="bloco-detalhe"><span>Responsável</span><strong>{{ chamado.responsavel.nome if chamado.responsavel else 'Aguardando atribuição' }}</strong></div>
-        <div class="bloco-detalhe"><span>Aberto em</span><strong>{{ chamado.criado_em.strftime('%d/%m/%Y às %H:%M') if chamado.criado_em else '—' }}</strong></div>
-        <div class="bloco-detalhe"><span>Última atualização</span><strong>{{ chamado.atualizado_em.strftime('%d/%m/%Y às %H:%M') if chamado.atualizado_em else '—' }}</strong></div>
+        <div class="bloco-detalhe"><span>Aberto em</span><strong>{{ chamado.criado_em|data_local }}</strong></div>
+        <div class="bloco-detalhe"><span>Última atualização</span><strong>{{ chamado.atualizado_em|data_local }}</strong></div>
     </section>
     <section class="secao"><h2>Descrição do problema</h2><p class="descricao-detalhe">{{ chamado.descricao }}</p></section>
 
-    {% if session['tipo_usuario'] in ['Técnico', 'Administrador'] and chamado.status != 'Resolvido' %}
+    {% if usuario_logado.eh_tecnico and chamado.status != 'Resolvido' %}
     <section class="secao acoes-chamado"><h2>Atendimento</h2>
         <form method="POST" action="/chamados/{{ chamado.id }}/status">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             {% if chamado.status == 'Aberto' %}<input type="hidden" name="status" value="Em andamento"><button class="botao" type="submit">▶ Iniciar atendimento</button>
             {% else %}<input type="hidden" name="status" value="Resolvido"><button class="botao botao-sucesso" type="submit">✓ Marcar como resolvido</button>{% endif %}
         </form>
     </section>{% endif %}
 
     <section class="secao"><h2>Atualizações</h2>
-        {% if comentarios %}<div class="linha-do-tempo">{% for comentario in comentarios %}<article class="comentario"><div class="comentario-cabecalho"><strong>{{ comentario.autor.nome }}</strong><time>{{ comentario.criado_em.strftime('%d/%m/%Y às %H:%M') }}</time></div><p>{{ comentario.mensagem }}</p></article>{% endfor %}</div>
+        {% if comentarios %}<div class="linha-do-tempo">{% for comentario in comentarios %}<article class="comentario"><div class="comentario-cabecalho"><strong>{{ comentario.autor.nome }}</strong><time>{{ comentario.criado_em|data_local }}</time></div><p>{{ comentario.mensagem }}</p></article>{% endfor %}</div>
         {% else %}<p class="vazio">Ainda não há atualizações neste chamado.</p>{% endif %}
-        {% if session['tipo_usuario'] in ['Técnico', 'Administrador'] %}<form method="POST" action="/chamados/{{ chamado.id }}/comentarios" class="formulario formulario-comentario"><label for="mensagem">Adicionar atualização</label><textarea id="mensagem" name="mensagem" rows="4" placeholder="Descreva o que foi feito ou o próximo passo..." required></textarea><button class="botao" type="submit">Adicionar atualização</button></form>{% endif %}
+        {% if usuario_logado.eh_tecnico %}<form method="POST" action="/chamados/{{ chamado.id }}/comentarios" class="formulario formulario-comentario">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label for="mensagem">Adicionar atualização</label><textarea id="mensagem" name="mensagem" rows="4" placeholder="Descreva o que foi feito ou o próximo passo..." required></textarea><button class="botao" type="submit">Adicionar atualização</button></form>{% endif %}
     </section>
 </main>
 </body>

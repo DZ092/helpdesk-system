@@ -4,6 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Cadastro - Help Desk</title>
 
@@ -31,6 +32,7 @@ Cadastro de acesso ao sistema
 
 
 <form method="POST" class="formulario">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 
 <div class="campo">
@@ -68,24 +70,18 @@ required>
 <input 
 type="password"
 name="senha"
-placeholder="Crie uma senha"
+placeholder="Mínimo de 8 caracteres"
+minlength="8"
 required>
 
 </div>
 
 
 
-<div class="campo">
-
-<label>Tipo de usuário</label>
-
-<select name="tipo_usuario" required>
-<option value="Usuário">Usuário</option>
-<option value="Técnico">Técnico</option>
-<option value="Administrador">Administrador</option>
-</select>
-
-</div>
+<p class="link-secundario">
+Toda conta nova é criada com o perfil <strong>Usuário</strong>. Perfis de Técnico e
+Administrador são concedidos por um administrador no painel do sistema.
+</p>
 
 
 

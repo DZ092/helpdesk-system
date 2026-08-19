@@ -4,6 +4,7 @@
 <head>
 
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Painel Administrativo</title>
 
@@ -19,7 +20,7 @@
 
 
     <div class="usuario-logado">
-    Olá, <strong>{{ session['usuario_nome'] }}</strong> ({{ session['tipo_usuario'] }})
+    Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }})
     <a href="/logout" class="sair">Sair</a>
     </div>
 
@@ -93,6 +94,7 @@
                 <td>
 
                     <form method="POST" action="/admin/usuarios/{{ usuario.id }}/tipo" class="form-tipo-usuario">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                         <select name="tipo_usuario">
                             <option value="Usuário" {% if usuario.tipo_usuario == "Usuário" %}selected{% endif %}>Usuário</option>
@@ -109,11 +111,16 @@
 
                 <td>
 
-                    {% if usuario.id != session['usuario_id'] %}
+                    {% if usuario.id != usuario_logado.id %}
 
+                        <!-- O nome vai num data-attribute e é lido pelo JS.
+                             Interpolar direto dentro do onsubmit permitia que um
+                             nome com aspas escapasse da string e virasse código. -->
                         <form method="POST"
                               action="/admin/usuarios/{{ usuario.id }}/excluir"
-                              onsubmit="return confirm('Tem certeza que deseja excluir {{ usuario.nome }}?');">
+                              class="form-excluir"
+                              data-nome="{{ usuario.nome }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                             <button class="botao-perigo" type="submit">Excluir</button>
 
@@ -141,6 +148,18 @@
 
 
 </div>
+
+
+<script>
+document.querySelectorAll(".form-excluir").forEach(function (form) {
+    form.addEventListener("submit", function (evento) {
+        var nome = form.dataset.nome;
+        if (!confirm("Tem certeza que deseja excluir " + nome + "?")) {
+            evento.preventDefault();
+        }
+    });
+});
+</script>
 
 
 </body>
