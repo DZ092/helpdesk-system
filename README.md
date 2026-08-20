@@ -82,11 +82,28 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   inteira em coluna única, e os botões de navegação ganham área de toque
   maior.
 
+- **Tema dark**  
+  Interface escura em todas as telas. As cores ficam em variáveis CSS
+  (`--bg`, `--superficie`, `--acento`, `--texto`, além das faixas de status)
+  declaradas uma única vez no topo do `style.css`, que é o mesmo arquivo
+  carregado por todas as páginas — então mudar uma cor ali repinta dashboard,
+  histórico, painel administrativo e logs de uma vez, sem cor solta espalhada
+  pelos templates.
+
+- **Tratamento próprio para login e cadastro**  
+  Essas duas telas carregam também o `auth.css`, com os extras que só fazem
+  sentido nelas: cartão estreito e centralizado, glows desfocados ao fundo,
+  animação de entrada e ícones dentro dos campos. As telas de dados ficam de
+  fora desse tratamento de propósito — ali o brilho decorativo atrapalharia a
+  leitura.
+
 - **Testes automatizados**  
-  Suíte com 24 testes em pytest cobrindo autenticação, controle de acesso por
+  Suíte com 25 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
   responsável do chamado. Boa parte deles são testes de regressão, escritos para
-  que falhas já corrigidas não voltem despercebidas.
+  que falhas já corrigidas não voltem despercebidas. A suíte roda sozinha no
+  GitHub Actions a cada push e a cada pull request para o `main` — o selo no
+  topo deste README mostra o resultado da última execução.
 
 ---
 
@@ -105,6 +122,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - HTML5
 - CSS3
 - Pytest
+- GitHub Actions
 
 ---
 
@@ -112,6 +130,10 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 
 ```text
 helpdesk-system/
+│
+├── .github/
+│   └── workflows/
+│       └── tests.yml
 │
 ├── app.py
 ├── promover_admin.py
@@ -127,7 +149,8 @@ helpdesk-system/
 │
 ├── static/
 │   └── css/
-│       └── style.css
+│       ├── style.css
+│       └── auth.css
 │
 ├── templates/
 │   ├── index.html
@@ -309,7 +332,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **24 passed**.
+Esperado: **25 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
