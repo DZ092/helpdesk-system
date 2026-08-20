@@ -9,11 +9,12 @@
 <title>Cadastro - Help Desk</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 
 </head>
 
 
-<body>
+<body class="pagina-auth">
 
 
 <div class="container">
@@ -37,13 +38,19 @@ Cadastro de acesso ao sistema
 
 <div class="campo">
 
-<label>Nome</label>
+<label for="nome">Nome</label>
 
-<input 
+<div class="campo-input">
+<span class="icone-campo" aria-hidden="true">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+</span>
+<input
+id="nome"
 type="text"
 name="nome"
 placeholder="Seu nome completo"
 required>
+</div>
 
 </div>
 
@@ -51,13 +58,19 @@ required>
 
 <div class="campo">
 
-<label>E-mail</label>
+<label for="email">E-mail</label>
 
-<input 
+<div class="campo-input">
+<span class="icone-campo" aria-hidden="true">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
+</span>
+<input
+id="email"
 type="email"
 name="email"
 placeholder="seuemail@exemplo.com"
 required>
+</div>
 
 </div>
 
@@ -65,14 +78,20 @@ required>
 
 <div class="campo">
 
-<label>Senha</label>
+<label for="senha">Senha</label>
 
-<input 
+<div class="campo-input">
+<span class="icone-campo" aria-hidden="true">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+</span>
+<input
+id="senha"
 type="password"
 name="senha"
 placeholder="Mínimo de 8 caracteres"
 minlength="8"
 required>
+</div>
 
 </div>
 

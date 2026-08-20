@@ -50,6 +50,24 @@ def test_login_com_senha_errada(client):
     assert "inv".encode() in resposta.data.lower()
 
 
+def test_tentativas_repetidas_de_login_bloqueiam(client):
+    from app import MAX_TENTATIVAS_LOGIN, limpar_tentativas_login
+
+    email = "forca-login@teste.com"
+    limpar_tentativas_login(email)
+    cadastrar_usuario(client, email=email)
+
+    for _ in range(MAX_TENTATIVAS_LOGIN):
+        fazer_login(client, email=email, senha="senha-errada")
+
+    resposta = fazer_login(client, email=email, senha="senha-errada")
+    assert "Tentativas demais".encode() in resposta.data
+
+    # mesmo com a senha certa continua bloqueado
+    assert "Tentativas demais".encode() in fazer_login(client, email=email).data
+    limpar_tentativas_login(email)
+
+
 def test_senha_curta_e_recusada(client):
     resposta = cadastrar_usuario(client, senha="123")
     assert "pelo menos".encode() in resposta.data
