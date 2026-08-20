@@ -72,6 +72,14 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - **Controle de acesso**  
   Apenas Técnicos e Administradores podem assumir chamados, alterar status, adicionar comentários internos e acessar "Meus Chamados". Apenas Administradores podem acessar o painel administrativo e os logs de auditoria.
 
+- **Interface responsiva**  
+  Layout adaptado para uso em celular. Nas telas de dashboard, histórico de
+  chamados, "Meus Chamados", painel administrativo e logs de auditoria, as
+  tabelas se reorganizam em cartões empilhados (rótulo + valor) em vez de
+  colunas apertadas; os filtros e formulários passam a ocupar a largura
+  inteira em coluna única, e os botões de navegação ganham área de toque
+  maior.
+
 - **Testes automatizados**  
   Suíte com 24 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
@@ -465,7 +473,6 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 - Upload de anexos nos chamados
 - Recuperação de senha por e-mail
 - API REST
-- Responsividade completa para dispositivos móveis
 - Limite de tentativas de login (rate limiting)
 - Migrações de banco com Flask-Migrate
 - Deploy em ambiente de produção

@@ -75,6 +75,7 @@ Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario
 <table class="tabela-chamados">
 
 
+<thead>
 <tr>
 
 <th>ID</th>
@@ -85,25 +86,28 @@ Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario
 <th>Ações</th>
 
 </tr>
+</thead>
+
+<tbody>
 
 
 {% for chamado in chamados %}
 
 <tr>
 
-<td>{{ chamado.id }}</td>
+<td data-label="ID">{{ chamado.id }}</td>
 
-<td>
+<td data-label="Usuário">
 {{ chamado.usuario }}
 </td>
 
 
-<td>
+<td data-label="Título">
 {{ chamado.titulo }}
 </td>
 
 
-<td>
+<td data-label="Prioridade">
 
 {% if chamado.prioridade == "Baixa" %}
 <span class="prioridade prioridade-baixa">Baixa</span>
@@ -118,7 +122,7 @@ Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario
 </td>
 
 
-<td>
+<td data-label="Status">
 
 
 {% if chamado.status == "Aberto" %}
@@ -148,7 +152,7 @@ Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario
 </td>
 
 
-<td>
+<td data-label="Ações">
 
 {% if usuario_logado.eh_tecnico %}
 
@@ -183,12 +187,12 @@ Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario
 
 {% endfor %}
 
+</tbody>
 
 </table>
 
 
-<br>
-
+<div class="acoes">
 
 <a class="botao"
 href="/chamados">
@@ -225,6 +229,8 @@ href="/admin/usuarios">
 </a>
 
 {% endif %}
+
+</div>
 
 
 </div>

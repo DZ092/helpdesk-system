@@ -94,18 +94,22 @@
     </form>
 
 
-    <a class="novo-chamado" href="/chamado">
-        ➕ Novo Chamado
-    </a>
+    <div class="acoes">
 
-
-    {% if usuario_logado.eh_tecnico %}
-
-        <a class="novo-chamado" href="/meus-chamados">
-            🙋 Meus Chamados
+        <a class="novo-chamado" href="/chamado">
+            ➕ Novo Chamado
         </a>
 
-    {% endif %}
+
+        {% if usuario_logado.eh_tecnico %}
+
+            <a class="novo-chamado" href="/meus-chamados">
+                🙋 Meus Chamados
+            </a>
+
+        {% endif %}
+
+    </div>
 
 
 
@@ -149,32 +153,32 @@
             <tr>
 
 
-                <td>
+                <td data-label="ID">
                     {{ chamado.id }}
                 </td>
 
 
-                <td>
+                <td data-label="Usuário">
                     {{ chamado.usuario }}
                 </td>
 
 
-                <td>
+                <td data-label="Setor">
                     {{ chamado.setor }}
                 </td>
 
 
-                <td>
+                <td data-label="Título">
                     {{ chamado.titulo }}
                 </td>
 
 
-                <td>
+                <td data-label="Descrição">
                     {{ chamado.descricao }}
                 </td>
 
 
-                <td>
+                <td data-label="Prioridade">
 
                     {% if chamado.prioridade == "Baixa" %}
                         <span class="prioridade prioridade-baixa">Baixa</span>
@@ -190,7 +194,7 @@
 
 
 
-                <td>
+                <td data-label="Status">
 
 
                     {% if chamado.status == "Aberto" %}
@@ -222,7 +226,7 @@
 
 
 
-                <td>
+                <td data-label="Responsável">
 
                     {% if chamado.responsavel %}
                         {{ chamado.responsavel.nome }}
@@ -234,7 +238,7 @@
 
 
 
-                <td>
+                <td data-label="Ação">
 
 
 
