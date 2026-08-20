@@ -1,5 +1,7 @@
 # 🖥️ Help Desk System
 
+![tests](https://github.com/DZ092/helpdesk-system/actions/workflows/tests.yml/badge.svg)
+
 Sistema web para gerenciamento de chamados técnicos, desenvolvido para simular um ambiente real de suporte de TI.
 
 A aplicação possui controle de acesso por perfil de usuário, dashboard com indicadores, histórico de chamados com busca, filtros e paginação, definição de prioridades, atendimento técnico, comentários internos, notificações automáticas por e-mail, um painel administrativo para gerenciamento de usuários, registro de logs e auditoria, e testes automatizados.
