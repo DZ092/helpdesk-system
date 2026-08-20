@@ -1,0 +1,112 @@
+/* ==============================
+   TELAS DE AUTENTICAÇÃO (LOGIN E CADASTRO) - TOQUES EXCLUSIVOS
+   O tema dark em si já é global (style.css). Aqui ficam só os extras que
+   fazem sentido nessas duas telas: fundo com glow, card mais estreito,
+   animação de entrada e os ícones dentro dos campos.
+   ============================== */
+
+body.pagina-auth {
+    align-items: center;
+    background: radial-gradient(circle at 50% 0%, #1b2740 0%, #0b1120 60%);
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Glows decorativos ao fundo, atrás do card */
+body.pagina-auth::before,
+body.pagina-auth::after {
+    border-radius: 50%;
+    content: "";
+    filter: blur(60px);
+    pointer-events: none;
+    position: fixed;
+    z-index: 0;
+}
+
+body.pagina-auth::before {
+    background: rgba(59, 130, 246, 0.22);
+    height: 320px;
+    left: -80px;
+    top: -100px;
+    width: 320px;
+}
+
+body.pagina-auth::after {
+    background: rgba(99, 102, 241, 0.16);
+    bottom: -120px;
+    height: 380px;
+    right: -100px;
+    width: 380px;
+}
+
+body.pagina-auth .container {
+    animation: entrada-auth 0.5s ease-out;
+    margin: 20px;
+    max-width: 420px;
+    padding: 44px 38px;
+    position: relative;
+    width: 100%;
+    z-index: 1;
+}
+
+@keyframes entrada-auth {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.pagina-auth .container {
+        animation: none;
+    }
+}
+
+body.pagina-auth .campo-input {
+    align-items: center;
+    display: flex;
+    position: relative;
+}
+
+body.pagina-auth .icone-campo {
+    color: var(--texto-fraco);
+    display: flex;
+    left: 14px;
+    pointer-events: none;
+    position: absolute;
+    transition: color 0.15s ease;
+}
+
+body.pagina-auth .icone-campo svg {
+    height: 18px;
+    width: 18px;
+}
+
+body.pagina-auth .campo-input:focus-within .icone-campo {
+    color: var(--acento);
+}
+
+body.pagina-auth .campo input {
+    padding-left: 42px;
+}
+
+/* Evita o flash branco do autofill do Chrome sobre o fundo escuro */
+body.pagina-auth .campo input:-webkit-autofill,
+body.pagina-auth .campo input:-webkit-autofill:hover,
+body.pagina-auth .campo input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--superficie-alt) inset;
+    -webkit-text-fill-color: var(--texto);
+    transition: background-color 9999s ease-in-out 0s;
+}
+
+@media (max-width: 480px) {
+    body.pagina-auth .container {
+        padding: 34px 26px;
+    }
+}
