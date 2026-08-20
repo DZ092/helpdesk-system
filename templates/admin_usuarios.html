@@ -76,22 +76,22 @@
             <tr>
 
 
-                <td>
+                <td data-label="ID">
                     {{ usuario.id }}
                 </td>
 
 
-                <td>
+                <td data-label="Nome">
                     {{ usuario.nome }}
                 </td>
 
 
-                <td>
+                <td data-label="E-mail">
                     {{ usuario.email }}
                 </td>
 
 
-                <td>
+                <td data-label="Perfil">
 
                     <form method="POST" action="/admin/usuarios/{{ usuario.id }}/tipo" class="form-tipo-usuario">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -109,7 +109,7 @@
                 </td>
 
 
-                <td>
+                <td data-label="Ações">
 
                     {% if usuario.id != usuario_logado.id %}
 

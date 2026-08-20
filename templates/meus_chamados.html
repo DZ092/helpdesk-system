@@ -73,27 +73,27 @@
             <tr>
 
 
-                <td>
+                <td data-label="ID">
                     {{ chamado.id }}
                 </td>
 
 
-                <td>
+                <td data-label="Usuário">
                     {{ chamado.usuario }}
                 </td>
 
 
-                <td>
+                <td data-label="Setor">
                     {{ chamado.setor }}
                 </td>
 
 
-                <td>
+                <td data-label="Título">
                     {{ chamado.titulo }}
                 </td>
 
 
-                <td>
+                <td data-label="Prioridade">
 
                     {% if chamado.prioridade == "Baixa" %}
                         <span class="prioridade prioridade-baixa">Baixa</span>
@@ -108,7 +108,7 @@
                 </td>
 
 
-                <td>
+                <td data-label="Status">
 
 
                     {% if chamado.status == "Aberto" %}
@@ -138,7 +138,7 @@
                 </td>
 
 
-                <td>
+                <td data-label="Ação">
 
                     {% if chamado.status == "Resolvido" %}
 

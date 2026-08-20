@@ -69,22 +69,22 @@
             <tr>
 
 
-                <td>
+                <td data-label="Data/Hora">
                     {{ log.criado_em|data_local("%d/%m/%Y %H:%M") }}
                 </td>
 
 
-                <td>
+                <td data-label="Usuário">
                     {{ log.usuario_nome }}
                 </td>
 
 
-                <td>
+                <td data-label="Ação">
                     {{ log.acao }}
                 </td>
 
 
-                <td>
+                <td data-label="Detalhes">
                     {{ log.detalhes or "—" }}
                 </td>
 

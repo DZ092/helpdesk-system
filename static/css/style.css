@@ -160,6 +160,12 @@ h1 {
 
     cursor: pointer;
 
+    display: inline-block;
+
+    text-align: center;
+
+    text-decoration: none;
+
 }
 
 
@@ -167,6 +173,104 @@ h1 {
 .botao:hover {
 
     background: #1d4ed8;
+
+}
+
+
+
+/* GRUPO DE BOTÕES DE NAVEGAÇÃO (dashboard, telas iniciais) */
+
+.acoes {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    margin-top: 20px;
+
+}
+
+
+/* CARDS DE RESUMO (dashboard) */
+
+.cards {
+
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 16px;
+
+    margin-bottom: 30px;
+
+}
+
+
+.card {
+
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+
+    border-radius: 14px;
+
+    padding: 20px;
+
+    text-align: center;
+
+}
+
+
+.card h2 {
+
+    color: #1e4f8a;
+
+    font-size: 32px;
+
+    margin-bottom: 6px;
+
+}
+
+
+.card p {
+
+    color: #666;
+
+    font-size: 14px;
+
+}
+
+
+.card.aberto h2 {
+
+    color: #b91c1c;
+
+}
+
+
+.card.andamento h2 {
+
+    color: #92400e;
+
+}
+
+
+.card.resolvido h2 {
+
+    color: #166534;
+
+}
+
+
+.titulo-tabela {
+
+    color: #1e4f8a;
+
+    font-size: 20px;
+
+    margin-bottom: 14px;
 
 }
 
@@ -618,6 +722,18 @@ h1 {
 
 
 
+/* USUÁRIO LOGADO EM TELAS PEQUENAS */
+
+@media(max-width:480px){
+
+    .usuario-logado {
+        font-size: 13px;
+        justify-content: space-between;
+    }
+
+}
+
+
 /* RESPONSIVO */
 
 @media(max-width:700px){
@@ -627,17 +743,211 @@ h1 {
 
     width:95%;
 
+    margin: 20px auto;
+
     padding:20px;
 
 }
 
 
-.tabela-chamados{
+h1{
 
-    font-size:12px;
+    font-size:24px;
 
 }
 
+
+.usuario-logado{
+
+    flex-wrap: wrap;
+
+}
+
+
+.cards{
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap:10px;
+
+}
+
+
+.card{
+
+    padding:14px;
+
+}
+
+
+.card h2{
+
+    font-size:24px;
+
+}
+
+
+.acoes, .acoes a.botao, .acoes button.botao{
+
+    width:100%;
+
+}
+
+
+.novo-chamado{
+
+    display:block;
+
+    text-align:center;
+
+    width:100%;
+
+}
+
+
+/* FILTROS EMPILHADOS */
+
+.filtro-form{
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+}
+
+
+.filtro-form input,
+.filtro-form select,
+.filtro-form .botao-filtro,
+.filtro-label{
+
+    width:100%;
+
+}
+
+
+.filtro-label input{
+
+    flex:1;
+
+}
+
+
+.limpar-filtro{
+
+    text-align:center;
+
+}
+
+
+.paginacao{
+
+    flex-wrap: wrap;
+
+}
+
+
+/* TABELAS VIRAM CARTÕES EMPILHADOS */
+
+.tabela-chamados thead{
+
+    display:none;
+
+}
+
+
+.tabela-chamados, .tabela-chamados tbody, .tabela-chamados tr, .tabela-chamados td{
+
+    display:block;
+
+    width:100%;
+
+}
+
+
+.tabela-chamados tr{
+
+    background:white;
+
+    border:1px solid #e2e8f0;
+
+    border-radius:12px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,0.04);
+
+    margin-bottom:14px;
+
+    padding:6px 14px;
+
+}
+
+
+.tabela-chamados tr:hover{
+
+    background:white;
+
+}
+
+
+.tabela-chamados td{
+
+    align-items:center;
+
+    border-bottom:1px solid #f1f5f9;
+
+    display:flex;
+
+    gap:10px;
+
+    justify-content:space-between;
+
+    padding:10px 0;
+
+    text-align:right;
+
+}
+
+
+.tabela-chamados td:last-child{
+
+    border-bottom:none;
+
+}
+
+
+.tabela-chamados td::before{
+
+    color:#1e4f8a;
+
+    content: attr(data-label);
+
+    font-weight:bold;
+
+    text-align:left;
+
+    margin-right:auto;
+
+}
+
+
+.tabela-chamados td[data-label=""]::before,
+.tabela-chamados td:not([data-label])::before{
+
+    content:none;
+
+}
+
+
+}
+
+
+@media(max-width:480px){
+
+    .cards{
+
+        grid-template-columns: 1fr;
+
+    }
 
 }
 
