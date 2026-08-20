@@ -311,13 +311,20 @@ def notificar_tecnicos_novo_chamado(chamado):
         .all()
     )
 
-    destinatarios = [tecnico.email for tecnico in tecnicos]
-    if not destinatarios:
-        app.logger.info("Nenhum técnico cadastrado — notificação não enviada.")
-        return
-
     if not app.config.get("MAIL_USERNAME"):
         app.logger.warning("MAIL_USERNAME não configurado — notificação não enviada.")
+        return
+
+    # A conta que envia não precisa receber cópia do próprio aviso. Como ela
+    # costuma estar cadastrada como Administrador para poder atender chamados,
+    # sem esse filtro o sistema mandaria e-mail dela para ela mesma.
+    remetente = app.config["MAIL_USERNAME"].strip().lower()
+    destinatarios = [
+        tecnico.email for tecnico in tecnicos if tecnico.email.strip().lower() != remetente
+    ]
+
+    if not destinatarios:
+        app.logger.info("Nenhum destinatário para notificar — e-mail não enviado.")
         return
 
     corpo = (
