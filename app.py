@@ -31,6 +31,12 @@ TAMANHO_MINIMO_SENHA = 8
 MAX_TENTATIVAS_SENHA = 5
 JANELA_BLOQUEIO_SEGUNDOS = 300
 
+# Mesma ideia, aplicada ao login: limita tentativas de força bruta contra uma
+# conta antes de existir uma sessão (por isso o throttle abaixo é por e-mail,
+# não por usuario_id).
+MAX_TENTATIVAS_LOGIN = 5
+JANELA_BLOQUEIO_LOGIN_SEGUNDOS = 300
+
 # Lista curta de senhas óbvias. Não substitui uma checagem contra bases de
 # vazamentos (ver README), mas barra os casos mais comuns sem depender de rede.
 SENHAS_PROIBIDAS = frozenset(
@@ -436,6 +442,38 @@ def limpar_tentativas_senha(usuario_id):
     _tentativas_senha.pop(usuario_id, None)
 
 
+# Tentativas de login com senha errada, por e-mail: {email: [timestamps]}.
+# Mesma limitação do dicionário acima: em memória, serve para um processo
+# único (ver a recomendação de rate limiting no README).
+_tentativas_login = {}
+
+
+def registrar_tentativa_login(email):
+    agora = time.monotonic()
+    tentativas = [
+        t for t in _tentativas_login.get(email, []) if agora - t < JANELA_BLOQUEIO_LOGIN_SEGUNDOS
+    ]
+    tentativas.append(agora)
+    _tentativas_login[email] = tentativas
+
+
+def segundos_de_bloqueio_login(email):
+    """Quantos segundos faltam para liberar. Zero se não estiver bloqueado."""
+    agora = time.monotonic()
+    tentativas = [
+        t for t in _tentativas_login.get(email, []) if agora - t < JANELA_BLOQUEIO_LOGIN_SEGUNDOS
+    ]
+    _tentativas_login[email] = tentativas
+
+    if len(tentativas) < MAX_TENTATIVAS_LOGIN:
+        return 0
+    return int(JANELA_BLOQUEIO_LOGIN_SEGUNDOS - (agora - tentativas[0])) + 1
+
+
+def limpar_tentativas_login(email):
+    _tentativas_login.pop(email, None)
+
+
 # ==============================================================================
 # ROTAS DA APLICAÇÃO
 # ==============================================================================
@@ -491,11 +529,20 @@ def login():
         email = request.form.get("email", "").strip().lower()
         senha = request.form.get("senha", "")
 
+        bloqueio = segundos_de_bloqueio_login(email)
+        if bloqueio:
+            registrar_log("Login bloqueado", f"Excesso de tentativas para {email}")
+            return render_template(
+                "login.html",
+                erro=f"Tentativas demais. Tente de novo em {bloqueio // 60 + 1} minuto(s).",
+            )
+
         usuario = db.session.execute(
             db.select(Usuario).where(Usuario.email == email)
         ).scalar_one_or_none()
 
         if usuario and check_password_hash(usuario.senha, senha):
+            limpar_tentativas_login(email)
             # Troca o identificador de sessão no login para evitar fixação de sessão.
             session.clear()
             session["usuario_id"] = usuario.id
@@ -504,6 +551,8 @@ def login():
             g.usuario = usuario
             registrar_log("Login realizado")
             return redirect("/dashboard")
+
+        registrar_tentativa_login(email)
 
         # Mensagem genérica de propósito: dizer "e-mail não existe" permitiria
         # descobrir quais endereços estão cadastrados no sistema.

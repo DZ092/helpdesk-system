@@ -401,6 +401,9 @@ Nunca adicione credenciais reais diretamente no código ou no repositório.
   o nome ou o e-mail do próprio usuário.
 - **Limite de tentativas na troca de senha.** Cinco erros da senha atual
   bloqueiam a operação por 5 minutos, e cada tentativa vai para os logs.
+- **Limite de tentativas de login.** Cinco senhas erradas para o mesmo e-mail
+  bloqueiam novas tentativas de login por 5 minutos, dificultando força bruta
+  contra uma conta.
 - **Senhas com hash `scrypt`** (padrão do Werkzeug), nunca em texto puro.
 
 ---
@@ -475,7 +478,6 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 - Upload de anexos nos chamados
 - Recuperação de senha por e-mail
 - API REST
-- Limite de tentativas de login (rate limiting)
 - Migrações de banco com Flask-Migrate
 - Deploy em ambiente de produção
 - Utilização de PostgreSQL em produção
