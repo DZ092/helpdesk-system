@@ -1,24 +1,16 @@
 import os
-import threading
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta, timezone
 
 from dotenv import load_dotenv
 from flask import Flask, flash, g, redirect, render_template, request
-from flask_mail import Message
 
 from auditoria import registrar_log
-from constantes import (
-    FUSO_EXIBICAO,
-    PERFIS_TECNICOS,
-    PRIORIDADES,
-    STATUS_CHAMADO,
-    TIPOS_USUARIO,
-)
+from constantes import FUSO_EXIBICAO, TIPOS_USUARIO
 from extensions import csrf, db, mail
 from models import Chamado, Comentario, LogAuditoria, Usuario
 from rotas.auth import auth
-from seguranca import admin_required, login_required, tecnico_required, usuario_atual
-from validacao import campo_obrigatorio, inteiro_ou_none
+from rotas.chamados import chamados
+from seguranca import admin_required, usuario_atual
 
 load_dotenv()
 
@@ -59,6 +51,7 @@ mail.init_app(app)
 csrf.init_app(app)
 
 app.register_blueprint(auth)
+app.register_blueprint(chamados)
 
 
 @app.template_filter("data_local")
@@ -102,67 +95,6 @@ def injetar_usuario():
 # ==============================================================================
 # NOTIFICAÇÕES POR E-MAIL
 # ==============================================================================
-def _enviar_em_segundo_plano(app_obj, mensagem):
-    with app_obj.app_context():
-        try:
-            mail.send(mensagem)
-            app_obj.logger.info("E-mail de notificação enviado.")
-        except Exception:
-            app_obj.logger.exception("Falha ao enviar e-mail de notificação.")
-
-
-def notificar_tecnicos_novo_chamado(chamado):
-    """Avisa técnicos e administradores sobre um chamado novo.
-
-    O envio vai para uma thread separada de propósito: a abertura de chamado é
-    pública e ficava presa esperando o SMTP responder, então um servidor de
-    e-mail lento ou fora do ar travava a página do usuário por minutos.
-    """
-    tecnicos = (
-        db.session.execute(
-            db.select(Usuario).where(Usuario.tipo_usuario.in_(PERFIS_TECNICOS))
-        )
-        .scalars()
-        .all()
-    )
-
-    if not app.config.get("MAIL_USERNAME"):
-        app.logger.warning("MAIL_USERNAME não configurado — notificação não enviada.")
-        return
-
-    # A conta que envia não precisa receber cópia do próprio aviso. Como ela
-    # costuma estar cadastrada como Administrador para poder atender chamados,
-    # sem esse filtro o sistema mandaria e-mail dela para ela mesma.
-    remetente = app.config["MAIL_USERNAME"].strip().lower()
-    destinatarios = [
-        tecnico.email for tecnico in tecnicos if tecnico.email.strip().lower() != remetente
-    ]
-
-    if not destinatarios:
-        app.logger.info("Nenhum destinatário para notificar — e-mail não enviado.")
-        return
-
-    corpo = (
-        f"Novo chamado aberto no Help Desk!\n\n"
-        f"Título: {chamado.titulo}\n"
-        f"Usuário: {chamado.usuario}\n"
-        f"Setor: {chamado.setor}\n"
-        f"Prioridade: {chamado.prioridade}\n\n"
-        f"Descrição:\n{chamado.descricao}\n\n"
-        f"Acesse o sistema para ver mais detalhes e atender o chamado."
-    )
-
-    mensagem = Message(
-        subject=f"[Help Desk] Novo chamado: {chamado.titulo}",
-        recipients=destinatarios,
-        body=corpo,
-    )
-
-    threading.Thread(
-        target=_enviar_em_segundo_plano,
-        args=(app, mensagem),
-        daemon=True,
-    ).start()
 
 
 # ==============================================================================
@@ -173,240 +105,6 @@ def notificar_tecnicos_novo_chamado(chamado):
 # ==============================================================================
 # ROTAS DA APLICAÇÃO
 # ==============================================================================
-@app.route("/")
-def home():
-    return redirect("/dashboard")
-
-
-@app.route("/dashboard")
-@login_required
-def dashboard():
-    # Uma única consulta agrupada no lugar de quatro COUNT separados.
-    contagens = dict(
-        db.session.execute(
-            db.select(Chamado.status, db.func.count(Chamado.id)).group_by(Chamado.status)
-        ).all()
-    )
-
-    chamados = (
-        db.session.execute(db.select(Chamado).order_by(Chamado.id.desc()).limit(5))
-        .scalars()
-        .all()
-    )
-
-    return render_template(
-        "dashboard.html",
-        total=sum(contagens.values()),
-        abertos=contagens.get("Aberto", 0),
-        andamento=contagens.get("Em andamento", 0),
-        resolvidos=contagens.get("Resolvido", 0),
-        chamados=chamados,
-    )
-
-
-@app.route("/chamado", methods=["GET", "POST"])
-def chamado():
-    if request.method == "POST":
-        usuario = campo_obrigatorio("usuario", 100)
-        setor = campo_obrigatorio("setor", 100)
-        titulo = campo_obrigatorio("titulo", 200)
-        descricao = request.form.get("descricao", "").strip()
-        prioridade = request.form.get("prioridade", "Média")
-
-        if not all((usuario, setor, titulo, descricao)):
-            return render_template(
-                "chamado.html", erro="Preencha todos os campos do chamado."
-            )
-
-        # Sem essa checagem, qualquer valor enviado no formulário era gravado
-        # como prioridade e escapava dos filtros e das cores da interface.
-        if prioridade not in PRIORIDADES:
-            prioridade = "Média"
-
-        novo_chamado = Chamado(
-            usuario=usuario,
-            setor=setor,
-            titulo=titulo,
-            descricao=descricao,
-            status="Aberto",
-            prioridade=prioridade,
-        )
-        db.session.add(novo_chamado)
-        db.session.commit()
-        registrar_log("Abertura de chamado", f"Chamado #{novo_chamado.id}: {novo_chamado.titulo}")
-        notificar_tecnicos_novo_chamado(novo_chamado)
-        flash("Chamado enviado com sucesso! Nossa equipe vai analisar em breve.")
-        return redirect("/chamado")
-    return render_template("chamado.html")
-
-
-@app.route("/chamados")
-@login_required
-def lista_chamados():
-    busca = request.args.get("busca", "").strip()
-    status_filtro = request.args.get("status", "")
-    prioridade_filtro = request.args.get("prioridade", "")
-    setor_filtro = request.args.get("setor", "")
-    responsavel_filtro = request.args.get("responsavel", "")
-    data_inicio = request.args.get("data_inicio", "")
-    data_fim = request.args.get("data_fim", "")
-    pagina = request.args.get("pagina", 1, type=int)
-
-    stmt = db.select(Chamado)
-
-    if busca:
-        stmt = stmt.where(Chamado.titulo.ilike(f"%{busca}%"))
-
-    if status_filtro in STATUS_CHAMADO:
-        stmt = stmt.where(Chamado.status == status_filtro)
-
-    if prioridade_filtro in PRIORIDADES:
-        stmt = stmt.where(Chamado.prioridade == prioridade_filtro)
-
-    if setor_filtro:
-        stmt = stmt.where(Chamado.setor == setor_filtro)
-
-    if responsavel_filtro == "nenhum":
-        stmt = stmt.where(Chamado.responsavel_id.is_(None))
-    elif responsavel_filtro:
-        # `?responsavel=abc` derrubava a página com erro 500 no int().
-        responsavel_id = inteiro_ou_none(responsavel_filtro)
-        if responsavel_id is not None:
-            stmt = stmt.where(Chamado.responsavel_id == responsavel_id)
-
-    if data_inicio:
-        try:
-            inicio = datetime.strptime(data_inicio, "%Y-%m-%d")
-            stmt = stmt.where(Chamado.criado_em >= inicio)
-        except ValueError:
-            pass
-
-    if data_fim:
-        try:
-            fim = datetime.strptime(data_fim, "%Y-%m-%d").replace(
-                hour=23, minute=59, second=59
-            )
-            stmt = stmt.where(Chamado.criado_em <= fim)
-        except ValueError:
-            pass
-
-    stmt = stmt.order_by(Chamado.id.desc())
-
-    paginacao = db.paginate(stmt, page=pagina, per_page=15, error_out=False)
-    chamados = paginacao.items
-
-    tecnicos = (
-        db.session.execute(
-            db.select(Usuario)
-            .where(Usuario.tipo_usuario.in_(PERFIS_TECNICOS))
-            .order_by(Usuario.nome)
-        )
-        .scalars()
-        .all()
-    )
-
-    setores = (
-        db.session.execute(db.select(Chamado.setor).distinct().order_by(Chamado.setor))
-        .scalars()
-        .all()
-    )
-
-    return render_template(
-        "chamados.html",
-        chamados=chamados,
-        busca=busca,
-        status_filtro=status_filtro,
-        prioridade_filtro=prioridade_filtro,
-        setor_filtro=setor_filtro,
-        responsavel_filtro=responsavel_filtro,
-        data_inicio=data_inicio,
-        data_fim=data_fim,
-        tecnicos=tecnicos,
-        setores=setores,
-        paginacao=paginacao,
-    )
-
-
-@app.route("/chamados/<int:id>")
-@login_required
-def detalhe_chamado(id):
-    chamado = db.get_or_404(Chamado, id)
-
-    comentarios = (
-        db.session.execute(
-            db.select(Comentario)
-            .where(Comentario.chamado_id == id)
-            .order_by(Comentario.criado_em)
-        )
-        .scalars()
-        .all()
-    )
-
-    return render_template("detalhe_chamado.html", chamado=chamado, comentarios=comentarios)
-
-
-@app.route("/chamados/<int:id>/status", methods=["POST"])
-@tecnico_required
-def atualizar_status_chamado(id):
-    chamado = db.get_or_404(Chamado, id)
-
-    novo_status = request.form.get("status")
-
-    if novo_status not in STATUS_CHAMADO:
-        flash("Status inválido.")
-        return redirect(f"/chamados/{id}")
-
-    chamado.status = novo_status
-
-    if chamado.responsavel_id is None:
-        chamado.responsavel_id = usuario_atual().id
-
-    db.session.commit()
-
-    registrar_log("Atualização de status", f"Chamado #{chamado.id} alterado para '{novo_status}'")
-
-    flash(f"Status do chamado atualizado para '{novo_status}'.")
-    return redirect(f"/chamados/{id}")
-
-
-@app.route("/chamados/<int:id>/comentarios", methods=["POST"])
-@tecnico_required
-def adicionar_comentario(id):
-    chamado = db.get_or_404(Chamado, id)
-
-    mensagem = request.form.get("mensagem", "").strip()
-    if not mensagem:
-        flash("A mensagem da atualização não pode ficar vazia.")
-        return redirect(f"/chamados/{id}")
-
-    novo_comentario = Comentario(
-        chamado_id=chamado.id,
-        autor_id=usuario_atual().id,
-        mensagem=mensagem,
-    )
-    db.session.add(novo_comentario)
-    db.session.commit()
-
-    registrar_log("Comentário adicionado", f"Comentário adicionado ao chamado #{chamado.id}")
-
-    flash("Atualização adicionada com sucesso.")
-    return redirect(f"/chamados/{id}")
-
-
-@app.route("/meus-chamados")
-@tecnico_required
-def meus_chamados():
-    chamados = (
-        db.session.execute(
-            db.select(Chamado)
-            .where(Chamado.responsavel_id == usuario_atual().id)
-            .order_by(Chamado.id.desc())
-        )
-        .scalars()
-        .all()
-    )
-
-    return render_template("meus_chamados.html", chamados=chamados)
 
 
 @app.route("/admin/usuarios")
