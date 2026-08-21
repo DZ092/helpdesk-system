@@ -14,7 +14,9 @@ from getpass import getpass
 
 from werkzeug.security import generate_password_hash
 
-from app import Usuario, app, db, validar_forca_senha
+from app import app, db
+from models import Usuario
+from seguranca import validar_forca_senha
 
 
 def pedir_senha(usuario):

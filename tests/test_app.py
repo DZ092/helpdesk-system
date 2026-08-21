@@ -51,7 +51,8 @@ def test_login_com_senha_errada(client):
 
 
 def test_tentativas_repetidas_de_login_bloqueiam(client):
-    from app import MAX_TENTATIVAS_LOGIN, limpar_tentativas_login
+    from constantes import MAX_TENTATIVAS_LOGIN
+    from seguranca import limpar_tentativas_login
 
     email = "forca-login@teste.com"
     limpar_tentativas_login(email)
@@ -334,7 +335,8 @@ def test_troca_de_senha_derruba_sessao_de_outro_dispositivo(client, criar_usuari
 
 
 def test_tentativas_repetidas_bloqueiam(client, criar_usuario):
-    from app import MAX_TENTATIVAS_SENHA, limpar_tentativas_senha
+    from constantes import MAX_TENTATIVAS_SENHA
+    from seguranca import limpar_tentativas_senha
 
     usuario = criar_usuario(email="forca@teste.com")
     limpar_tentativas_senha(usuario.id)

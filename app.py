@@ -1,31 +1,24 @@
-import hashlib
-import hmac
 import os
 import threading
-import time
 from datetime import datetime, timedelta, timezone
-from functools import wraps
 
 from dotenv import load_dotenv
-from flask import Flask, flash, g, redirect, render_template, request, session
+from flask import Flask, flash, g, redirect, render_template, request
 from flask_mail import Message
-from werkzeug.security import check_password_hash, generate_password_hash
 
+from auditoria import registrar_log
 from constantes import (
     FUSO_EXIBICAO,
-    JANELA_BLOQUEIO_LOGIN_SEGUNDOS,
-    JANELA_BLOQUEIO_SEGUNDOS,
-    MAX_TENTATIVAS_LOGIN,
-    MAX_TENTATIVAS_SENHA,
     PERFIS_TECNICOS,
     PRIORIDADES,
-    SENHAS_PROIBIDAS,
     STATUS_CHAMADO,
-    TAMANHO_MINIMO_SENHA,
     TIPOS_USUARIO,
 )
 from extensions import csrf, db, mail
 from models import Chamado, Comentario, LogAuditoria, Usuario
+from rotas.auth import auth
+from seguranca import admin_required, login_required, tecnico_required, usuario_atual
+from validacao import campo_obrigatorio, inteiro_ou_none
 
 load_dotenv()
 
@@ -65,6 +58,8 @@ db.init_app(app)
 mail.init_app(app)
 csrf.init_app(app)
 
+app.register_blueprint(auth)
+
 
 @app.template_filter("data_local")
 def formatar_data_local(valor, formato="%d/%m/%Y às %H:%M"):
@@ -79,47 +74,6 @@ def formatar_data_local(valor, formato="%d/%m/%Y às %H:%M"):
 # ==============================================================================
 # USUÁRIO DA REQUISIÇÃO E CONTROLE DE ACESSO
 # ==============================================================================
-def impressao_sessao(usuario):
-    """Assinatura da sessão, derivada do hash da senha.
-
-    Guardada no cookie e conferida a cada requisição. Como o valor deriva do
-    hash da senha, trocar a senha muda a assinatura e derruba automaticamente
-    todas as sessões abertas em outros dispositivos — que é justamente o que se
-    espera de uma troca de senha feita porque a antiga vazou.
-
-    É um HMAC com a SECRET_KEY: o cookie carrega só o resultado, nunca o hash
-    da senha em si.
-    """
-    return hmac.new(
-        app.config["SECRET_KEY"].encode(),
-        usuario.senha.encode(),
-        hashlib.sha256,
-    ).hexdigest()
-
-
-def usuario_atual():
-    """Usuário logado, sempre relido do banco.
-
-    O perfil não pode sair da sessão: o cookie é escrito no login e nunca mais
-    revisado, então um técnico rebaixado a Usuário — ou uma conta já excluída —
-    continuaria com os privilégios antigos até fazer logout. Lendo do banco a
-    cada requisição, qualquer mudança de perfil vale imediatamente.
-    """
-    if "usuario" not in g:
-        usuario_id = session.get("usuario_id")
-        usuario = db.session.get(Usuario, usuario_id) if usuario_id else None
-
-        # Conta excluída, ou senha trocada desde que esta sessão foi criada.
-        if usuario is not None and not hmac.compare_digest(
-            session.get("auth", ""), impressao_sessao(usuario)
-        ):
-            usuario = None
-
-        if usuario_id and usuario is None:
-            session.clear()
-
-        g.usuario = usuario
-    return g.usuario
 
 
 @app.before_request
@@ -140,57 +94,9 @@ def injetar_usuario():
     return {"usuario_logado": usuario_atual()}
 
 
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if usuario_atual() is None:
-            return redirect("/login")
-        return f(*args, **kwargs)
-
-    return decorated_function
-
-
-def tecnico_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        usuario = usuario_atual()
-        if usuario is None:
-            return redirect("/login")
-        if not usuario.eh_tecnico:
-            flash("Essa ação é restrita a Técnicos e Administradores.")
-            return redirect("/chamados")
-        return f(*args, **kwargs)
-
-    return decorated_function
-
-
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        usuario = usuario_atual()
-        if usuario is None:
-            return redirect("/login")
-        if not usuario.eh_admin:
-            flash("Essa área é restrita a Administradores.")
-            return redirect("/dashboard")
-        return f(*args, **kwargs)
-
-    return decorated_function
-
-
 # ==============================================================================
 # REGISTRO DE LOGS E AUDITORIA
 # ==============================================================================
-def registrar_log(acao, detalhes=None):
-    usuario = usuario_atual()
-    log = LogAuditoria(
-        usuario_id=usuario.id if usuario else None,
-        usuario_nome=usuario.nome if usuario else "Público",
-        acao=acao,
-        detalhes=detalhes,
-    )
-    db.session.add(log)
-    db.session.commit()
 
 
 # ==============================================================================
@@ -262,119 +168,6 @@ def notificar_tecnicos_novo_chamado(chamado):
 # ==============================================================================
 # HELPERS DE VALIDAÇÃO
 # ==============================================================================
-def campo_obrigatorio(nome, tamanho_maximo):
-    """Lê um campo do formulário, remove espaços e corta no tamanho da coluna."""
-    valor = request.form.get(nome, "").strip()
-    return valor[:tamanho_maximo]
-
-
-def inteiro_ou_none(valor):
-    try:
-        return int(valor)
-    except (TypeError, ValueError):
-        return None
-
-
-def validar_forca_senha(senha, usuario=None):
-    """Devolve uma mensagem de erro, ou None se a senha for aceitável.
-
-    As regras cobrem o que costuma quebrar senha de sistema interno: curta
-    demais, previsível, ou derivada do próprio nome/e-mail — que é a primeira
-    coisa que alguém tenta.
-    """
-    if len(senha) < TAMANHO_MINIMO_SENHA:
-        return f"A senha precisa ter pelo menos {TAMANHO_MINIMO_SENHA} caracteres."
-
-    if len(senha) > 128:
-        # Limite de sanidade: hashes de senhas gigantes só consomem CPU à toa.
-        return "A senha pode ter no máximo 128 caracteres."
-
-    if senha.lower() in SENHAS_PROIBIDAS:
-        return "Essa senha é comum demais. Escolha outra."
-
-    if senha.isdigit():
-        return "A senha não pode ser só números."
-
-    if senha.isalpha():
-        return "A senha precisa ter pelo menos um número ou símbolo."
-
-    if len(set(senha)) < 4:
-        return "A senha tem caracteres repetidos demais. Escolha outra."
-
-    if usuario is not None:
-        # Só pedaços de 4+ caracteres: um e-mail como "a@x.com" tem parte local
-        # de uma letra, e comparar com ela reprovaria quase toda senha válida.
-        pedacos = [usuario.email.split("@")[0]] + usuario.nome.split()
-        pedacos = [p.lower() for p in pedacos if len(p) >= 4]
-        if any(pedaco in senha.lower() for pedaco in pedacos):
-            return "A senha não pode conter seu nome nem seu e-mail."
-
-    return None
-
-
-# Tentativas erradas da senha atual, por usuário: {id: [timestamps]}.
-# Guardado em memória de propósito — é simples e suficiente para um processo
-# único. Num deploy com vários workers, isso precisa ir para Redis ou banco
-# (ver a recomendação de rate limiting no README).
-_tentativas_senha = {}
-
-
-def registrar_tentativa_senha(usuario_id):
-    agora = time.monotonic()
-    tentativas = [
-        t for t in _tentativas_senha.get(usuario_id, []) if agora - t < JANELA_BLOQUEIO_SEGUNDOS
-    ]
-    tentativas.append(agora)
-    _tentativas_senha[usuario_id] = tentativas
-
-
-def segundos_de_bloqueio(usuario_id):
-    """Quantos segundos faltam para liberar. Zero se não estiver bloqueado."""
-    agora = time.monotonic()
-    tentativas = [
-        t for t in _tentativas_senha.get(usuario_id, []) if agora - t < JANELA_BLOQUEIO_SEGUNDOS
-    ]
-    _tentativas_senha[usuario_id] = tentativas
-
-    if len(tentativas) < MAX_TENTATIVAS_SENHA:
-        return 0
-    return int(JANELA_BLOQUEIO_SEGUNDOS - (agora - tentativas[0])) + 1
-
-
-def limpar_tentativas_senha(usuario_id):
-    _tentativas_senha.pop(usuario_id, None)
-
-
-# Tentativas de login com senha errada, por e-mail: {email: [timestamps]}.
-# Mesma limitação do dicionário acima: em memória, serve para um processo
-# único (ver a recomendação de rate limiting no README).
-_tentativas_login = {}
-
-
-def registrar_tentativa_login(email):
-    agora = time.monotonic()
-    tentativas = [
-        t for t in _tentativas_login.get(email, []) if agora - t < JANELA_BLOQUEIO_LOGIN_SEGUNDOS
-    ]
-    tentativas.append(agora)
-    _tentativas_login[email] = tentativas
-
-
-def segundos_de_bloqueio_login(email):
-    """Quantos segundos faltam para liberar. Zero se não estiver bloqueado."""
-    agora = time.monotonic()
-    tentativas = [
-        t for t in _tentativas_login.get(email, []) if agora - t < JANELA_BLOQUEIO_LOGIN_SEGUNDOS
-    ]
-    _tentativas_login[email] = tentativas
-
-    if len(tentativas) < MAX_TENTATIVAS_LOGIN:
-        return 0
-    return int(JANELA_BLOQUEIO_LOGIN_SEGUNDOS - (agora - tentativas[0])) + 1
-
-
-def limpar_tentativas_login(email):
-    _tentativas_login.pop(email, None)
 
 
 # ==============================================================================
@@ -383,154 +176,6 @@ def limpar_tentativas_login(email):
 @app.route("/")
 def home():
     return redirect("/dashboard")
-
-
-@app.route("/cadastro", methods=["GET", "POST"])
-def cadastro():
-    if request.method == "POST":
-        nome = campo_obrigatorio("nome", 100)
-        email = campo_obrigatorio("email", 120).lower()
-        senha = request.form.get("senha", "")
-
-        if not nome or not email:
-            return render_template("cadastro.html", erro="Preencha nome e e-mail.")
-
-        if len(senha) < TAMANHO_MINIMO_SENHA:
-            return render_template(
-                "cadastro.html",
-                erro=f"A senha precisa ter pelo menos {TAMANHO_MINIMO_SENHA} caracteres.",
-            )
-
-        usuario_existente = db.session.execute(
-            db.select(Usuario).where(Usuario.email == email)
-        ).scalar_one_or_none()
-
-        if usuario_existente:
-            return render_template("cadastro.html", erro="Este e-mail já está cadastrado.")
-
-        # O perfil NUNCA vem do formulário. O cadastro é aberto ao público, então
-        # aceitar `tipo_usuario` do cliente deixaria qualquer visitante criar a
-        # própria conta de Administrador. Promoção de perfil é feita só pelo
-        # painel administrativo (ou pelo script promover_admin.py no primeiro uso).
-        novo_usuario = Usuario(
-            nome=nome,
-            email=email,
-            senha=generate_password_hash(senha),
-            tipo_usuario="Usuário",
-        )
-        db.session.add(novo_usuario)
-        db.session.commit()
-        registrar_log("Cadastro de usuário", f"Novo usuário: {novo_usuario.email}")
-        flash("Conta criada com sucesso! Faça login para continuar.")
-        return redirect("/login")
-    return render_template("cadastro.html")
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
-        senha = request.form.get("senha", "")
-
-        bloqueio = segundos_de_bloqueio_login(email)
-        if bloqueio:
-            registrar_log("Login bloqueado", f"Excesso de tentativas para {email}")
-            return render_template(
-                "login.html",
-                erro=f"Tentativas demais. Tente de novo em {bloqueio // 60 + 1} minuto(s).",
-            )
-
-        usuario = db.session.execute(
-            db.select(Usuario).where(Usuario.email == email)
-        ).scalar_one_or_none()
-
-        if usuario and check_password_hash(usuario.senha, senha):
-            limpar_tentativas_login(email)
-            # Troca o identificador de sessão no login para evitar fixação de sessão.
-            session.clear()
-            session["usuario_id"] = usuario.id
-            session["auth"] = impressao_sessao(usuario)
-            session.permanent = True
-            g.usuario = usuario
-            registrar_log("Login realizado")
-            return redirect("/dashboard")
-
-        registrar_tentativa_login(email)
-
-        # Mensagem genérica de propósito: dizer "e-mail não existe" permitiria
-        # descobrir quais endereços estão cadastrados no sistema.
-        return render_template("login.html", erro="E-mail ou senha inválidos.")
-    return render_template("login.html")
-
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/login")
-
-
-@app.route("/senha", methods=["GET", "POST"])
-@login_required
-def alterar_senha():
-    """Troca de senha do próprio usuário."""
-    usuario = usuario_atual()
-
-    if request.method == "POST":
-        bloqueio = segundos_de_bloqueio(usuario.id)
-        if bloqueio:
-            registrar_log(
-                "Troca de senha bloqueada",
-                f"Excesso de tentativas para {usuario.email}",
-            )
-            return render_template(
-                "alterar_senha.html",
-                erro=f"Tentativas demais. Tente de novo em {bloqueio // 60 + 1} minuto(s).",
-            )
-
-        senha_atual = request.form.get("senha_atual", "")
-        nova_senha = request.form.get("nova_senha", "")
-        confirmacao = request.form.get("confirmacao", "")
-
-        # Confirmar a senha atual impede que alguém com a sessão sequestrada
-        # (ou um computador destravado) troque a senha e tome a conta.
-        if not check_password_hash(usuario.senha, senha_atual):
-            registrar_tentativa_senha(usuario.id)
-            registrar_log("Senha atual incorreta", f"Tentativa de troca por {usuario.email}")
-            return render_template("alterar_senha.html", erro="Senha atual incorreta.")
-
-        if nova_senha != confirmacao:
-            return render_template(
-                "alterar_senha.html", erro="A nova senha e a confirmação não conferem."
-            )
-
-        if check_password_hash(usuario.senha, nova_senha):
-            return render_template(
-                "alterar_senha.html", erro="A nova senha precisa ser diferente da atual."
-            )
-
-        problema = validar_forca_senha(nova_senha, usuario)
-        if problema:
-            return render_template("alterar_senha.html", erro=problema)
-
-        usuario.senha = generate_password_hash(nova_senha)
-        db.session.commit()
-
-        limpar_tentativas_senha(usuario.id)
-        registrar_log("Senha alterada", f"Senha alterada por {usuario.email}")
-
-        # A assinatura da sessão deriva do hash da senha, então trocar a senha
-        # invalidou todas as sessões — inclusive esta. Reemitimos a desta aba
-        # para o usuário não ser expulso logo depois de acertar tudo; as demais
-        # continuam derrubadas.
-        session.clear()
-        session["usuario_id"] = usuario.id
-        session["auth"] = impressao_sessao(usuario)
-        session.permanent = True
-
-        flash("Senha alterada com sucesso. As sessões em outros dispositivos foram encerradas.")
-        return redirect("/dashboard")
-
-    return render_template("alterar_senha.html")
 
 
 @app.route("/dashboard")
