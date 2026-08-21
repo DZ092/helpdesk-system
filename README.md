@@ -137,6 +137,9 @@ helpdesk-system/
 │       └── tests.yml
 │
 ├── app.py
+├── constantes.py
+├── extensions.py
+├── models.py
 ├── promover_admin.py
 ├── redefinir_senha.py
 ├── serve.py
