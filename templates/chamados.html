@@ -328,7 +328,7 @@
         <div class="paginacao">
 
             {% if paginacao.has_prev %}
-                <a class="botao-filtro" href="{{ url_for('lista_chamados', **dict(request.args, pagina=paginacao.prev_num)) }}">← Anterior</a>
+                <a class="botao-filtro" href="{{ url_for('chamados.lista_chamados', **dict(request.args, pagina=paginacao.prev_num)) }}">← Anterior</a>
             {% endif %}
 
             {% for numero in paginacao.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
@@ -338,7 +338,7 @@
                     {% if numero == paginacao.page %}
                         <span class="pagina-atual">{{ numero }}</span>
                     {% else %}
-                        <a class="pagina-link" href="{{ url_for('lista_chamados', **dict(request.args, pagina=numero)) }}">{{ numero }}</a>
+                        <a class="pagina-link" href="{{ url_for('chamados.lista_chamados', **dict(request.args, pagina=numero)) }}">{{ numero }}</a>
                     {% endif %}
 
                 {% else %}
@@ -350,7 +350,7 @@
             {% endfor %}
 
             {% if paginacao.has_next %}
-                <a class="botao-filtro" href="{{ url_for('lista_chamados', **dict(request.args, pagina=paginacao.next_num)) }}">Próxima →</a>
+                <a class="botao-filtro" href="{{ url_for('chamados.lista_chamados', **dict(request.args, pagina=paginacao.next_num)) }}">Próxima →</a>
             {% endif %}
 
         </div>
