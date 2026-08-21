@@ -122,6 +122,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - HTML5
 - CSS3
 - Pytest
+- Waitress
 - GitHub Actions
 
 ---
@@ -138,6 +139,7 @@ helpdesk-system/
 ├── app.py
 ├── promover_admin.py
 ├── redefinir_senha.py
+├── serve.py
 ├── requirements.txt
 ├── requirements-dev.txt
 ├── .env.example
@@ -302,6 +304,23 @@ Acesse no navegador:
 ```text
 http://127.0.0.1:5000
 ```
+
+#### Rodando com um servidor de produção (opcional)
+
+O `app.py` sobe o servidor embutido do Flask, que existe só para
+desenvolvimento — ele avisa isso no terminal toda vez. Para ver a aplicação
+como ela rodaria em produção, use o **Waitress**, um servidor WSGI multithread
+que funciona bem no Windows:
+
+```bash
+python serve.py
+```
+
+Acesse `http://127.0.0.1:8000`. Host, porta e número de threads são ajustáveis
+por `HOST`, `PORT` e `THREADS` no `.env`.
+
+O Waitress não recarrega ao salvar arquivo: reinicie o processo a cada mudança,
+ou volte ao `python app.py` enquanto estiver desenvolvendo.
 
 ---
 
