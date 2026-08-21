@@ -14,7 +14,9 @@ from getpass import getpass
 
 from werkzeug.security import generate_password_hash
 
-from app import TAMANHO_MINIMO_SENHA, Usuario, app, db
+from app import app, db
+from constantes import TAMANHO_MINIMO_SENHA
+from models import Usuario
 
 
 def pedir_senha():

@@ -137,12 +137,15 @@ helpdesk-system/
 │       └── tests.yml
 │
 ├── app.py
+├── auditoria.py
 ├── constantes.py
 ├── extensions.py
 ├── models.py
 ├── promover_admin.py
 ├── redefinir_senha.py
+├── seguranca.py
 ├── serve.py
+├── validacao.py
 ├── requirements.txt
 ├── requirements-dev.txt
 ├── .env.example
@@ -151,6 +154,10 @@ helpdesk-system/
 │
 ├── instance/
 │   └── chamados.db
+│
+├── rotas/
+│   ├── __init__.py
+│   └── auth.py
 │
 ├── static/
 │   └── css/
