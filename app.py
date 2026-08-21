@@ -5,56 +5,29 @@ import threading
 import time
 from datetime import datetime, timedelta, timezone
 from functools import wraps
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from dotenv import load_dotenv
 from flask import Flask, flash, g, redirect, render_template, request, session
-from flask_mail import Mail, Message
-from flask_sqlalchemy import SQLAlchemy
-from flask_wtf.csrf import CSRFProtect
+from flask_mail import Message
 from werkzeug.security import check_password_hash, generate_password_hash
 
-load_dotenv()
-
-# ==============================================================================
-# CONSTANTES DE DOMÍNIO
-# ==============================================================================
-TIPOS_USUARIO = ("Usuário", "Técnico", "Administrador")
-PERFIS_TECNICOS = ("Técnico", "Administrador")
-PRIORIDADES = ("Baixa", "Média", "Alta", "Crítica")
-STATUS_CHAMADO = ("Aberto", "Em andamento", "Resolvido")
-
-TAMANHO_MINIMO_SENHA = 8
-
-# Throttle da troca de senha: quantas tentativas erradas da senha atual são
-# toleradas antes de bloquear, e por quanto tempo o bloqueio dura.
-MAX_TENTATIVAS_SENHA = 5
-JANELA_BLOQUEIO_SEGUNDOS = 300
-
-# Mesma ideia, aplicada ao login: limita tentativas de força bruta contra uma
-# conta antes de existir uma sessão (por isso o throttle abaixo é por e-mail,
-# não por usuario_id).
-MAX_TENTATIVAS_LOGIN = 5
-JANELA_BLOQUEIO_LOGIN_SEGUNDOS = 300
-
-# Lista curta de senhas óbvias. Não substitui uma checagem contra bases de
-# vazamentos (ver README), mas barra os casos mais comuns sem depender de rede.
-SENHAS_PROIBIDAS = frozenset(
-    {
-        "12345678", "123456789", "1234567890", "senha123", "password",
-        "password1", "qwerty123", "abc12345", "helpdesk", "admin123",
-        "12341234", "10203040", "1q2w3e4r", "senhasenha", "mudar123",
-    }
+from constantes import (
+    FUSO_EXIBICAO,
+    JANELA_BLOQUEIO_LOGIN_SEGUNDOS,
+    JANELA_BLOQUEIO_SEGUNDOS,
+    MAX_TENTATIVAS_LOGIN,
+    MAX_TENTATIVAS_SENHA,
+    PERFIS_TECNICOS,
+    PRIORIDADES,
+    SENHAS_PROIBIDAS,
+    STATUS_CHAMADO,
+    TAMANHO_MINIMO_SENHA,
+    TIPOS_USUARIO,
 )
+from extensions import csrf, db, mail
+from models import Chamado, Comentario, LogAuditoria, Usuario
 
-# O zoneinfo lê o banco de fusos do sistema operacional, e o Windows não tem um.
-# O pacote `tzdata` (nos requirements) supre isso, mas se por algum motivo ele
-# faltar, cair para um deslocamento fixo de -3h é melhor que derrubar a aplicação
-# — o Brasil não adota mais horário de verão desde 2019, então o valor é exato.
-try:
-    FUSO_EXIBICAO = ZoneInfo("America/Sao_Paulo")
-except ZoneInfoNotFoundError:  # pragma: no cover
-    FUSO_EXIBICAO = timezone(timedelta(hours=-3))
+load_dotenv()
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
@@ -88,21 +61,9 @@ app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
 app.config["MAIL_DEFAULT_SENDER"] = app.config["MAIL_USERNAME"]
 
-db = SQLAlchemy(app)
-mail = Mail(app)
-csrf = CSRFProtect(app)
-
-
-def obter_data_utc():
-    """Momento atual em UTC, sem fuso embutido.
-
-    O SQLite não guarda o fuso horário, então gravar um datetime "aware" faria a
-    informação de fuso ser silenciosamente descartada na escrita e reaparecer
-    como naive na leitura. Padronizamos em UTC naive para que o que é gravado e
-    o que é lido sejam sempre o mesmo valor; a conversão para o horário de
-    Brasília acontece só na hora de exibir (ver filtro `data_local`).
-    """
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+db.init_app(app)
+mail.init_app(app)
+csrf.init_app(app)
 
 
 @app.template_filter("data_local")
@@ -113,64 +74,6 @@ def formatar_data_local(valor, formato="%d/%m/%Y às %H:%M"):
     if valor.tzinfo is None:
         valor = valor.replace(tzinfo=timezone.utc)
     return valor.astimezone(FUSO_EXIBICAO).strftime(formato)
-
-
-# ==============================================================================
-# MODELOS DO BANCO DE DADOS
-# ==============================================================================
-class Chamado(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    usuario = db.Column(db.String(100), nullable=False)
-    setor = db.Column(db.String(100), nullable=False, index=True)
-    titulo = db.Column(db.String(200), nullable=False)
-    descricao = db.Column(db.Text, nullable=False)
-    status = db.Column(db.String(50), default="Aberto", index=True)
-    prioridade = db.Column(db.String(20), default="Média", index=True)
-    criado_em = db.Column(db.DateTime, default=obter_data_utc, nullable=False, index=True)
-    atualizado_em = db.Column(
-        db.DateTime, default=obter_data_utc, onupdate=obter_data_utc, nullable=False
-    )
-    responsavel_id = db.Column(
-        db.Integer, db.ForeignKey("usuario.id"), nullable=True, index=True
-    )
-    responsavel = db.relationship("Usuario", backref="chamados_responsaveis")
-
-
-class Usuario(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    senha = db.Column(db.String(255), nullable=False)
-    tipo_usuario = db.Column(db.String(20), nullable=False, default="Usuário")
-
-    @property
-    def eh_tecnico(self):
-        return self.tipo_usuario in PERFIS_TECNICOS
-
-    @property
-    def eh_admin(self):
-        return self.tipo_usuario == "Administrador"
-
-
-class Comentario(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    chamado_id = db.Column(db.Integer, db.ForeignKey("chamado.id"), nullable=False)
-    autor_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
-    mensagem = db.Column(db.Text, nullable=False)
-    criado_em = db.Column(db.DateTime, default=obter_data_utc, nullable=False)
-    chamado = db.relationship(
-        "Chamado", backref=db.backref("comentarios", lazy=True, cascade="all, delete-orphan")
-    )
-    autor = db.relationship("Usuario", backref="comentarios")
-
-
-class LogAuditoria(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=True)
-    usuario_nome = db.Column(db.String(100), nullable=False)
-    acao = db.Column(db.String(100), nullable=False)
-    detalhes = db.Column(db.Text, nullable=True)
-    criado_em = db.Column(db.DateTime, default=obter_data_utc, nullable=False)
 
 
 # ==============================================================================
