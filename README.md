@@ -139,6 +139,7 @@ helpdesk-system/
 ├── app.py
 ├── auditoria.py
 ├── constantes.py
+├── emails.py
 ├── extensions.py
 ├── models.py
 ├── promover_admin.py
@@ -157,7 +158,8 @@ helpdesk-system/
 │
 ├── rotas/
 │   ├── __init__.py
-│   └── auth.py
+│   ├── auth.py
+│   └── chamados.py
 │
 ├── static/
 │   └── css/
