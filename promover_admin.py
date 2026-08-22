@@ -14,7 +14,8 @@ from getpass import getpass
 
 from werkzeug.security import generate_password_hash
 
-from app import app, db
+from app import create_app
+from extensions import db
 from constantes import TAMANHO_MINIMO_SENHA
 from models import Usuario
 
@@ -38,6 +39,8 @@ def main():
     if not email:
         print("Nenhum e-mail informado. Saindo.")
         return
+
+    app = create_app()
 
     with app.app_context():
         db.create_all()
