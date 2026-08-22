@@ -252,6 +252,19 @@ h1 {
     width: 36px;
 }
 
+/* O .acao é um círculo de 36px feito para um ícone só. Quando a ação precisa
+   de texto — como "Ver detalhes" —, esta variante solta a largura e vira
+   pílula, senão a palavra vaza para fora do círculo. */
+.acao-texto {
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    height: auto;
+    padding: 8px 16px;
+    white-space: nowrap;
+    width: auto;
+}
+
 .acao:hover {
     background: linear-gradient(135deg, var(--acento-hover), var(--acento-hover-forte));
 }
