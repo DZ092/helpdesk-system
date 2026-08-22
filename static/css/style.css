@@ -185,10 +185,17 @@ h1 {
 /* ==============================
    TABELA DE CHAMADOS
    ============================== */
+/* A tabela rola dentro da própria caixa quando não couber. Sem isso, uma
+   coluna a mais empurra a página inteira e o cabeçalho sai de vista à direita. */
+.tabela-rolavel {
+    margin-top: 30px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .tabela-chamados {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 30px;
 }
 
 .tabela-chamados th {
@@ -413,7 +420,7 @@ h1 {
 }
 
 /* RESPONSIVO */
-@media(max-width:700px){
+@media(max-width:900px){
 
 .container{
     width:95%;
@@ -478,6 +485,10 @@ h1{
 }
 
 /* TABELAS VIRAM CARTÕES EMPILHADOS */
+.tabela-rolavel{
+    overflow-x:visible;
+}
+
 .tabela-chamados thead{
     display:none;
 }
@@ -665,7 +676,7 @@ h1{
     resize: vertical;
 }
 
-@media(max-width:700px) {
+@media(max-width:900px) {
     .cabecalho-chamado, .comentario-cabecalho {
         align-items: flex-start;
         flex-direction: column;
