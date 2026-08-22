@@ -22,11 +22,23 @@ from seguranca import usuario_atual
 load_dotenv()
 
 
+def _url_do_banco():
+    """URL do banco, com o esquema que o SQLAlchemy 2 aceita.
+
+    Provedores de PostgreSQL gerenciado (Render, Neon, Heroku) entregam a URL
+    começando com `postgres://`, um esquema que o SQLAlchemy 2 removeu. Sem
+    esta troca a aplicação sobe normalmente e só quebra na primeira consulta —
+    é o tropeço clássico do primeiro deploy.
+    """
+    url = os.environ.get("DATABASE_URL", "sqlite:///chamados.db")
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+    return url
+
+
 def _configurar(app, ajustes):
     """Preenche a configuração a partir do ambiente e aplica os ajustes."""
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-        "DATABASE_URL", "sqlite:///chamados.db"
-    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = _url_do_banco()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 

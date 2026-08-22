@@ -107,7 +107,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 62 testes em pytest cobrindo autenticação, controle de acesso por
+  Suíte com 64 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
   responsável do chamado. Boa parte deles são testes de regressão, escritos para
   que falhas já corrigidas não voltem despercebidas. Um segundo arquivo,
@@ -150,6 +150,7 @@ helpdesk-system/
 │
 ├── app.py
 ├── auditoria.py
+├── render.yaml
 ├── constantes.py
 ├── emails.py
 ├── extensions.py
@@ -383,11 +384,39 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **62 passed**.
+Esperado: **64 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
 suíte se detectar que a engine aponta para um arquivo real.
+
+---
+
+## ☁️ Deploy
+
+A aplicação roda em produção com o **Waitress** (`serve.py`) e **PostgreSQL**,
+sem mudança de código: o banco vem da variável `DATABASE_URL` e o restante da
+configuração também sai do ambiente.
+
+O `render.yaml` na raiz descreve o serviço — comando de build, comando de start
+e as variáveis necessárias —, então a plataforma se configura sozinha ao
+conectar o repositório. As variáveis sensíveis ficam marcadas como `sync: false`
+e são preenchidas no painel, nunca no repositório:
+
+| Variável | Para quê |
+|---|---|
+| `SECRET_KEY` | assina o cookie de sessão; sem ela a aplicação se recusa a subir |
+| `DATABASE_URL` | conexão do PostgreSQL |
+| `MAIL_USERNAME` e `MAIL_PASSWORD` | envio das notificações |
+| `SESSION_COOKIE_SECURE=1` | cookie de sessão só trafega por HTTPS |
+
+> A URL entregue pelos provedores começa com `postgres://`, esquema que o
+> SQLAlchemy 2 não aceita mais. A função `_url_do_banco()` no `app.py` faz a
+> troca para `postgresql://` — sem ela, a aplicação sobe e só quebra na
+> primeira consulta.
+
+> Em planos gratuitos o serviço hiberna após alguns minutos sem acesso, e o
+> primeiro carregamento seguinte pode levar cerca de um minuto.
 
 ---
 
