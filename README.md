@@ -64,6 +64,14 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   Tela dedicada onde o usuário informa a senha atual e define uma nova. A troca
   encerra automaticamente as sessões abertas em outros dispositivos.
 
+- **Recuperação de senha por e-mail**  
+  Quem esquece a senha pede um link pela tela de login. O e-mail chega com um
+  endereço assinado que vale por 1 hora e só funciona uma vez: o token carrega
+  um HMAC do hash da senha atual, então redefinir a senha invalida o próprio
+  link usado e qualquer outro ainda parado na caixa de entrada. A tela responde
+  a mesma coisa para e-mail cadastrado ou não, para não revelar quem tem conta,
+  e aceita no máximo 3 pedidos por endereço a cada 15 minutos.
+
 - **Redefinição de senha por linha de comando**  
   Script `redefinir_senha.py` para o caso clássico de suporte: o usuário esqueceu
   a senha e não consegue entrar para trocá-la sozinho.
@@ -98,7 +106,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 25 testes em pytest cobrindo autenticação, controle de acesso por
+  Suíte com 31 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
   responsável do chamado. Boa parte deles são testes de regressão, escritos para
   que falhas já corrigidas não voltem despercebidas. A suíte roda sozinha no
@@ -174,6 +182,8 @@ helpdesk-system/
 │   ├── chamado.html
 │   ├── chamados.html
 │   ├── detalhe_chamado.html
+│   ├── esqueci_senha.html
+│   ├── redefinir_senha.html
 │   ├── admin_usuarios.html
 │   ├── admin_logs.html
 │   ├── alterar_senha.html
@@ -363,7 +373,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **25 passed**.
+Esperado: **31 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
@@ -458,6 +468,17 @@ Nunca adicione credenciais reais diretamente no código ou no repositório.
 - **Limite de tentativas de login.** Cinco senhas erradas para o mesmo e-mail
   bloqueiam novas tentativas de login por 5 minutos, dificultando força bruta
   contra uma conta.
+- **Link de redefinição sem tabela de tokens.** O token é assinado com a
+  `SECRET_KEY` e carrega o id do usuário mais um HMAC do hash da senha atual.
+  Isso dá uso único de graça: a redefinição muda o hash, o HMAC deixa de bater
+  e o link morre — sem precisar guardar, marcar como usado nem limpar tokens
+  vencidos no banco.
+- **A tela de recuperação não revela quem tem conta.** A resposta é idêntica
+  para um e-mail cadastrado e para um desconhecido; a diferença fica só no log
+  de auditoria, que é interno.
+- **Redefinição não faz login automático.** Abrir o link permite escolher a
+  senha, não entrar: quem redefine prova que sabe a senha nova usando-a no
+  login.
 - **Senhas com hash `scrypt`** (padrão do Werkzeug), nunca em texto puro.
 
 ---
@@ -530,7 +551,6 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 
 - Exportação de relatórios em PDF ou Excel
 - Upload de anexos nos chamados
-- Recuperação de senha por e-mail
 - API REST
 - Migrações de banco com Flask-Migrate
 - Deploy em ambiente de produção

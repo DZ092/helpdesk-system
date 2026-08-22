@@ -26,6 +26,14 @@ JANELA_BLOQUEIO_SEGUNDOS = 300
 MAX_TENTATIVAS_LOGIN = 5
 JANELA_BLOQUEIO_LOGIN_SEGUNDOS = 300
 
+# Redefinição de senha por e-mail: por quanto tempo o link enviado continua
+# valendo, e quantos pedidos são aceitos por e-mail antes de segurar a mão.
+# Uma hora é o suficiente para quem pediu conseguir abrir a caixa de entrada,
+# e curto o bastante para um link vazado envelhecer sozinho.
+VALIDADE_TOKEN_SENHA_SEGUNDOS = 3600
+MAX_PEDIDOS_REDEFINICAO = 3
+JANELA_PEDIDOS_REDEFINICAO_SEGUNDOS = 900
+
 # Lista curta de senhas óbvias. Não substitui uma checagem contra bases de
 # vazamentos (ver README), mas barra os casos mais comuns sem depender de rede.
 SENHAS_PROIBIDAS = frozenset(

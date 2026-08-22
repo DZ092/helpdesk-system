@@ -52,10 +52,10 @@ def test_login_com_senha_errada(client):
 
 def test_tentativas_repetidas_de_login_bloqueiam(client):
     from constantes import MAX_TENTATIVAS_LOGIN
-    from seguranca import limpar_tentativas_login
+    from seguranca import throttle_login
 
     email = "forca-login@teste.com"
-    limpar_tentativas_login(email)
+    throttle_login.limpar(email)
     cadastrar_usuario(client, email=email)
 
     for _ in range(MAX_TENTATIVAS_LOGIN):
@@ -66,7 +66,7 @@ def test_tentativas_repetidas_de_login_bloqueiam(client):
 
     # mesmo com a senha certa continua bloqueado
     assert "Tentativas demais".encode() in fazer_login(client, email=email).data
-    limpar_tentativas_login(email)
+    throttle_login.limpar(email)
 
 
 def test_senha_curta_e_recusada(client):
@@ -336,10 +336,10 @@ def test_troca_de_senha_derruba_sessao_de_outro_dispositivo(client, criar_usuari
 
 def test_tentativas_repetidas_bloqueiam(client, criar_usuario):
     from constantes import MAX_TENTATIVAS_SENHA
-    from seguranca import limpar_tentativas_senha
+    from seguranca import throttle_senha
 
     usuario = criar_usuario(email="forca@teste.com")
-    limpar_tentativas_senha(usuario.id)
+    throttle_senha.limpar(usuario.id)
     fazer_login(client, email="forca@teste.com")
 
     for _ in range(MAX_TENTATIVAS_SENHA):
@@ -350,4 +350,98 @@ def test_tentativas_repetidas_bloqueiam(client, criar_usuario):
 
     # mesmo com a senha certa continua bloqueado
     assert "Tentativas demais".encode() in trocar_senha(client).data
-    limpar_tentativas_senha(usuario.id)
+    throttle_senha.limpar(usuario.id)
+
+# ==============================================================================
+# REDEFINIÇÃO DE SENHA POR E-MAIL
+# ==============================================================================
+def _token_de(client, email="fulano@teste.com"):
+    """Extrai um token de redefinição válido para o usuário informado."""
+    from app import app as flask_app
+    from models import Usuario
+    from seguranca import gerar_token_redefinicao
+    from extensions import db
+
+    with flask_app.test_request_context():
+        usuario = db.session.execute(
+            db.select(Usuario).where(Usuario.email == email)
+        ).scalar_one()
+        return gerar_token_redefinicao(usuario)
+
+
+def test_esqueci_senha_responde_igual_para_email_desconhecido(client, criar_usuario):
+    """A tela não pode virar um verificador de quem tem conta no sistema."""
+    criar_usuario()
+
+    conhecido = client.post("/esqueci-senha", data={"email": "fulano@teste.com"})
+    desconhecido = client.post("/esqueci-senha", data={"email": "ninguem@teste.com"})
+
+    assert conhecido.status_code == desconhecido.status_code == 200
+    assert conhecido.get_data() == desconhecido.get_data()
+
+
+def test_link_de_redefinicao_troca_a_senha(client, criar_usuario):
+    criar_usuario(senha="senha-antiga-1")
+    token = _token_de(client)
+
+    resposta = client.post(
+        f"/redefinir-senha/{token}",
+        data={"nova_senha": "senha-nova-99", "confirmacao": "senha-nova-99"},
+        follow_redirects=True,
+    )
+    assert resposta.status_code == 200
+
+    # a antiga não entra mais, a nova entra
+    assert b"inv" in client.post(
+        "/login", data={"email": "fulano@teste.com", "senha": "senha-antiga-1"}
+    ).get_data()
+    entrada = client.post(
+        "/login", data={"email": "fulano@teste.com", "senha": "senha-nova-99"}
+    )
+    assert entrada.status_code == 302
+
+
+def test_token_so_serve_uma_vez(client, criar_usuario):
+    """Trocar a senha muda o hash, e o hash é o que assina o token."""
+    criar_usuario()
+    token = _token_de(client)
+
+    client.post(f"/redefinir-senha/{token}",
+                data={"nova_senha": "senha-nova-99", "confirmacao": "senha-nova-99"})
+
+    segunda = client.get(f"/redefinir-senha/{token}")
+    assert "já foi usado" in segunda.get_data(as_text=True)
+
+
+def test_token_adulterado_e_recusado(client, criar_usuario):
+    criar_usuario()
+    resposta = client.get("/redefinir-senha/token-inventado-por-mim")
+    assert "não é válido" in resposta.get_data(as_text=True)
+
+
+def test_token_expirado_e_recusado(client, criar_usuario):
+    criar_usuario()
+    token = _token_de(client)
+
+    from app import app as flask_app
+    from seguranca import usuario_do_token
+
+    with flask_app.test_request_context():
+        usuario, motivo = usuario_do_token(token, validade_segundos=-1)
+
+    assert usuario is None
+    assert motivo == "expirado"
+
+
+def test_redefinicao_recusa_senha_fraca(client, criar_usuario):
+    criar_usuario()
+    token = _token_de(client)
+
+    resposta = client.post(f"/redefinir-senha/{token}",
+                           data={"nova_senha": "12345678", "confirmacao": "12345678"})
+
+    assert "comum demais" in resposta.get_data(as_text=True)
+    # a senha original continua valendo
+    assert client.post(
+        "/login", data={"email": "fulano@teste.com", "senha": "senha-de-teste"}
+    ).status_code == 302
