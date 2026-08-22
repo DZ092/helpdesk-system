@@ -14,7 +14,8 @@ from getpass import getpass
 
 from werkzeug.security import generate_password_hash
 
-from app import app, db
+from app import create_app
+from extensions import db
 from models import Usuario
 from seguranca import validar_forca_senha
 
@@ -42,6 +43,8 @@ def main():
     if not email:
         print("Nenhum e-mail informado. Saindo.")
         return
+
+    app = create_app()
 
     with app.app_context():
         usuario = db.session.execute(

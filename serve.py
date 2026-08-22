@@ -20,12 +20,15 @@ import os
 
 from waitress import serve
 
-from app import app, db
+from app import create_app
+from extensions import db
 
 
 def main():
     # Mesma garantia do app.py: sem isso, uma cópia recém-clonada subiria sem
     # as tabelas e quebraria na primeira consulta.
+    app = create_app()
+
     with app.app_context():
         db.create_all()
 
