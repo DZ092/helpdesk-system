@@ -81,7 +81,8 @@ def test_senha_curta_e_recusada(client):
 # ==============================================================================
 def test_cadastro_ignora_tipo_usuario_enviado_no_formulario(client):
     """Antes, qualquer visitante criava a própria conta de Administrador."""
-    from app import Usuario, db
+    from extensions import db
+    from models import Usuario
 
     cadastrar_usuario(client, email="invasor@teste.com", tipo_usuario="Administrador")
 
@@ -118,7 +119,7 @@ def test_admin_acessa_painel_admin(client, criar_usuario):
 # ==============================================================================
 def test_rebaixar_perfil_vale_na_mesma_sessao(client, criar_usuario):
     """Antes, o perfil ficava congelado no cookie até o usuário deslogar."""
-    from app import db
+    from extensions import db
 
     tecnico = criar_usuario(email="tecnico@teste.com", tipo="Técnico")
     fazer_login(client, email="tecnico@teste.com")
@@ -131,7 +132,7 @@ def test_rebaixar_perfil_vale_na_mesma_sessao(client, criar_usuario):
 
 
 def test_usuario_excluido_perde_a_sessao(client, criar_usuario):
-    from app import db
+    from extensions import db
 
     usuario = criar_usuario(email="some@teste.com")
     fazer_login(client, email="some@teste.com")
@@ -154,7 +155,8 @@ def test_abrir_chamado_publico(client):
 
 def test_prioridade_invalida_vira_media(client):
     """Antes, qualquer texto enviado no formulário virava prioridade no banco."""
-    from app import Chamado, db
+    from extensions import db
+    from models import Chamado
 
     abrir_chamado(client, prioridade="XYZ-INVALIDA")
 
@@ -165,7 +167,8 @@ def test_prioridade_invalida_vira_media(client):
 
 
 def test_chamado_incompleto_e_recusado(client):
-    from app import Chamado, db
+    from extensions import db
+    from models import Chamado
 
     client.post("/chamado", data={"usuario": "  ", "setor": "TI", "titulo": "t", "descricao": "d"})
     total = db.session.execute(db.select(db.func.count(Chamado.id))).scalar_one()
@@ -202,13 +205,11 @@ def test_filtro_responsavel_invalido_nao_quebra(client, criar_usuario):
 # ==============================================================================
 def test_post_sem_token_csrf_e_bloqueado(client, criar_usuario):
     """Com CSRF ativo, um POST vindo de outro site não passa."""
-    from app import app as flask_app
-
     alvo = criar_usuario(email="vitima@teste.com", tipo="Usuário")
     criar_usuario(nome="Adm", email="admin@teste.com", tipo="Administrador")
     fazer_login(client, email="admin@teste.com")
 
-    flask_app.config["WTF_CSRF_ENABLED"] = True
+    client.application.config["WTF_CSRF_ENABLED"] = True
     try:
         resposta = client.post(
             f"/admin/usuarios/{alvo.id}/tipo", data={"tipo_usuario": "Administrador"}
@@ -216,7 +217,7 @@ def test_post_sem_token_csrf_e_bloqueado(client, criar_usuario):
         assert resposta.status_code == 400
         assert alvo.tipo_usuario == "Usuário"
     finally:
-        flask_app.config["WTF_CSRF_ENABLED"] = False
+        client.application.config["WTF_CSRF_ENABLED"] = False
 
 
 # ==============================================================================
@@ -319,11 +320,9 @@ def test_senhas_fracas_sao_recusadas(client, criar_usuario):
 
 def test_troca_de_senha_derruba_sessao_de_outro_dispositivo(client, criar_usuario):
     """A assinatura da sessão deriva do hash da senha, então trocar invalida."""
-    from app import app as flask_app
-
     criar_usuario(email="dois@teste.com")
 
-    outro = flask_app.test_client()
+    outro = client.application.test_client()
     fazer_login(outro, email="dois@teste.com")
     assert outro.get("/dashboard").status_code == 200
 
@@ -357,12 +356,11 @@ def test_tentativas_repetidas_bloqueiam(client, criar_usuario):
 # ==============================================================================
 def _token_de(client, email="fulano@teste.com"):
     """Extrai um token de redefinição válido para o usuário informado."""
-    from app import app as flask_app
     from models import Usuario
     from seguranca import gerar_token_redefinicao
     from extensions import db
 
-    with flask_app.test_request_context():
+    with client.application.test_request_context():
         usuario = db.session.execute(
             db.select(Usuario).where(Usuario.email == email)
         ).scalar_one()
@@ -423,10 +421,9 @@ def test_token_expirado_e_recusado(client, criar_usuario):
     criar_usuario()
     token = _token_de(client)
 
-    from app import app as flask_app
     from seguranca import usuario_do_token
 
-    with flask_app.test_request_context():
+    with client.application.test_request_context():
         usuario, motivo = usuario_do_token(token, validade_segundos=-1)
 
     assert usuario is None

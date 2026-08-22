@@ -167,6 +167,7 @@ helpdesk-system/
 │
 ├── rotas/
 │   ├── __init__.py
+│   ├── admin.py
 │   ├── auth.py
 │   └── chamados.py
 │
@@ -312,6 +313,10 @@ exit()
 ```bash
 python app.py
 ```
+
+O `app.py` não cria a aplicação na importação: ele expõe a fábrica
+`create_app()`, e quem precisa de uma instância a constrói — o `python app.py`,
+o `serve.py` e a suíte de testes, cada um com a configuração que lhe cabe.
 
 O modo debug fica **desligado** por padrão. Para ligá-lo durante o
 desenvolvimento, defina `FLASK_DEBUG=1` no `.env`. Nunca ligue o debug em
@@ -484,42 +489,65 @@ Nunca adicione credenciais reais diretamente no código ou no repositório.
 
 ---
 
-## 🎥 Demonstração
+## 📦 Exemplo de `requirements.txt`
 
-### Percurso completo — do cadastro ao atendimento
+```text
+Flask
+Flask-Mail
+Flask-SQLAlchemy
+Flask-WTF
+python-dotenv
+SQLAlchemy
+Werkzeug
+pytest
+```
 
-Uma gravação única cobrindo o sistema inteiro. Na primeira metade, uma usuária
-cria a conta do zero, faz o primeiro login, abre um chamado e encontra o
-próprio registro no histórico. Na segunda, o administrador entra, percorre os
-filtros de status, prioridade, responsável e setor, assume o chamado dela,
-registra duas atualizações técnicas, resolve, e passa pelo painel de usuários
-e pelos logs de auditoria — onde toda a sequência aparece registrada.
+Para gerar uma lista com as versões instaladas no seu ambiente:
 
-https://github.com/user-attachments/assets/6dac345c-8ee9-48d2-82b7-22a390e737ba
+```bash
+pip freeze > requirements.txt
+```
 
 ---
 
-### Demonstrações por perfil
+## 🔐 Exemplo de `.gitignore`
 
-> As quatro gravações abaixo são anteriores ao tema dark e mostram a interface
-> clara da versão original. O fluxo de trabalho continua o mesmo.
+```gitignore
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+instance/
+chamados.db
+.vscode/
+.env
+*.7z
+```
 
-**Usuário comum** — abre um chamado e acompanha o andamento do atendimento:
+---
+
+## 🎥 Demonstração
+
+### Usuário comum
+
+O usuário abre um chamado e acompanha o andamento do atendimento:
 
 https://github.com/user-attachments/assets/7660a055-f4c3-4855-9f9f-6203c0f05648
 
-**Técnico** — visualiza, assume, atualiza e resolve os chamados:
+### Técnico
+
+O técnico visualiza, assume, atualiza e resolve os chamados:
 
 https://github.com/user-attachments/assets/73b39249-7663-4c63-9df0-67f2d30e7677
 
-**Administrador** — possui as mesmas permissões operacionais do Técnico:
+### Administrador
+
+O administrador possui as mesmas permissões operacionais do Técnico:
 
 https://github.com/user-attachments/assets/cbdb6652-dc39-408b-9c74-736d42d47b45
 
-**Notificação por e-mail** — login, abertura de um novo chamado e a notificação
-automática chegando na caixa de entrada. No vídeo também aparece um retorno de
-erro (bounce) de um destinatário de teste com endereço inválido, mostrando que
-o próprio provedor avisa quando a entrega falha:
+**Notificação por e-mail** — login, abertura de um novo chamado e notificação automática chegando por e-mail. No vídeo também aparece um retorno de erro (bounce) de um dos destinatários de teste com endereço inválido — mostra que, quando o e-mail não pode ser entregue, o próprio provedor avisa sobre a falha:
 
 https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 
@@ -534,6 +562,22 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 - Deploy em ambiente de produção
 - Utilização de PostgreSQL em produção
 - Integração com serviços de armazenamento em nuvem
+
+---
+
+## 🔒 Segurança
+
+As seguintes práticas são aplicadas ou recomendadas no projeto:
+
+- Senhas armazenadas com hash
+- Credenciais mantidas em variáveis de ambiente
+- Controle de acesso baseado em perfil
+- Validação de sessão nas rotas protegidas
+- Proteção contra CSRF nos formulários
+- Arquivo `.env` ignorado pelo Git
+- Uso de uma chave secreta segura
+- Senha de aplicativo específica para envio de e-mails
+- Registro de logs e auditoria das ações administrativas
 
 ---
 

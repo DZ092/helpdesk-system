@@ -1,28 +1,28 @@
-import os
+import pytest
 
-# ATENÇÃO: estas variáveis precisam ser definidas ANTES de importar `app`.
-#
-# O objeto SQLAlchemy é criado no momento em que app.py é importado, e é nesse
-# momento que ele lê a URI do banco e monta a engine. A versão anterior deste
-# arquivo trocava SQLALCHEMY_DATABASE_URI dentro da fixture, ou seja, tarde
-# demais: a engine já apontava para instance/chamados.db, e o db.drop_all() do
-# teardown apagava as tabelas do banco REAL de desenvolvimento a cada `pytest`.
-os.environ["DATABASE_URL"] = "sqlite://"  # banco em memória
-os.environ.setdefault("SECRET_KEY", "chave-de-teste")
+from app import create_app
+from extensions import db
 
-import pytest  # noqa: E402
-
-from app import app as flask_app, db  # noqa: E402
+# Toda a configuração de teste vem daqui, não do ambiente. Antes da fábrica era
+# preciso definir DATABASE_URL *antes* de importar o app, porque o objeto
+# SQLAlchemy montava a engine no momento da importação — se a ordem escapasse,
+# a suíte rodava contra o banco de desenvolvimento e o drop_all do teardown
+# apagava dados de verdade. Com `create_app`, essa armadilha deixou de existir.
+CONFIG_DE_TESTE = {
+    "TESTING": True,
+    "SQLALCHEMY_DATABASE_URI": "sqlite://",  # banco em memória
+    "SECRET_KEY": "chave-de-teste",
+    "WTF_CSRF_ENABLED": False,  # formulários de teste não têm token
+    "MAIL_SUPPRESS_SEND": True,
+}
 
 
 @pytest.fixture
-def client():
-    flask_app.config["TESTING"] = True
-    flask_app.config["WTF_CSRF_ENABLED"] = False  # formulários de teste não têm token
-    flask_app.config["MAIL_SUPPRESS_SEND"] = True
-    flask_app.extensions["mail"].suppress = True
+def app():
+    """Uma aplicação nova, isolada, para cada teste."""
+    aplicacao = create_app(CONFIG_DE_TESTE)
 
-    with flask_app.app_context():
+    with aplicacao.app_context():
         # Trava de segurança: se por algum motivo a engine apontar para um
         # arquivo, o db.drop_all() do teardown apagaria um banco de verdade.
         assert str(db.engine.url) in ("sqlite://", "sqlite:///:memory:"), (
@@ -30,17 +30,23 @@ def client():
             "Abortando para não destruir um banco real."
         )
 
+        aplicacao.extensions["mail"].suppress = True
         db.create_all()
 
-        with flask_app.test_client() as client:
-            yield client
+        yield aplicacao
 
         db.session.remove()
         db.drop_all()
 
 
 @pytest.fixture
-def criar_usuario():
+def client(app):
+    with app.test_client() as cliente:
+        yield cliente
+
+
+@pytest.fixture
+def criar_usuario(app):
     """Cria um usuário direto no banco, com o perfil pedido.
 
     O cadastro público sempre gera perfil "Usuário", então promover alguém a
@@ -50,7 +56,7 @@ def criar_usuario():
     def _criar(nome="Fulano", email="fulano@teste.com", senha="senha-de-teste", tipo="Usuário"):
         from werkzeug.security import generate_password_hash
 
-        from app import Usuario
+        from models import Usuario
 
         usuario = Usuario(
             nome=nome,
