@@ -3,20 +3,22 @@
 from flask import Blueprint, flash, g, redirect, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from flask import url_for
+
 from auditoria import registrar_log
 from constantes import TAMANHO_MINIMO_SENHA
+from emails import enviar_email_redefinicao
 from extensions import db
 from models import Usuario
 from seguranca import (
+    gerar_token_redefinicao,
     impressao_sessao,
-    limpar_tentativas_login,
-    limpar_tentativas_senha,
     login_required,
-    registrar_tentativa_login,
-    registrar_tentativa_senha,
-    segundos_de_bloqueio,
-    segundos_de_bloqueio_login,
+    throttle_login,
+    throttle_redefinicao,
+    throttle_senha,
     usuario_atual,
+    usuario_do_token,
     validar_forca_senha,
 )
 from validacao import campo_obrigatorio
@@ -71,7 +73,7 @@ def login():
         email = request.form.get("email", "").strip().lower()
         senha = request.form.get("senha", "")
 
-        bloqueio = segundos_de_bloqueio_login(email)
+        bloqueio = throttle_login.segundos_de_bloqueio(email)
         if bloqueio:
             registrar_log("Login bloqueado", f"Excesso de tentativas para {email}")
             return render_template(
@@ -84,7 +86,7 @@ def login():
         ).scalar_one_or_none()
 
         if usuario and check_password_hash(usuario.senha, senha):
-            limpar_tentativas_login(email)
+            throttle_login.limpar(email)
             # Troca o identificador de sessão no login para evitar fixação de sessão.
             session.clear()
             session["usuario_id"] = usuario.id
@@ -94,7 +96,7 @@ def login():
             registrar_log("Login realizado")
             return redirect("/dashboard")
 
-        registrar_tentativa_login(email)
+        throttle_login.registrar(email)
 
         # Mensagem genérica de propósito: dizer "e-mail não existe" permitiria
         # descobrir quais endereços estão cadastrados no sistema.
@@ -115,7 +117,7 @@ def alterar_senha():
     usuario = usuario_atual()
 
     if request.method == "POST":
-        bloqueio = segundos_de_bloqueio(usuario.id)
+        bloqueio = throttle_senha.segundos_de_bloqueio(usuario.id)
         if bloqueio:
             registrar_log(
                 "Troca de senha bloqueada",
@@ -133,7 +135,7 @@ def alterar_senha():
         # Confirmar a senha atual impede que alguém com a sessão sequestrada
         # (ou um computador destravado) troque a senha e tome a conta.
         if not check_password_hash(usuario.senha, senha_atual):
-            registrar_tentativa_senha(usuario.id)
+            throttle_senha.registrar(usuario.id)
             registrar_log("Senha atual incorreta", f"Tentativa de troca por {usuario.email}")
             return render_template("alterar_senha.html", erro="Senha atual incorreta.")
 
@@ -154,7 +156,7 @@ def alterar_senha():
         usuario.senha = generate_password_hash(nova_senha)
         db.session.commit()
 
-        limpar_tentativas_senha(usuario.id)
+        throttle_senha.limpar(usuario.id)
         registrar_log("Senha alterada", f"Senha alterada por {usuario.email}")
 
         # A assinatura da sessão deriva do hash da senha, então trocar a senha
@@ -170,3 +172,77 @@ def alterar_senha():
         return redirect("/dashboard")
 
     return render_template("alterar_senha.html")
+
+
+@auth.route("/esqueci-senha", methods=["GET", "POST"])
+def esqueci_senha():
+    """Pede o e-mail e dispara o link de redefinição."""
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+
+        bloqueio = throttle_redefinicao.segundos_de_bloqueio(email)
+        if bloqueio:
+            return render_template(
+                "esqueci_senha.html",
+                erro=f"Pedidos demais para esse e-mail. Tente de novo em {bloqueio // 60 + 1} minuto(s).",
+            )
+
+        throttle_redefinicao.registrar(email)
+
+        usuario = db.session.execute(
+            db.select(Usuario).where(Usuario.email == email)
+        ).scalar_one_or_none()
+
+        if usuario:
+            link = url_for("auth.redefinir_senha", token=gerar_token_redefinicao(usuario), _external=True)
+            enviar_email_redefinicao(usuario, link)
+            registrar_log("Redefinição de senha solicitada", f"Link enviado para {usuario.email}")
+        else:
+            registrar_log("Redefinição de senha solicitada", f"E-mail não cadastrado: {email}")
+
+        # A resposta é a mesma nos dois casos. Dizer "esse e-mail não existe"
+        # transformaria a tela num verificador de quem tem conta no sistema.
+        return render_template("esqueci_senha.html", enviado=True)
+
+    return render_template("esqueci_senha.html")
+
+
+@auth.route("/redefinir-senha/<token>", methods=["GET", "POST"])
+def redefinir_senha(token):
+    """Valida o link recebido por e-mail e troca a senha."""
+    usuario, motivo = usuario_do_token(token)
+
+    if usuario is None:
+        return render_template("redefinir_senha.html", motivo=motivo)
+
+    if request.method == "POST":
+        nova_senha = request.form.get("nova_senha", "")
+        confirmacao = request.form.get("confirmacao", "")
+
+        if nova_senha != confirmacao:
+            return render_template(
+                "redefinir_senha.html", token=token, nome=usuario.nome,
+                erro="A nova senha e a confirmação não conferem.",
+            )
+
+        problema = validar_forca_senha(nova_senha, usuario)
+        if problema:
+            return render_template(
+                "redefinir_senha.html", token=token, nome=usuario.nome, erro=problema
+            )
+
+        usuario.senha = generate_password_hash(nova_senha)
+        db.session.commit()
+
+        # Trocar o hash invalida o próprio token usado, os links antigos ainda
+        # na caixa de entrada e as sessões abertas em outros dispositivos.
+        throttle_senha.limpar(usuario.id)
+        throttle_login.limpar(usuario.email)
+        registrar_log("Senha redefinida", f"Redefinição por link para {usuario.email}")
+
+        # Sem login automático: quem abriu o link prova que sabe a senha nova
+        # entrando com ela.
+        flash("Senha redefinida com sucesso. Faça login com a nova senha.")
+        return redirect("/login")
+
+    return render_template("redefinir_senha.html", token=token, nome=usuario.nome)

@@ -11,14 +11,18 @@ import time
 from functools import wraps
 
 from flask import current_app, flash, g, redirect, session
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 from constantes import (
     JANELA_BLOQUEIO_LOGIN_SEGUNDOS,
+    JANELA_PEDIDOS_REDEFINICAO_SEGUNDOS,
     JANELA_BLOQUEIO_SEGUNDOS,
+    MAX_PEDIDOS_REDEFINICAO,
     MAX_TENTATIVAS_LOGIN,
     MAX_TENTATIVAS_SENHA,
     SENHAS_PROIBIDAS,
     TAMANHO_MINIMO_SENHA,
+    VALIDADE_TOKEN_SENHA_SEGUNDOS,
 )
 from extensions import db
 from models import Usuario
@@ -142,66 +146,96 @@ def validar_forca_senha(senha, usuario=None):
     return None
 
 
-# Tentativas erradas da senha atual, por usuário: {id: [timestamps]}.
-# Guardado em memória de propósito — é simples e suficiente para um processo
-# único. Num deploy com vários workers, isso precisa ir para Redis ou banco
-# (ver a recomendação de rate limiting no README).
-_tentativas_senha = {}
+class Throttle:
+    """Contador de tentativas em memória, com janela deslizante.
+
+    Guardado no processo de propósito: é simples e suficiente enquanto a
+    aplicação roda num processo só. Num deploy com vários workers isso precisa
+    ir para Redis ou banco — está registrado como pendência no README.
+    """
+
+    def __init__(self, maximo, janela_segundos):
+        self.maximo = maximo
+        self.janela = janela_segundos
+        self._registros = {}
+
+    def _recentes(self, chave):
+        agora = time.monotonic()
+        tentativas = [t for t in self._registros.get(chave, []) if agora - t < self.janela]
+        self._registros[chave] = tentativas
+        return agora, tentativas
+
+    def registrar(self, chave):
+        _, tentativas = self._recentes(chave)
+        tentativas.append(time.monotonic())
+
+    def segundos_de_bloqueio(self, chave):
+        """Quantos segundos faltam para liberar. Zero se não estiver bloqueado."""
+        agora, tentativas = self._recentes(chave)
+        if len(tentativas) < self.maximo:
+            return 0
+        return int(self.janela - (agora - tentativas[0])) + 1
+
+    def limpar(self, chave):
+        self._registros.pop(chave, None)
 
 
-def registrar_tentativa_senha(usuario_id):
-    agora = time.monotonic()
-    tentativas = [
-        t for t in _tentativas_senha.get(usuario_id, []) if agora - t < JANELA_BLOQUEIO_SEGUNDOS
-    ]
-    tentativas.append(agora)
-    _tentativas_senha[usuario_id] = tentativas
+# Senha atual errada na troca de senha, por usuário.
+throttle_senha = Throttle(MAX_TENTATIVAS_SENHA, JANELA_BLOQUEIO_SEGUNDOS)
+
+# Senha errada no login, por e-mail — o throttle precisa existir antes de haver
+# sessão, por isso a chave é o e-mail e não o id.
+throttle_login = Throttle(MAX_TENTATIVAS_LOGIN, JANELA_BLOQUEIO_LOGIN_SEGUNDOS)
+
+# Pedidos de redefinição por e-mail, para o formulário público não virar uma
+# forma de disparar mensagens em massa contra uma caixa de entrada.
+throttle_redefinicao = Throttle(MAX_PEDIDOS_REDEFINICAO, JANELA_PEDIDOS_REDEFINICAO_SEGUNDOS)
 
 
-def segundos_de_bloqueio(usuario_id):
-    """Quantos segundos faltam para liberar. Zero se não estiver bloqueado."""
-    agora = time.monotonic()
-    tentativas = [
-        t for t in _tentativas_senha.get(usuario_id, []) if agora - t < JANELA_BLOQUEIO_SEGUNDOS
-    ]
-    _tentativas_senha[usuario_id] = tentativas
+# ==============================================================================
+# TOKEN DE REDEFINIÇÃO DE SENHA
+# ==============================================================================
+def _serializador():
+    """Assinador dos links de redefinição.
 
-    if len(tentativas) < MAX_TENTATIVAS_SENHA:
-        return 0
-    return int(JANELA_BLOQUEIO_SEGUNDOS - (agora - tentativas[0])) + 1
-
-
-def limpar_tentativas_senha(usuario_id):
-    _tentativas_senha.pop(usuario_id, None)
+    O `salt` isola este uso: um token assinado aqui não vale para nenhuma outra
+    finalidade que use a mesma SECRET_KEY.
+    """
+    return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt="redefinir-senha")
 
 
-# Tentativas de login com senha errada, por e-mail: {email: [timestamps]}.
-# Mesma limitação do dicionário acima: em memória, serve para um processo
-# único (ver a recomendação de rate limiting no README).
-_tentativas_login = {}
+def gerar_token_redefinicao(usuario):
+    """Token que identifica o usuário e morre assim que a senha muda.
+
+    Além do id, o token carrega a impressão da sessão — um HMAC do hash da
+    senha atual. Como redefinir a senha muda esse hash, o próprio link usado
+    deixa de valer, e o mesmo acontece com qualquer link antigo ainda no
+    e-mail. É o que dá o uso único sem precisar de tabela de tokens.
+    """
+    return _serializador().dumps({"id": usuario.id, "impressao": impressao_sessao(usuario)})
 
 
-def registrar_tentativa_login(email):
-    agora = time.monotonic()
-    tentativas = [
-        t for t in _tentativas_login.get(email, []) if agora - t < JANELA_BLOQUEIO_LOGIN_SEGUNDOS
-    ]
-    tentativas.append(agora)
-    _tentativas_login[email] = tentativas
+def usuario_do_token(token, validade_segundos=None):
+    """Devolve (usuario, None) se o token servir, ou (None, motivo) se não.
 
+    Motivos: "expirado" (passou da validade), "usado" (a senha já mudou desde
+    que o link foi emitido) e "invalido" (assinatura quebrada ou conta apagada).
+    """
+    if validade_segundos is None:
+        validade_segundos = VALIDADE_TOKEN_SENHA_SEGUNDOS
 
-def segundos_de_bloqueio_login(email):
-    """Quantos segundos faltam para liberar. Zero se não estiver bloqueado."""
-    agora = time.monotonic()
-    tentativas = [
-        t for t in _tentativas_login.get(email, []) if agora - t < JANELA_BLOQUEIO_LOGIN_SEGUNDOS
-    ]
-    _tentativas_login[email] = tentativas
+    try:
+        dados = _serializador().loads(token, max_age=validade_segundos)
+    except SignatureExpired:
+        return None, "expirado"
+    except BadSignature:
+        return None, "invalido"
 
-    if len(tentativas) < MAX_TENTATIVAS_LOGIN:
-        return 0
-    return int(JANELA_BLOQUEIO_LOGIN_SEGUNDOS - (agora - tentativas[0])) + 1
+    usuario = db.session.get(Usuario, dados.get("id"))
+    if usuario is None:
+        return None, "invalido"
 
+    if not hmac.compare_digest(dados.get("impressao", ""), impressao_sessao(usuario)):
+        return None, "usado"
 
-def limpar_tentativas_login(email):
-    _tentativas_login.pop(email, None)
+    return usuario, None
