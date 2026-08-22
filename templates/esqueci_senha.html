@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Login - Help Desk</title>
+<title>Esqueci minha senha - Help Desk</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
@@ -20,18 +20,25 @@
 <div class="container">
 
 
-<h1>🔐 Login</h1>
+<h1>🔑 Esqueci minha senha</h1>
 
 <p class="subtitulo">
-Acesse o painel de suporte técnico
+Informe seu e-mail e enviaremos um link para criar uma nova senha
 </p>
 
 
-{% with mensagens = get_flashed_messages() %}
-{% if mensagens %}
-<p class="sucesso">{{ mensagens[0] }}</p>
-{% endif %}
-{% endwith %}
+{% if enviado %}
+
+<p class="sucesso">
+Se houver uma conta com esse e-mail, o link de redefinição já está a caminho.
+Ele vale por 1 hora.
+</p>
+
+<p class="link-secundario">
+Não recebeu? Confira a caixa de spam antes de pedir de novo.
+</p>
+
+{% else %}
 
 
 {% if erro %}
@@ -45,7 +52,7 @@ Acesse o painel de suporte técnico
 
 <div class="campo">
 
-<label for="email">E-mail</label>
+<label for="email">E-mail da conta</label>
 
 <div class="campo-input">
 <span class="icone-campo" aria-hidden="true">
@@ -62,44 +69,20 @@ required>
 </div>
 
 
-
-<div class="campo">
-
-<label for="senha">Senha</label>
-
-<div class="campo-input">
-<span class="icone-campo" aria-hidden="true">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-</span>
-<input
-id="senha"
-type="password"
-name="senha"
-placeholder="Sua senha"
-required>
-</div>
-
-</div>
-
-
-
 <button class="botao" type="submit">
 
-Entrar
+Enviar link de redefinição
 
 </button>
 
 
 </form>
 
-
-<p class="link-secundario">
-<a href="/esqueci-senha">Esqueci minha senha</a>
-</p>
+{% endif %}
 
 
 <p class="link-secundario">
-Não tem conta? <a href="/cadastro">Cadastre-se</a>
+Lembrou a senha? <a href="/login">Voltar ao login</a>
 </p>
 
 

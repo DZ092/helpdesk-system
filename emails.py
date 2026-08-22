@@ -76,3 +76,36 @@ def notificar_tecnicos_novo_chamado(chamado):
         args=(current_app._get_current_object(), mensagem),
         daemon=True,
     ).start()
+
+
+def enviar_email_redefinicao(usuario, link):
+    """Manda o link de redefinição para o dono da conta.
+
+    O corpo não repete a senha nem diz o que fazer se a pessoa não pediu além
+    de "ignore": qualquer instrução extra é espaço para um golpe se copiar.
+    """
+    if not current_app.config.get("MAIL_USERNAME"):
+        current_app.logger.warning(
+            "MAIL_USERNAME não configurado — e-mail de redefinição não enviado."
+        )
+        return
+
+    mensagem = Message(
+        subject="Redefinição de senha — Help Desk",
+        recipients=[usuario.email],
+        body=(
+            f"Olá, {usuario.nome}.\n\n"
+            "Recebemos um pedido para redefinir a senha da sua conta no Help Desk.\n"
+            "Abra o endereço abaixo para escolher uma nova senha:\n\n"
+            f"{link}\n\n"
+            "O link vale por 1 hora e só pode ser usado uma vez.\n"
+            "Se não foi você que pediu, ignore esta mensagem: nada muda até que "
+            "o link seja aberto e uma nova senha seja confirmada.\n"
+        ),
+    )
+
+    threading.Thread(
+        target=_enviar_em_segundo_plano,
+        args=(current_app._get_current_object(), mensagem),
+        daemon=True,
+    ).start()
