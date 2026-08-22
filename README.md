@@ -107,10 +107,13 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 31 testes em pytest cobrindo autenticação, controle de acesso por
+  Suíte com 62 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
   responsável do chamado. Boa parte deles são testes de regressão, escritos para
-  que falhas já corrigidas não voltem despercebidas. A suíte roda sozinha no
+  que falhas já corrigidas não voltem despercebidas. Um segundo arquivo,
+  `test_rotas.py`, cobre o outro lado: visita todas as telas e o ciclo completo
+  de um chamado, pegando o tipo de quebra que uma refatoração causa sem violar
+  nenhuma regra de negócio. A suíte roda sozinha no
   GitHub Actions a cada push e a cada pull request para o `main` — o selo no
   topo deste README mostra o resultado da última execução.
 
@@ -193,7 +196,8 @@ helpdesk-system/
 │
 └── tests/
     ├── conftest.py
-    └── test_app.py
+    ├── test_app.py
+    └── test_rotas.py
 ```
 
 > A pasta `instance/` e o arquivo `chamados.db` são criados automaticamente na
@@ -379,7 +383,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **31 passed**.
+Esperado: **62 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
