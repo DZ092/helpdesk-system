@@ -546,6 +546,10 @@ https://github.com/user-attachments/assets/cbdb6652-dc39-408b-9c74-736d42d47b45
 
 https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 
+### ATUALIZAÇÃO
+
+https://github.com/user-attachments/assets/6dac345c-8ee9-48d2-82b7-22a390e737ba
+
 ---
 
 ## 🔧 Melhorias futuras
