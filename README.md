@@ -1,8 +1,8 @@
 # 🖥️ Help Desk System
 
-![tests](https://github.com/DZ092/helpdesk-system/actions/workflows/tests.yml/badge.svg)
+[![Acessar a aplicação](https://img.shields.io/badge/Acessar_a_aplica%C3%A7%C3%A3o-3B82F6?style=for-the-badge)](https://helpdesk-system-cci1.onrender.com/login)
 
-### 🔗 [Acessar a aplicação](https://helpdesk-system-cci1.onrender.com/login)
+[![tests](https://github.com/DZ092/helpdesk-system/actions/workflows/tests.yml/badge.svg)](https://github.com/DZ092/helpdesk-system/actions/workflows/tests.yml)
 
 > Hospedada em plano gratuito: o serviço hiberna depois de alguns minutos sem
 > acesso, então o primeiro carregamento pode levar cerca de um minuto. Os
