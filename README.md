@@ -88,7 +88,8 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   tabelas se reorganizam em cartões empilhados (rótulo + valor) em vez de
   colunas apertadas; os filtros e formulários passam a ocupar a largura
   inteira em coluna única, e os botões de navegação ganham área de toque
-  maior.
+  maior. As tabelas ficam dentro de um container que rola sozinho quando o
+  conteúdo não cabe, então nenhuma tela empurra a página inteira para o lado.
 
 - **Tema dark**  
   Interface escura em todas as telas. As cores ficam em variáveis CSS
