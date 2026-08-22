@@ -442,3 +442,21 @@ def test_redefinicao_recusa_senha_fraca(client, criar_usuario):
     assert client.post(
         "/login", data={"email": "fulano@teste.com", "senha": "senha-de-teste"}
     ).status_code == 302
+
+
+# ==============================================================================
+# CONFIGURAÇÃO DO BANCO
+# ==============================================================================
+def test_url_do_banco_corrige_o_esquema_do_postgres(monkeypatch):
+    """Provedores entregam `postgres://`, esquema que o SQLAlchemy 2 removeu."""
+    from app import _url_do_banco
+
+    monkeypatch.setenv("DATABASE_URL", "postgres://usuario:senha@host/banco")
+    assert _url_do_banco() == "postgresql://usuario:senha@host/banco"
+
+
+def test_url_do_banco_nao_mexe_no_sqlite(monkeypatch):
+    from app import _url_do_banco
+
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    assert _url_do_banco() == "sqlite:///chamados.db"
