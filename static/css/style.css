@@ -298,6 +298,22 @@ h1 {
     font-weight: bold;
 }
 
+.token-gerado {
+    background: var(--superficie-alt);
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 20px;
+    text-align: center;
+    word-break: break-all;
+}
+
+.token-gerado code {
+    color: var(--texto);
+    font-family: "Courier New", monospace;
+    font-size: 0.95rem;
+}
+
 /* LINK SECUNDÁRIO (login/cadastro) */
 .link-secundario {
     text-align: center;

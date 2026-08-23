@@ -7,10 +7,11 @@ de perfil, a política de senha e os três limitadores de tentativas.
 
 import hashlib
 import hmac
+import secrets
 from datetime import timedelta
 from functools import wraps
 
-from flask import current_app, flash, g, redirect, session
+from flask import current_app, flash, g, jsonify, redirect, request, session
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 from constantes import (
@@ -274,3 +275,65 @@ def usuario_do_token(token, validade_segundos=None):
         return None, "usado"
 
     return usuario, None
+
+
+# ==============================================================================
+# TOKEN DE API
+# ==============================================================================
+def _hash_token_api(token):
+    """SHA-256 do token, o que fica gravado no banco.
+
+    Mesmo raciocínio da senha: o banco guarda algo que serve para *conferir*
+    o token, não o token em si. Diferente da senha, aqui um hash simples basta
+    — o token já nasce com entropia alta (32 bytes aleatórios), então não há
+    o risco de dicionário que justifica o custo do bcrypt/scrypt numa senha
+    escolhida por humano.
+    """
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def gerar_token_api(usuario):
+    """Cria um token novo para o usuário e devolve o valor em texto puro.
+
+    É a única vez que o valor bruto existe: só o hash é gravado. Gerar de novo
+    substitui o anterior — não há como ter dois tokens válidos ao mesmo tempo,
+    então revogar é só apagar ou trocar.
+    """
+    token = secrets.token_urlsafe(32)
+    usuario.token_api_hash = _hash_token_api(token)
+    db.session.commit()
+    return token
+
+
+def usuario_do_token_api(token):
+    """Usuário dono do token, ou None se o token não existir ou não bater."""
+    if not token:
+        return None
+    return db.session.execute(
+        db.select(Usuario).where(Usuario.token_api_hash == _hash_token_api(token))
+    ).scalar_one_or_none()
+
+
+def token_api_required(f):
+    """Autenticação da API: um `Authorization: Bearer <token>` válido.
+
+    Não usa cookie de sessão de propósito — um script ou um app externo não
+    tem navegador para guardar cookie, e reaproveitar a sessão amarraria a API
+    a estar logado no mesmo browser. O erro sai em JSON, como o resto da API,
+    nunca um redirecionamento para `/login`: quem chama aqui é código, não uma
+    pessoa navegando.
+    """
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        cabecalho = request.headers.get("Authorization", "")
+        token = cabecalho[7:] if cabecalho.startswith("Bearer ") else None
+
+        usuario = usuario_do_token_api(token)
+        if usuario is None:
+            return jsonify(erro="Token de API ausente ou inválido."), 401
+
+        g.usuario_api = usuario
+        return f(*args, **kwargs)
+
+    return decorated_function

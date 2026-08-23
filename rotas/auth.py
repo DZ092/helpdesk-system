@@ -11,6 +11,7 @@ from emails import enviar_email_redefinicao
 from extensions import db
 from models import Usuario
 from seguranca import (
+    gerar_token_api,
     gerar_token_redefinicao,
     impressao_sessao,
     login_required,
@@ -172,6 +173,25 @@ def alterar_senha():
         return redirect("/dashboard")
 
     return render_template("alterar_senha.html")
+
+
+@auth.route("/meu-token", methods=["GET", "POST"])
+@login_required
+def meu_token():
+    """Gera (ou substitui) o token que autentica este usuário na API.
+
+    O valor bruto só existe na resposta deste POST — o banco guarda apenas o
+    hash (ver `gerar_token_api`). Fechou a página sem copiar, o jeito de ver o
+    token de novo é gerar outro, o que invalida o anterior.
+    """
+    usuario = usuario_atual()
+
+    if request.method == "POST":
+        token = gerar_token_api(usuario)
+        registrar_log("Token de API gerado", f"Token gerado por {usuario.email}")
+        return render_template("meu_token.html", token_gerado=token)
+
+    return render_template("meu_token.html", tem_token=usuario.token_api_hash is not None)
 
 
 @auth.route("/esqueci-senha", methods=["GET", "POST"])
