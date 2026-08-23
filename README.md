@@ -88,6 +88,14 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - **Controle de acesso**  
   Apenas Técnicos e Administradores podem assumir chamados, alterar status, adicionar comentários internos e acessar "Meus Chamados". Apenas Administradores podem acessar o painel administrativo e os logs de auditoria.
 
+- **API REST somente leitura**  
+  Além das telas, os chamados podem ser consultados em JSON por um script ou
+  aplicativo externo. Cada usuário gera o próprio token em "Meu token de API"
+  e o envia no cabeçalho `Authorization: Bearer <token>`. Cobre listagem (com
+  os mesmos filtros de status, prioridade e setor da tela, e paginação) e
+  detalhe com os comentários. Abrir chamado, mudar status e comentar continuam
+  só pela interface — ver "Melhorias futuras".
+
 - **Interface responsiva**  
   Layout adaptado para uso em celular. Nas telas de dashboard, histórico de
   chamados, "Meus Chamados", painel administrativo e logs de auditoria, as
@@ -113,7 +121,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 67 testes em pytest cobrindo autenticação, controle de acesso por
+  Suíte com 79 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
   responsável do chamado. Boa parte deles são testes de regressão, escritos para
   que falhas já corrigidas não voltem despercebidas. Um segundo arquivo,
@@ -179,7 +187,8 @@ helpdesk-system/
 ├── migrations/
 │   ├── versions/
 │   │   ├── 169fedd696d9_cria_o_esquema_inicial.py
-│   │   └── 5995b4db02ca_adiciona_a_tabela_de_tentativas_de_.py
+│   │   ├── 5995b4db02ca_adiciona_a_tabela_de_tentativas_de_.py
+│   │   └── d141e98118e1_adiciona_o_token_de_api_do_usuario.py
 │   ├── alembic.ini
 │   ├── env.py
 │   ├── README
@@ -188,6 +197,7 @@ helpdesk-system/
 ├── rotas/
 │   ├── __init__.py
 │   ├── admin.py
+│   ├── api.py
 │   ├── auth.py
 │   └── chamados.py
 │
@@ -209,10 +219,12 @@ helpdesk-system/
 │   ├── admin_usuarios.html
 │   ├── admin_logs.html
 │   ├── alterar_senha.html
+│   ├── meu_token.html
 │   └── meus_chamados.html
 │
 └── tests/
     ├── conftest.py
+    ├── test_api.py
     ├── test_app.py
     └── test_rotas.py
 ```
@@ -402,7 +414,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **67 passed**.
+Esperado: **79 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
@@ -551,6 +563,15 @@ Nunca adicione credenciais reais diretamente no código ou no repositório.
   senha, não entrar: quem redefine prova que sabe a senha nova usando-a no
   login.
 - **Senhas com hash `scrypt`** (padrão do Werkzeug), nunca em texto puro.
+- **Token de API guardado como hash, nunca em texto puro.** Mesmo raciocínio
+  da senha: um vazamento do banco não deve entregar nada que sirva para
+  autenticar. O valor bruto só existe uma vez, na resposta de quem acabou de
+  gerá-lo — a tela nem oferece como reexibi-lo depois.
+- **A API não usa cookie de sessão, de propósito.** Um script ou app externo
+  não tem navegador para guardar cookie, e é o cookie — enviado sozinho pelo
+  navegador a qualquer origem — que torna um endpoint vulnerável a CSRF. Sem
+  esse mecanismo ambiente, o token de API troca de papel com o cookie e a
+  proteção de CSRF é dispensada só nessas rotas.
 
 ---
 
@@ -599,7 +620,7 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 
 - Exportação de relatórios em PDF ou Excel
 - Upload de anexos nos chamados
-- API REST
+- API REST de escrita (abrir chamado, mudar status, comentar)
 - Integração com serviços de armazenamento em nuvem
 
 ---

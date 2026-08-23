@@ -15,6 +15,7 @@ from flask import Flask, g
 from constantes import FUSO_EXIBICAO
 from extensions import csrf, db, mail, migrate
 from rotas.admin import admin
+from rotas.api import api
 from rotas.auth import auth
 from rotas.chamados import chamados
 from seguranca import usuario_atual
@@ -120,6 +121,14 @@ def create_app(ajustes=None):
     app.register_blueprint(auth)
     app.register_blueprint(chamados)
     app.register_blueprint(admin)
+    app.register_blueprint(api)
+
+    # A API se autentica por token no cabeçalho, não por cookie de sessão — e é
+    # a sessão em cookie que torna um endpoint vulnerável a CSRF (o navegador
+    # anexa o cookie sozinho a qualquer requisição, de qualquer origem). Sem
+    # esse mecanismo ambiente, o token de CSRF não protege nada aqui e só
+    # atrapalharia um cliente que nunca terá acesso a ele.
+    csrf.exempt(api)
 
     _registrar_ganchos(app)
 

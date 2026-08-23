@@ -19,6 +19,7 @@ ROTAS_INTERNAS = [
     "/chamados",
     "/meus-chamados",
     "/senha",
+    "/meu-token",
     "/admin/usuarios",
     "/admin/logs",
 ]

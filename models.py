@@ -46,6 +46,11 @@ class Usuario(db.Model):
     senha = db.Column(db.String(255), nullable=False)
     tipo_usuario = db.Column(db.String(20), nullable=False, default="Usuário")
 
+    # Hash do token de API, nunca o token em si — mesmo raciocínio da senha:
+    # um vazamento do banco não deve entregar nada que sirva para autenticar.
+    # É None enquanto o usuário nunca gerou um token.
+    token_api_hash = db.Column(db.String(64), unique=True, nullable=True, index=True)
+
     @property
     def eh_tecnico(self):
         return self.tipo_usuario in PERFIS_TECNICOS

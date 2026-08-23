@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Meu token de API - Help Desk</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<div class="usuario-logado">
+Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }})
+<a href="/logout" class="sair">Sair</a>
+</div>
+
+
+<h1>🔗 Meu token de API</h1>
+
+<p class="subtitulo">
+Usado por scripts e aplicativos externos para ler seus chamados sem passar
+pelo navegador
+</p>
+
+
+<a class="voltar" href="/dashboard">
+    ← Voltar ao Dashboard
+</a>
+
+
+{% if token_gerado %}
+
+<p class="sucesso">
+Token gerado. Copie agora — ele só aparece esta vez, e gerar um novo substitui
+este.
+</p>
+
+<p class="token-gerado"><code>{{ token_gerado }}</code></p>
+
+<p class="vazio">
+Envie-o no cabeçalho <code>Authorization: Bearer {{ token_gerado }}</code> das
+requisições à API.
+</p>
+
+{% else %}
+
+{% if tem_token %}
+<p class="vazio">
+Você já tem um token gerado. O valor não pode ser mostrado de novo — gere um
+novo se precisar dele outra vez, o que invalida o atual.
+</p>
+{% else %}
+<p class="vazio">
+Você ainda não gerou nenhum token.
+</p>
+{% endif %}
+
+<form method="POST" class="formulario">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+<button class="botao" type="submit">
+
+{{ "Gerar novo token" if tem_token else "Gerar token" }}
+
+</button>
+
+</form>
+
+{% endif %}
+
+
+</div>
+
+
+</body>
+
+</html>
