@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from flask import Flask, g
 
 from constantes import FUSO_EXIBICAO
-from extensions import csrf, db, mail
+from extensions import csrf, db, mail, migrate
 from rotas.admin import admin
 from rotas.auth import auth
 from rotas.chamados import chamados
@@ -111,6 +111,12 @@ def create_app(ajustes=None):
     mail.init_app(app)
     csrf.init_app(app)
 
+    # Os padrões do Flask-Migrate já servem aqui: `render_as_batch` recria a
+    # tabela quando o SQLite não sabe executar o ALTER pedido (ele só aceita
+    # uma fração do comando), e `compare_type` faz o autogenerate enxergar
+    # troca de tipo de coluna, não só coluna que entrou ou saiu.
+    migrate.init_app(app, db)
+
     app.register_blueprint(auth)
     app.register_blueprint(chamados)
     app.register_blueprint(admin)
@@ -123,9 +129,11 @@ def create_app(ajustes=None):
 if __name__ == "__main__":
     aplicacao = create_app()
 
-    with aplicacao.app_context():
-        db.create_all()
-
+    # O esquema do banco pertence às migrações. Numa cópia recém-clonada, rode
+    # `flask db upgrade` uma vez antes de subir a aplicação: criar as tabelas
+    # aqui com `db.create_all()` deixaria o banco sem registro de versão, e a
+    # primeira migração futura tentaria criar o que já existe.
+    #
     # O debugger do Werkzeug permite execução remota de código: ele só pode
     # ligar quando explicitamente pedido pelo ambiente, nunca por padrão.
     aplicacao.run(debug=os.environ.get("FLASK_DEBUG", "0") == "1")

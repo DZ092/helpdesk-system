@@ -1,16 +1,22 @@
+alembic==1.19.1
 blinker==1.9.0
 click==8.4.2
 colorama==0.4.6
 Flask==3.1.3
 Flask-Mail==0.10.0
+Flask-Migrate==4.1.0
 Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.2
 greenlet==3.5.4
 itsdangerous==2.2.0
 Jinja2==3.1.6
+Mako==1.4.1
 MarkupSafe==3.0.3
 python-dotenv==1.2.2
-psycopg2-binary==2.9.10
+# Driver do PostgreSQL, usado só em produção. Fica de fora do Windows: não há
+# wheel para o Python 3.14 nessa plataforma e compilar exigiria o PostgreSQL
+# instalado na máquina. No Render e no CI, que são Linux, ele entra normalmente.
+psycopg2-binary==2.9.10; sys_platform != "win32"
 SQLAlchemy==2.0.51
 tzdata==2025.2
 typing_extensions==4.16.0
