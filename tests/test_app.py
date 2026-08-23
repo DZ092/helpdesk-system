@@ -460,3 +460,41 @@ def test_url_do_banco_nao_mexe_no_sqlite(monkeypatch):
 
     monkeypatch.delenv("DATABASE_URL", raising=False)
     assert _url_do_banco() == "sqlite:///chamados.db"
+
+
+def test_migracoes_reproduzem_o_esquema_dos_modelos(tmp_path):
+    """As migrações versionadas geram exatamente o esquema descrito em models.py.
+
+    É o teste que pega o esquecimento clássico ao trabalhar com migrações: mexer
+    num modelo e não gerar o arquivo de migração correspondente. Os outros
+    testes não pegariam — eles criam as tabelas direto dos modelos, então
+    passariam felizes. Quem quebraria seria a produção, onde o esquema vem
+    exclusivamente das migrações.
+    """
+    from alembic.autogenerate import compare_metadata
+    from alembic.migration import MigrationContext
+    from flask_migrate import upgrade
+
+    from app import create_app
+    from extensions import db
+
+    banco = tmp_path / "migracoes.db"
+    aplicacao = create_app(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": f"sqlite:///{banco}",
+            "SECRET_KEY": "chave-de-teste",
+        }
+    )
+
+    with aplicacao.app_context():
+        upgrade()  # aplica a pasta migrations/ do zero neste banco temporário
+
+        with db.engine.connect() as conexao:
+            diferencas = compare_metadata(MigrationContext.configure(conexao), db.metadata)
+
+    assert diferencas == [], (
+        "O esquema dos modelos e o das migrações divergem: "
+        f"{diferencas}. Gere a migração que falta com "
+        '`flask db migrate -m "descreva a mudanca"` e versione o arquivo criado.'
+    )

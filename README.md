@@ -113,7 +113,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 64 testes em pytest cobrindo autenticação, controle de acesso por
+  Suíte com 65 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
   responsável do chamado. Boa parte deles são testes de regressão, escritos para
   que falhas já corrigidas não voltem despercebidas. Um segundo arquivo,
@@ -131,6 +131,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - Flask
 - Flask-SQLAlchemy
 - Flask-Mail
+- Flask-Migrate
 - Flask-WTF
 - Python-dotenv
 - SQLite
@@ -174,6 +175,14 @@ helpdesk-system/
 │
 ├── instance/
 │   └── chamados.db
+│
+├── migrations/
+│   ├── versions/
+│   │   └── 169fedd696d9_cria_o_esquema_inicial.py
+│   ├── alembic.ini
+│   ├── env.py
+│   ├── README
+│   └── script.py.mako
 │
 ├── rotas/
 │   ├── __init__.py
@@ -296,26 +305,28 @@ SECRET_KEY=resultado-gerado-pelo-comando
 
 ### 5. Inicialize o banco de dados
 
-Caso o projeto ainda não possua o arquivo `chamados.db`, execute:
+O esquema é versionado com o **Flask-Migrate**: em vez de criar as tabelas na
+mão, aplique as migrações que já vieram no repositório.
 
 ```bash
-python
+flask db upgrade
 ```
 
-Dentro do terminal interativo do Python, execute:
+O comando cria o `instance/chamados.db` com todas as tabelas e grava dentro dele
+qual migração foi aplicada. É o mesmo comando em qualquer máquina e em produção
+— ninguém precisa lembrar a ordem dos `CREATE TABLE`.
 
-```python
-from app import app, db
-
-with app.app_context():
-    db.create_all()
-```
-
-Depois, encerre o terminal:
-
-```python
-exit()
-```
+> **Mexeu em algum modelo do `models.py`?** Gere a migração correspondente e
+> aplique-a:
+>
+> ```bash
+> flask db migrate -m "descreva a mudanca"
+> flask db upgrade
+> ```
+>
+> O arquivo criado em `migrations/versions/` **entra no commit** — é ele que
+> leva a mesma mudança ao banco de produção no próximo deploy. A suíte tem um
+> teste que falha justamente quando um modelo muda e a migração não vem junto.
 
 ---
 
@@ -390,7 +401,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **64 passed**.
+Esperado: **65 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
@@ -419,6 +430,11 @@ e são preenchidas no painel, nunca no repositório:
 | `DATABASE_URL` | conexão do PostgreSQL |
 | `MAIL_USERNAME` e `MAIL_PASSWORD` | envio das notificações |
 | `SESSION_COOKIE_SECURE=1` | cookie de sessão só trafega por HTTPS |
+
+O comando de build é `pip install -r requirements.txt && flask db upgrade`:
+cada deploy aplica as migrações pendentes antes de o serviço subir. Se uma
+migração falhar, o build falha e a versão anterior continua no ar — o banco
+nunca fica a meio caminho de uma versão que não entrou.
 
 > A URL entregue pelos provedores começa com `postgres://`, esquema que o
 > SQLAlchemy 2 não aceita mais. A função `_url_do_banco()` no `app.py` faz a
@@ -578,9 +594,6 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 - Exportação de relatórios em PDF ou Excel
 - Upload de anexos nos chamados
 - API REST
-- Migrações de banco com Flask-Migrate
-- Deploy em ambiente de produção
-- Utilização de PostgreSQL em produção
 - Integração com serviços de armazenamento em nuvem
 
 ---

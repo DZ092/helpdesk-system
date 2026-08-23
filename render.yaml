@@ -6,12 +6,18 @@ services:
     runtime: python
     plan: free
     region: oregon
-    buildCommand: pip install -r requirements.txt
-    # O serve.py sobe o Waitress e cria as tabelas que ainda não existirem.
+    # O `flask db upgrade` aplica as migrações pendentes antes de o serviço
+    # subir. Se uma migração falhar, o build falha e a versão anterior continua
+    # no ar — que é exatamente o que se quer de um deploy que mexe no banco.
+    buildCommand: pip install -r requirements.txt && flask db upgrade
+    # O serve.py sobe o Waitress. O esquema já veio pronto do build.
     startCommand: python serve.py
     envVars:
       - key: PYTHON_VERSION
         value: "3.13.0"
+      # Diz ao comando `flask` do build onde está a fábrica da aplicação.
+      - key: FLASK_APP
+        value: app.py
       # O Render injeta a porta em PORT; o serve.py já lê essa variável.
       - key: HOST
         value: 0.0.0.0

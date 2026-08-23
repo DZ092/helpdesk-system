@@ -21,16 +21,13 @@ import os
 from waitress import serve
 
 from app import create_app
-from extensions import db
 
 
 def main():
-    # Mesma garantia do app.py: sem isso, uma cópia recém-clonada subiria sem
-    # as tabelas e quebraria na primeira consulta.
+    # O esquema é responsabilidade das migrações, não deste script: o build do
+    # Render roda `flask db upgrade` antes de chamar o serve.py, e localmente o
+    # comando é o mesmo. Por isso aqui não há `db.create_all()`.
     app = create_app()
-
-    with app.app_context():
-        db.create_all()
 
     host = os.environ.get("HOST", "127.0.0.1")
     port = int(os.environ.get("PORT", "8000"))
