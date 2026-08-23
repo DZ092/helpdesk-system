@@ -67,6 +67,30 @@ class Comentario(db.Model):
     autor = db.relationship("Usuario", backref="comentarios")
 
 
+class TentativaAcesso(db.Model):
+    """Uma tentativa registrada por um dos limitadores de abuso.
+
+    Isto morava num dicionário do processo. Funcionava enquanto a aplicação era
+    um processo só que nunca parava — deixou de ser verdade no instante em que
+    ela foi para um plano gratuito que hiberna: a cada vez que o serviço
+    acordava o contador voltava a zero, e quem estava bloqueado ganhava uma
+    leva nova de tentativas. Guardada aqui, a contagem atravessa reinício,
+    deploy e qualquer número de workers.
+    """
+
+    id = db.Column(db.Integer, primary_key=True)
+    escopo = db.Column(db.String(30), nullable=False)
+    chave = db.Column(db.String(255), nullable=False)
+    criado_em = db.Column(db.DateTime, default=obter_data_utc, nullable=False)
+
+    # Índice único, composto, na ordem em que as colunas são filtradas: escopo e
+    # chave por igualdade, data por intervalo. Serve tanto a contagem da janela
+    # quanto a varredura do que já expirou, que para de comparar na chave.
+    __table_args__ = (
+        db.Index("ix_tentativa_escopo_chave_data", "escopo", "chave", "criado_em"),
+    )
+
+
 class LogAuditoria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=True)

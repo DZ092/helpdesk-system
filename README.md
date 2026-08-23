@@ -113,7 +113,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 65 testes em pytest cobrindo autenticação, controle de acesso por
+  Suíte com 67 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
   responsável do chamado. Boa parte deles são testes de regressão, escritos para
   que falhas já corrigidas não voltem despercebidas. Um segundo arquivo,
@@ -178,7 +178,8 @@ helpdesk-system/
 │
 ├── migrations/
 │   ├── versions/
-│   │   └── 169fedd696d9_cria_o_esquema_inicial.py
+│   │   ├── 169fedd696d9_cria_o_esquema_inicial.py
+│   │   └── 5995b4db02ca_adiciona_a_tabela_de_tentativas_de_.py
 │   ├── alembic.ini
 │   ├── env.py
 │   ├── README
@@ -401,7 +402,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **65 passed**.
+Esperado: **67 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
@@ -533,6 +534,11 @@ Nunca adicione credenciais reais diretamente no código ou no repositório.
 - **Limite de tentativas de login.** Cinco senhas erradas para o mesmo e-mail
   bloqueiam novas tentativas de login por 5 minutos, dificultando força bruta
   contra uma conta.
+- **A contagem de tentativas fica no banco, não na memória do processo.** O
+  serviço hiberna depois de alguns minutos sem acesso; enquanto o contador
+  vivia dentro do processo, cada despertar o zerava, e a defesa contra força
+  bruta se desfazia sozinha várias vezes por dia. Na tabela `TentativaAcesso`
+  ela atravessa reinício, deploy e qualquer número de workers.
 - **Link de redefinição sem tabela de tokens.** O token é assinado com a
   `SECRET_KEY` e carrega o id do usuário mais um HMAC do hash da senha atual.
   Isso dá uso único de graça: a redefinição muda o hash, o HMAC deixa de bater

@@ -2,12 +2,12 @@
 
 Reúne o que decide *quem é* o usuário da requisição e *o que ele pode fazer*:
 a assinatura da sessão, a leitura do usuário a cada requisição, os decoradores
-de perfil, a política de senha e os dois limitadores de tentativas.
+de perfil, a política de senha e os três limitadores de tentativas.
 """
 
 import hashlib
 import hmac
-import time
+from datetime import timedelta
 from functools import wraps
 
 from flask import current_app, flash, g, redirect, session
@@ -25,7 +25,7 @@ from constantes import (
     VALIDADE_TOKEN_SENHA_SEGUNDOS,
 )
 from extensions import db
-from models import Usuario
+from models import TentativaAcesso, Usuario, obter_data_utc
 
 
 def impressao_sessao(usuario):
@@ -147,49 +147,84 @@ def validar_forca_senha(senha, usuario=None):
 
 
 class Throttle:
-    """Contador de tentativas em memória, com janela deslizante.
+    """Contador de tentativas com janela deslizante, guardado no banco.
 
-    Guardado no processo de propósito: é simples e suficiente enquanto a
-    aplicação roda num processo só. Num deploy com vários workers isso precisa
-    ir para Redis ou banco — está registrado como pendência no README.
+    Não tem estado próprio: cada instância é só o escopo e os limites, e toda a
+    contagem vive em `TentativaAcesso`. É o que faz um bloqueio continuar de pé
+    depois de um reinício do serviço, de um deploy ou entre workers diferentes
+    — antes ele evaporava junto com o processo.
     """
 
-    def __init__(self, maximo, janela_segundos):
+    def __init__(self, escopo, maximo, janela_segundos):
+        self.escopo = escopo
         self.maximo = maximo
         self.janela = janela_segundos
-        self._registros = {}
 
-    def _recentes(self, chave):
-        agora = time.monotonic()
-        tentativas = [t for t in self._registros.get(chave, []) if agora - t < self.janela]
-        self._registros[chave] = tentativas
-        return agora, tentativas
+    def _inicio_da_janela(self):
+        return obter_data_utc() - timedelta(seconds=self.janela)
+
+    def _desta_chave(self, chave):
+        # A chave vira texto porque um limitador usa e-mail e outro usa id.
+        return (
+            TentativaAcesso.escopo == self.escopo,
+            TentativaAcesso.chave == str(chave),
+        )
 
     def registrar(self, chave):
-        _, tentativas = self._recentes(chave)
-        tentativas.append(time.monotonic())
+        """Anota uma tentativa, aproveitando para varrer as que já expiraram.
+
+        A varredura sai de graça aqui: só há escrita quando alguém erra, e sem
+        ela a tabela cresceria para sempre com tentativas que não contam mais.
+        """
+        db.session.query(TentativaAcesso).filter(
+            TentativaAcesso.escopo == self.escopo,
+            TentativaAcesso.criado_em < self._inicio_da_janela(),
+        ).delete(synchronize_session=False)
+
+        db.session.add(TentativaAcesso(escopo=self.escopo, chave=str(chave)))
+        db.session.commit()
 
     def segundos_de_bloqueio(self, chave):
         """Quantos segundos faltam para liberar. Zero se não estiver bloqueado."""
-        agora, tentativas = self._recentes(chave)
+        tentativas = (
+            db.session.execute(
+                db.select(TentativaAcesso.criado_em)
+                .where(
+                    *self._desta_chave(chave),
+                    TentativaAcesso.criado_em >= self._inicio_da_janela(),
+                )
+                .order_by(TentativaAcesso.criado_em)
+            )
+            .scalars()
+            .all()
+        )
+
         if len(tentativas) < self.maximo:
             return 0
-        return int(self.janela - (agora - tentativas[0])) + 1
+
+        # A janela desliza a partir da tentativa mais antiga que ainda conta.
+        decorrido = (obter_data_utc() - tentativas[0]).total_seconds()
+        return int(self.janela - decorrido) + 1
 
     def limpar(self, chave):
-        self._registros.pop(chave, None)
+        db.session.query(TentativaAcesso).filter(*self._desta_chave(chave)).delete(
+            synchronize_session=False
+        )
+        db.session.commit()
 
 
 # Senha atual errada na troca de senha, por usuário.
-throttle_senha = Throttle(MAX_TENTATIVAS_SENHA, JANELA_BLOQUEIO_SEGUNDOS)
+throttle_senha = Throttle("senha", MAX_TENTATIVAS_SENHA, JANELA_BLOQUEIO_SEGUNDOS)
 
 # Senha errada no login, por e-mail — o throttle precisa existir antes de haver
 # sessão, por isso a chave é o e-mail e não o id.
-throttle_login = Throttle(MAX_TENTATIVAS_LOGIN, JANELA_BLOQUEIO_LOGIN_SEGUNDOS)
+throttle_login = Throttle("login", MAX_TENTATIVAS_LOGIN, JANELA_BLOQUEIO_LOGIN_SEGUNDOS)
 
 # Pedidos de redefinição por e-mail, para o formulário público não virar uma
 # forma de disparar mensagens em massa contra uma caixa de entrada.
-throttle_redefinicao = Throttle(MAX_PEDIDOS_REDEFINICAO, JANELA_PEDIDOS_REDEFINICAO_SEGUNDOS)
+throttle_redefinicao = Throttle(
+    "redefinicao", MAX_PEDIDOS_REDEFINICAO, JANELA_PEDIDOS_REDEFINICAO_SEGUNDOS
+)
 
 
 # ==============================================================================

@@ -52,10 +52,8 @@ def test_login_com_senha_errada(client):
 
 def test_tentativas_repetidas_de_login_bloqueiam(client):
     from constantes import MAX_TENTATIVAS_LOGIN
-    from seguranca import throttle_login
 
     email = "forca-login@teste.com"
-    throttle_login.limpar(email)
     cadastrar_usuario(client, email=email)
 
     for _ in range(MAX_TENTATIVAS_LOGIN):
@@ -66,7 +64,6 @@ def test_tentativas_repetidas_de_login_bloqueiam(client):
 
     # mesmo com a senha certa continua bloqueado
     assert "Tentativas demais".encode() in fazer_login(client, email=email).data
-    throttle_login.limpar(email)
 
 
 def test_senha_curta_e_recusada(client):
@@ -335,10 +332,8 @@ def test_troca_de_senha_derruba_sessao_de_outro_dispositivo(client, criar_usuari
 
 def test_tentativas_repetidas_bloqueiam(client, criar_usuario):
     from constantes import MAX_TENTATIVAS_SENHA
-    from seguranca import throttle_senha
 
-    usuario = criar_usuario(email="forca@teste.com")
-    throttle_senha.limpar(usuario.id)
+    criar_usuario(email="forca@teste.com")
     fazer_login(client, email="forca@teste.com")
 
     for _ in range(MAX_TENTATIVAS_SENHA):
@@ -349,7 +344,6 @@ def test_tentativas_repetidas_bloqueiam(client, criar_usuario):
 
     # mesmo com a senha certa continua bloqueado
     assert "Tentativas demais".encode() in trocar_senha(client).data
-    throttle_senha.limpar(usuario.id)
 
 # ==============================================================================
 # REDEFINIÇÃO DE SENHA POR E-MAIL
@@ -498,3 +492,75 @@ def test_migracoes_reproduzem_o_esquema_dos_modelos(tmp_path):
         f"{diferencas}. Gere a migração que falta com "
         '`flask db migrate -m "descreva a mudanca"` e versione o arquivo criado.'
     )
+
+
+# ==============================================================================
+# PERSISTÊNCIA DO LIMITE DE TENTATIVAS
+# ==============================================================================
+def _app_no_banco(caminho):
+    """Uma aplicação apontada para um arquivo de banco, fazendo as vezes de processo."""
+    from app import create_app
+
+    return create_app(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": f"sqlite:///{caminho}",
+            "SECRET_KEY": "chave-de-teste",
+            "WTF_CSRF_ENABLED": False,
+            "MAIL_SUPPRESS_SEND": True,
+        }
+    )
+
+
+def test_bloqueio_sobrevive_ao_reinicio_do_processo(tmp_path):
+    """O motivo de existir a tabela de tentativas.
+
+    A aplicação roda num plano que hiberna depois de alguns minutos sem acesso.
+    Enquanto a contagem morava na memória do processo, cada despertar zerava o
+    bloqueio e devolvia ao atacante uma leva nova de tentativas — várias vezes
+    por dia. A segunda aplicação abaixo é esse processo novo: mesmo banco,
+    memória em branco.
+    """
+    from constantes import MAX_TENTATIVAS_LOGIN
+    from extensions import db
+    from seguranca import throttle_login
+
+    banco = tmp_path / "tentativas.db"
+    email = "alvo@teste.com"
+
+    with _app_no_banco(banco).app_context():
+        db.create_all()
+        for _ in range(MAX_TENTATIVAS_LOGIN):
+            throttle_login.registrar(email)
+        assert throttle_login.segundos_de_bloqueio(email) > 0
+
+    with _app_no_banco(banco).app_context():
+        assert throttle_login.segundos_de_bloqueio(email) > 0
+
+
+def test_tentativas_antigas_saem_da_janela(app):
+    """Passada a janela, as tentativas param de contar e a próxima escrita as apaga."""
+    from datetime import timedelta
+
+    from constantes import JANELA_BLOQUEIO_LOGIN_SEGUNDOS, MAX_TENTATIVAS_LOGIN
+    from extensions import db
+    from models import TentativaAcesso, obter_data_utc
+    from seguranca import throttle_login
+
+    email = "antigo@teste.com"
+    vencida = obter_data_utc() - timedelta(seconds=JANELA_BLOQUEIO_LOGIN_SEGUNDOS + 60)
+
+    for _ in range(MAX_TENTATIVAS_LOGIN):
+        db.session.add(TentativaAcesso(escopo="login", chave=email, criado_em=vencida))
+    db.session.commit()
+
+    assert throttle_login.segundos_de_bloqueio(email) == 0
+
+    throttle_login.registrar(email)
+
+    restantes = (
+        db.session.execute(db.select(TentativaAcesso).where(TentativaAcesso.chave == email))
+        .scalars()
+        .all()
+    )
+    assert len(restantes) == 1
