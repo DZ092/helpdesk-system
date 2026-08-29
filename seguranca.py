@@ -337,3 +337,22 @@ def token_api_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+
+def tecnico_api_required(f):
+    """Exige perfil Técnico/Administrador, em cima de `token_api_required`.
+
+    Mudar status e comentar são ações restritas na tela (`tecnico_required`);
+    a API replica a mesma regra em vez de ser mais permissiva que a interface
+    web só porque a checagem de perfil ali usa sessão e aqui usa token. Espera
+    ser aplicado depois de `token_api_required`, que é quem popula
+    `g.usuario_api`.
+    """
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not g.usuario_api.eh_tecnico:
+            return jsonify(erro="Ação restrita a Técnicos e Administradores."), 403
+        return f(*args, **kwargs)
+
+    return decorated_function

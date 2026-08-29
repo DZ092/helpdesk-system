@@ -1,17 +1,21 @@
-"""API REST somente leitura dos chamados.
+"""API REST dos chamados — leitura e escrita (issue #9).
 
-Primeira fatia da issue #9: consultar chamados de fora do navegador, com um
-token de API em vez do cookie de sessão (ver `seguranca.token_api_required`).
-Abrir chamado, mudar status e comentar continuam só pela interface web — ficam
-para uma próxima fatia.
+Consultar, abrir, mudar status e comentar de fora do navegador, com um token
+de API em vez do cookie de sessão (ver `seguranca.token_api_required`). As
+regras de negócio e de permissão são as mesmas da interface web: abrir chamado
+continua público, mudar status e comentar continuam restritos a Técnico e
+Administrador (`seguranca.tecnico_api_required`) — só a forma de autenticar
+muda.
 """
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, g, jsonify, request
 
+from auditoria import registrar_log
 from constantes import PRIORIDADES, STATUS_CHAMADO
+from emails import notificar_tecnicos_novo_chamado
 from extensions import db
 from models import Chamado, Comentario
-from seguranca import token_api_required
+from seguranca import tecnico_api_required, token_api_required
 
 api = Blueprint("api", __name__, url_prefix="/api/v1")
 
@@ -103,3 +107,119 @@ def detalhe_chamado(id):
     dados = _chamado_para_json(chamado)
     dados["comentarios"] = [_comentario_para_json(c) for c in comentarios]
     return jsonify(dados)
+
+
+def _campo_obrigatorio_json(dados, nome, tamanho_maximo):
+    """Equivalente a `validacao.campo_obrigatorio`, mas lendo do corpo JSON.
+
+    A versão original lê de `request.form` — a API recebe JSON, então precisa
+    da mesma normalização (strip, corte no tamanho da coluna) sobre outra
+    fonte, não de uma regra diferente.
+    """
+    valor = str(dados.get(nome, "")).strip()
+    return valor[:tamanho_maximo]
+
+
+@api.route("/chamados", methods=["POST"])
+@token_api_required
+def abrir_chamado():
+    """Abre um chamado novo. Pública na tela, e continua sem exigir perfil aqui.
+
+    A única diferença da tela é a autenticação: a tela aceita qualquer
+    visitante sem login, a API exige um token válido — mas de qualquer
+    usuário, sem checar `eh_tecnico`, porque abrir chamado nunca foi uma ação
+    restrita.
+    """
+    dados = request.get_json(silent=True) or {}
+
+    usuario = _campo_obrigatorio_json(dados, "usuario", 100)
+    setor = _campo_obrigatorio_json(dados, "setor", 100)
+    titulo = _campo_obrigatorio_json(dados, "titulo", 200)
+    descricao = str(dados.get("descricao", "")).strip()
+    prioridade = dados.get("prioridade", "Média")
+
+    if not all((usuario, setor, titulo, descricao)):
+        return jsonify(erro="Preencha todos os campos do chamado."), 400
+
+    if prioridade not in PRIORIDADES:
+        prioridade = "Média"
+
+    novo_chamado = Chamado(
+        usuario=usuario,
+        setor=setor,
+        titulo=titulo,
+        descricao=descricao,
+        status="Aberto",
+        prioridade=prioridade,
+    )
+    db.session.add(novo_chamado)
+    db.session.commit()
+
+    registrar_log(
+        "Abertura de chamado",
+        f"Chamado #{novo_chamado.id}: {novo_chamado.titulo} (via API)",
+        usuario=g.usuario_api,
+    )
+    notificar_tecnicos_novo_chamado(novo_chamado)
+
+    return jsonify(_chamado_para_json(novo_chamado)), 201
+
+
+@api.route("/chamados/<int:id>/status", methods=["POST"])
+@token_api_required
+@tecnico_api_required
+def atualizar_status_chamado_api(id):
+    chamado = db.session.get(Chamado, id)
+    if chamado is None:
+        return jsonify(erro="Chamado não encontrado."), 404
+
+    dados = request.get_json(silent=True) or {}
+    novo_status = dados.get("status")
+
+    if novo_status not in STATUS_CHAMADO:
+        return jsonify(erro=f"status precisa ser um de: {', '.join(STATUS_CHAMADO)}"), 400
+
+    chamado.status = novo_status
+
+    if chamado.responsavel_id is None:
+        chamado.responsavel_id = g.usuario_api.id
+
+    db.session.commit()
+
+    registrar_log(
+        "Atualização de status",
+        f"Chamado #{chamado.id} alterado para '{novo_status}' (via API)",
+        usuario=g.usuario_api,
+    )
+
+    return jsonify(_chamado_para_json(chamado))
+
+
+@api.route("/chamados/<int:id>/comentarios", methods=["POST"])
+@token_api_required
+@tecnico_api_required
+def adicionar_comentario_api(id):
+    chamado = db.session.get(Chamado, id)
+    if chamado is None:
+        return jsonify(erro="Chamado não encontrado."), 404
+
+    dados = request.get_json(silent=True) or {}
+    mensagem = str(dados.get("mensagem", "")).strip()
+    if not mensagem:
+        return jsonify(erro="A mensagem da atualização não pode ficar vazia."), 400
+
+    novo_comentario = Comentario(
+        chamado_id=chamado.id,
+        autor_id=g.usuario_api.id,
+        mensagem=mensagem,
+    )
+    db.session.add(novo_comentario)
+    db.session.commit()
+
+    registrar_log(
+        "Comentário adicionado",
+        f"Comentário adicionado ao chamado #{chamado.id} (via API)",
+        usuario=g.usuario_api,
+    )
+
+    return jsonify(_comentario_para_json(novo_comentario)), 201
