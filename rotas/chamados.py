@@ -2,17 +2,74 @@
 
 from datetime import datetime
 
-from flask import Blueprint, flash, redirect, render_template, request
+from flask import Blueprint, Response, flash, redirect, render_template, request
 
 from auditoria import registrar_log
 from constantes import PERFIS_TECNICOS, PRIORIDADES, STATUS_CHAMADO
 from emails import notificar_tecnicos_novo_chamado
 from extensions import db
 from models import Chamado, Comentario, Usuario
+from relatorios import gerar_excel, gerar_pdf
 from seguranca import login_required, tecnico_required, usuario_atual
 from validacao import campo_obrigatorio, inteiro_ou_none
 
 chamados = Blueprint("chamados", __name__)
+
+
+def query_chamados_filtrados(args):
+    """Monta a consulta de `/chamados` a partir dos parâmetros da URL.
+
+    Compartilhada com a exportação (ver `relatorios.py`): o relatório precisa
+    baixar exatamente o que a tela está mostrando, com os mesmos filtros — não
+    uma segunda implementação que pode divergir da primeira com o tempo.
+    """
+    busca = args.get("busca", "").strip()
+    status_filtro = args.get("status", "")
+    prioridade_filtro = args.get("prioridade", "")
+    setor_filtro = args.get("setor", "")
+    responsavel_filtro = args.get("responsavel", "")
+    data_inicio = args.get("data_inicio", "")
+    data_fim = args.get("data_fim", "")
+
+    stmt = db.select(Chamado)
+
+    if busca:
+        stmt = stmt.where(Chamado.titulo.ilike(f"%{busca}%"))
+
+    if status_filtro in STATUS_CHAMADO:
+        stmt = stmt.where(Chamado.status == status_filtro)
+
+    if prioridade_filtro in PRIORIDADES:
+        stmt = stmt.where(Chamado.prioridade == prioridade_filtro)
+
+    if setor_filtro:
+        stmt = stmt.where(Chamado.setor == setor_filtro)
+
+    if responsavel_filtro == "nenhum":
+        stmt = stmt.where(Chamado.responsavel_id.is_(None))
+    elif responsavel_filtro:
+        # `?responsavel=abc` derrubava a página com erro 500 no int().
+        responsavel_id = inteiro_ou_none(responsavel_filtro)
+        if responsavel_id is not None:
+            stmt = stmt.where(Chamado.responsavel_id == responsavel_id)
+
+    if data_inicio:
+        try:
+            inicio = datetime.strptime(data_inicio, "%Y-%m-%d")
+            stmt = stmt.where(Chamado.criado_em >= inicio)
+        except ValueError:
+            pass
+
+    if data_fim:
+        try:
+            fim = datetime.strptime(data_fim, "%Y-%m-%d").replace(
+                hour=23, minute=59, second=59
+            )
+            stmt = stmt.where(Chamado.criado_em <= fim)
+        except ValueError:
+            pass
+
+    return stmt.order_by(Chamado.id.desc())
 
 
 @chamados.route("/")
@@ -94,45 +151,7 @@ def lista_chamados():
     data_fim = request.args.get("data_fim", "")
     pagina = request.args.get("pagina", 1, type=int)
 
-    stmt = db.select(Chamado)
-
-    if busca:
-        stmt = stmt.where(Chamado.titulo.ilike(f"%{busca}%"))
-
-    if status_filtro in STATUS_CHAMADO:
-        stmt = stmt.where(Chamado.status == status_filtro)
-
-    if prioridade_filtro in PRIORIDADES:
-        stmt = stmt.where(Chamado.prioridade == prioridade_filtro)
-
-    if setor_filtro:
-        stmt = stmt.where(Chamado.setor == setor_filtro)
-
-    if responsavel_filtro == "nenhum":
-        stmt = stmt.where(Chamado.responsavel_id.is_(None))
-    elif responsavel_filtro:
-        # `?responsavel=abc` derrubava a página com erro 500 no int().
-        responsavel_id = inteiro_ou_none(responsavel_filtro)
-        if responsavel_id is not None:
-            stmt = stmt.where(Chamado.responsavel_id == responsavel_id)
-
-    if data_inicio:
-        try:
-            inicio = datetime.strptime(data_inicio, "%Y-%m-%d")
-            stmt = stmt.where(Chamado.criado_em >= inicio)
-        except ValueError:
-            pass
-
-    if data_fim:
-        try:
-            fim = datetime.strptime(data_fim, "%Y-%m-%d").replace(
-                hour=23, minute=59, second=59
-            )
-            stmt = stmt.where(Chamado.criado_em <= fim)
-        except ValueError:
-            pass
-
-    stmt = stmt.order_by(Chamado.id.desc())
+    stmt = query_chamados_filtrados(request.args)
 
     paginacao = db.paginate(stmt, page=pagina, per_page=15, error_out=False)
     chamados = paginacao.items
@@ -166,6 +185,52 @@ def lista_chamados():
         tecnicos=tecnicos,
         setores=setores,
         paginacao=paginacao,
+    )
+
+
+# Teto de linhas por exportação. Sem ele, o mesmo filtro vazio que a tela pagina
+# em 15 por vez viraria uma consulta e um documento sem limite nenhum — o
+# suficiente pra travar a memória do processo num banco grande.
+LIMITE_EXPORTACAO = 5000
+
+
+@chamados.route("/chamados/exportar")
+@tecnico_required
+def exportar_chamados():
+    """Baixa em Excel ou PDF o mesmo recorte filtrado da tela `/chamados`.
+
+    Mais restrita que a própria listagem: `/chamados` é visível a qualquer
+    usuário logado, mas gerar um relatório é tratado como uma ação de posse —
+    fica no mesmo nível de quem já pode assumir chamado e mudar status.
+    """
+    formato = request.args.get("formato", "")
+    if formato not in ("excel", "pdf"):
+        flash("Escolha um formato de exportação válido.")
+        return redirect(f"/chamados?{request.query_string.decode()}")
+
+    stmt = query_chamados_filtrados(request.args).limit(LIMITE_EXPORTACAO)
+    chamados_lista = db.session.execute(stmt).scalars().all()
+
+    registrar_log(
+        "Exportação de relatório",
+        f"{len(chamados_lista)} chamado(s) exportado(s) em {formato}",
+    )
+
+    agora = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    if formato == "excel":
+        conteudo = gerar_excel(chamados_lista)
+        mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        nome_arquivo = f"chamados_{agora}.xlsx"
+    else:
+        conteudo = gerar_pdf(chamados_lista)
+        mimetype = "application/pdf"
+        nome_arquivo = f"chamados_{agora}.pdf"
+
+    return Response(
+        conteudo,
+        mimetype=mimetype,
+        headers={"Content-Disposition": f"attachment; filename={nome_arquivo}"},
     )
 
 

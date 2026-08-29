@@ -12,6 +12,12 @@ itsdangerous==2.2.0
 Jinja2==3.1.6
 Mako==1.4.1
 MarkupSafe==3.0.3
+# Geração dos relatórios exportáveis em /chamados/exportar: openpyxl monta o
+# .xlsx, reportlab monta o .pdf. Nenhum dos dois depende de biblioteca nativa
+# do sistema operacional — ao contrário de alternativas como weasyprint, que
+# puxam Pango/Cairo e complicam tanto o Windows local quanto o Render.
+openpyxl==3.1.5
+reportlab==4.4.10
 python-dotenv==1.2.2
 # Driver do PostgreSQL, usado só em produção. Fica de fora do Windows: não há
 # wheel para o Python 3.14 nessa plataforma e compilar exigiria o PostgreSQL

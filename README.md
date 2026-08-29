@@ -97,6 +97,14 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   status e comentário — com as mesmas regras da interface: abrir é público,
   mudar status e comentar exigem perfil Técnico ou Administrador.
 
+- **Exportação de relatórios**  
+  A listagem de `/chamados`, com os filtros aplicados, pode ser baixada em
+  Excel (.xlsx) ou PDF direto da tela. Restrita a Técnico e Administrador —
+  mais restrita que a própria listagem, tratada como uma ação de posse sobre
+  os dados, no mesmo nível de assumir chamado ou mudar status. Tem um teto de
+  5.000 linhas por exportação, para um filtro vazio num banco grande não gerar
+  um documento sem limite.
+
 - **Interface responsiva**  
   Layout adaptado para uso em celular. Nas telas de dashboard, histórico de
   chamados, "Meus Chamados", painel administrativo e logs de auditoria, as
@@ -122,7 +130,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 91 testes em pytest cobrindo autenticação, controle de acesso por
+  Suíte com 112 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
   responsável do chamado. Boa parte deles são testes de regressão, escritos para
   que falhas já corrigidas não voltem despercebidas. Um segundo arquivo,
@@ -173,6 +181,7 @@ helpdesk-system/
 ├── models.py
 ├── promover_admin.py
 ├── redefinir_senha.py
+├── relatorios.py
 ├── seguranca.py
 ├── serve.py
 ├── validacao.py
@@ -227,6 +236,7 @@ helpdesk-system/
     ├── conftest.py
     ├── test_api.py
     ├── test_app.py
+    ├── test_relatorios.py
     └── test_rotas.py
 ```
 
@@ -415,7 +425,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **91 passed**.
+Esperado: **112 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
@@ -619,7 +629,6 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 
 ## 🔧 Melhorias futuras
 
-- Exportação de relatórios em PDF ou Excel
 - Upload de anexos nos chamados
 - Integração com serviços de armazenamento em nuvem
 
