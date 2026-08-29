@@ -6,7 +6,10 @@ falha que uma refatoração introduz e nenhum teste de regra percebe, porque o
 template quebra sem que nenhuma regra mude.
 """
 
+import io
+
 import pytest
+from openpyxl import load_workbook
 
 SENHA = "senha-de-teste"
 
@@ -142,3 +145,89 @@ def test_telas_de_dados_nao_carregam_o_auth_css(client, criar_usuario):
     html = client.get("/dashboard").get_data(as_text=True)
     assert "css/style.css" in html
     assert "css/auth.css" not in html
+
+
+# ==============================================================================
+# EXPORTAÇÃO DE RELATÓRIOS (issue #7)
+# ==============================================================================
+def test_exportar_exige_login(client):
+    resposta = client.get("/chamados/exportar?formato=excel", follow_redirects=True)
+    assert b"Login" in resposta.data
+
+
+def test_exportar_recusa_usuario_comum(client, criar_usuario):
+    """Mais restrita que a própria listagem: exige perfil Técnico/Administrador."""
+    criar_usuario()
+    entrar(client, "fulano@teste.com")
+
+    resposta = client.get("/chamados/exportar?formato=excel", follow_redirects=True)
+    assert b"restrita a T" in resposta.data
+
+
+def test_exportar_excel_responde_para_tecnico(client, criar_usuario):
+    criar_usuario(nome="Ana Técnica", email="tecnica@teste.com", tipo="Técnico")
+    entrar(client, "tecnica@teste.com")
+    abrir_chamado(client)
+
+    resposta = client.get("/chamados/exportar?formato=excel")
+
+    assert resposta.status_code == 200
+    assert resposta.mimetype == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    assert "attachment" in resposta.headers["Content-Disposition"]
+
+
+def test_exportar_pdf_responde_para_admin(client, criar_usuario):
+    entrar_como_admin(client, criar_usuario)
+    abrir_chamado(client)
+
+    resposta = client.get("/chamados/exportar?formato=pdf")
+
+    assert resposta.status_code == 200
+    assert resposta.mimetype == "application/pdf"
+
+
+@pytest.mark.parametrize("consulta", CONSULTAS)
+def test_exportar_aguenta_os_mesmos_filtros_da_listagem(client, criar_usuario, consulta):
+    """Os mesmos parâmetros que a listagem aceita não podem derrubar o export."""
+    entrar_como_admin(client, criar_usuario)
+    abrir_chamado(client)
+
+    resposta = client.get(f"/chamados/exportar{consulta}&formato=excel")
+    assert resposta.status_code == 200
+
+
+def test_exportar_recusa_formato_desconhecido(client, criar_usuario):
+    entrar_como_admin(client, criar_usuario)
+
+    resposta = client.get("/chamados/exportar?formato=csv", follow_redirects=True)
+    assert resposta.status_code == 200
+    assert "formato de exporta" in resposta.get_data(as_text=True).lower()
+
+
+def test_exportacao_registra_log(client, criar_usuario):
+    entrar_como_admin(client, criar_usuario)
+    abrir_chamado(client)
+
+    client.get("/chamados/exportar?formato=pdf")
+
+    logs = client.get("/admin/logs").get_data(as_text=True)
+    assert "Exportação de relatório" in logs
+
+
+def test_exportacao_respeita_o_teto_de_linhas(client, criar_usuario, monkeypatch):
+    """Sem o teto, o mesmo filtro vazio que a tela pagina em 15 por vez viraria
+    uma exportação sem limite nenhum — aqui reduzimos o teto para não precisar
+    criar milhares de chamados só para exercitar a regra."""
+    import rotas.chamados as modulo_chamados
+
+    monkeypatch.setattr(modulo_chamados, "LIMITE_EXPORTACAO", 3)
+
+    entrar_como_admin(client, criar_usuario)
+    for i in range(6):
+        abrir_chamado(client, titulo=f"Chamado {i}")
+
+    resposta = client.get("/chamados/exportar?formato=excel")
+    pasta = load_workbook(io.BytesIO(resposta.data))
+    linhas = list(pasta.active.iter_rows(values_only=True))
+
+    assert len(linhas) - 1 == 3  # cabeçalho + 3 linhas, não as 6 criadas

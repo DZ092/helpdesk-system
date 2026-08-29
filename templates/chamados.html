@@ -35,6 +35,13 @@
     </a>
 
 
+    {% with mensagens = get_flashed_messages() %}
+    {% if mensagens %}
+    <p class="sucesso">{{ mensagens[0] }}</p>
+    {% endif %}
+    {% endwith %}
+
+
     <form method="GET" action="/chamados" class="filtro-form">
 
         <input
@@ -105,6 +112,14 @@
 
             <a class="novo-chamado" href="/meus-chamados">
                 🙋 Meus Chamados
+            </a>
+
+            <a class="novo-chamado" href="{{ url_for('chamados.exportar_chamados', **dict(request.args, formato='excel')) }}">
+                📊 Exportar Excel
+            </a>
+
+            <a class="novo-chamado" href="{{ url_for('chamados.exportar_chamados', **dict(request.args, formato='pdf')) }}">
+                📄 Exportar PDF
             </a>
 
         {% endif %}
