@@ -88,13 +88,14 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - **Controle de acesso**  
   Apenas Técnicos e Administradores podem assumir chamados, alterar status, adicionar comentários internos e acessar "Meus Chamados". Apenas Administradores podem acessar o painel administrativo e os logs de auditoria.
 
-- **API REST somente leitura**  
-  Além das telas, os chamados podem ser consultados em JSON por um script ou
-  aplicativo externo. Cada usuário gera o próprio token em "Meu token de API"
-  e o envia no cabeçalho `Authorization: Bearer <token>`. Cobre listagem (com
-  os mesmos filtros de status, prioridade e setor da tela, e paginação) e
-  detalhe com os comentários. Abrir chamado, mudar status e comentar continuam
-  só pela interface — ver "Melhorias futuras".
+- **API REST**  
+  Além das telas, os chamados podem ser consultados e mantidos em JSON por um
+  script ou aplicativo externo. Cada usuário gera o próprio token em "Meu
+  token de API" e o envia no cabeçalho `Authorization: Bearer <token>`. Cobre
+  listagem (com os mesmos filtros de status, prioridade e setor da tela, e
+  paginação), detalhe com os comentários, abertura de chamado, mudança de
+  status e comentário — com as mesmas regras da interface: abrir é público,
+  mudar status e comentar exigem perfil Técnico ou Administrador.
 
 - **Interface responsiva**  
   Layout adaptado para uso em celular. Nas telas de dashboard, histórico de
@@ -121,7 +122,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 79 testes em pytest cobrindo autenticação, controle de acesso por
+  Suíte com 91 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
   responsável do chamado. Boa parte deles são testes de regressão, escritos para
   que falhas já corrigidas não voltem despercebidas. Um segundo arquivo,
@@ -414,7 +415,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **79 passed**.
+Esperado: **91 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
@@ -620,7 +621,6 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 
 - Exportação de relatórios em PDF ou Excel
 - Upload de anexos nos chamados
-- API REST de escrita (abrir chamado, mudar status, comentar)
 - Integração com serviços de armazenamento em nuvem
 
 ---
