@@ -815,3 +815,23 @@ h1{
     color: var(--texto-fraco);
     padding: 0 4px;
 }
+
+/* RODAPE DA TELA PRINCIPAL (login.html, dashboard.html) */
+.rodape-app {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 30px;
+    font-size: 13px;
+    color: var(--texto-fraco);
+}
+
+.rodape-app a {
+    color: var(--texto-muted);
+    text-decoration: none;
+}
+
+.rodape-app a:hover {
+    color: var(--marca);
+    text-decoration: underline;
+}
