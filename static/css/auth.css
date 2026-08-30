@@ -1,13 +1,15 @@
 /* ==============================
    TELAS DE AUTENTICAÇÃO (LOGIN E CADASTRO) - TOQUES EXCLUSIVOS
-   O tema dark em si já é global (style.css). Aqui ficam só os extras que
-   fazem sentido nessas duas telas: fundo com glow, card mais estreito,
-   animação de entrada e os ícones dentro dos campos.
+   O tema em si já é global (style.css, ver [data-theme="light"] lá — estas
+   telas não têm o botão de trocar tema, só herdam a detecção automática do
+   sistema operacional). Aqui ficam só os extras que fazem sentido nessas
+   duas telas: fundo com glow, card mais estreito, animação de entrada e os
+   ícones dentro dos campos.
    ============================== */
 
 body.pagina-auth {
     align-items: center;
-    background: radial-gradient(circle at 50% 0%, #1b2740 0%, #0b1120 60%);
+    background: radial-gradient(circle at 50% 0%, var(--auth-glow-centro) 0%, var(--bg) 60%);
     display: flex;
     justify-content: center;
     min-height: 100vh;
@@ -96,7 +98,7 @@ body.pagina-auth .campo input {
     padding-left: 42px;
 }
 
-/* Evita o flash branco do autofill do Chrome sobre o fundo escuro */
+/* Evita o flash branco do autofill do Chrome por cima da superfície do tema */
 body.pagina-auth .campo input:-webkit-autofill,
 body.pagina-auth .campo input:-webkit-autofill:hover,
 body.pagina-auth .campo input:-webkit-autofill:focus {

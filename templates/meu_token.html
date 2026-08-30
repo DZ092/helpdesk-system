@@ -8,7 +8,27 @@
 
 <title>Meu token de API - Help Desk</title>
 
+<script>
+// Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
+// para não piscar no tema errado por uma fração de segundo. Lógica completa
+// e comentada em static/js/tema.js — este trecho precisa ser inline e vir
+// antes do <link> do CSS, senão o navegador já pintou a tela no tema padrão.
+(function () {
+    var tema;
+    try {
+        tema = localStorage.getItem("tema-preferido");
+    } catch (erro) {
+        tema = null;
+    }
+    if (!tema) {
+        var prefereClaro = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+        tema = prefereClaro ? "light" : "dark";
+    }
+    document.documentElement.setAttribute("data-theme", tema);
+})();
+</script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="{{ url_for('static', filename='js/tema.js') }}"></script>
 
 </head>
 
@@ -21,6 +41,7 @@
 
 <div class="usuario-logado">
 Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }})
+<button type="button" id="botao-tema" class="botao-tema" aria-label="Alternar tema"></button>
 <a href="/logout" class="sair">Sair</a>
 </div>
 

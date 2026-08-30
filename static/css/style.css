@@ -1,9 +1,16 @@
 /* ==============================
-   SISTEMA HELP DESK - ESTILO GERAL (TEMA DARK)
+   SISTEMA HELP DESK - ESTILO GERAL
+   Tema escuro é o padrão (:root). O tema claro (issue #44) sobrescreve as
+   mesmas variáveis em [data-theme="light"] — nenhuma regra abaixo deste
+   bloco deveria usar cor literal fora dessas variáveis, senão ela não
+   reage à troca de tema. `static/js/tema.js` decide qual atributo aplicar
+   no <html> (escolha salva > preferência do sistema > escuro).
    ============================== */
 
 :root {
     --bg: #0b1120;
+    --bg-gradiente-topo: #0d1425;
+    --bg-gradiente-base: #0b1120;
     --superficie: #111827;
     --superficie-alt: #1a2436;
     --borda: rgba(255, 255, 255, 0.08);
@@ -25,6 +32,34 @@
     --aviso-texto: #fcd34d;
     --info-bg: rgba(56, 189, 248, 0.14);
     --info-texto: #7dd3fc;
+    --sombra-caixa: rgba(0, 0, 0, 0.45);
+    --sombra-linha: rgba(0, 0, 0, 0.2);
+    --hover-linha: rgba(255, 255, 255, 0.03);
+    --hover-pagina: rgba(255, 255, 255, 0.06);
+    /* Usada só em auth.css, no glow de fundo de login/cadastro. */
+    --auth-glow-centro: #1b2740;
+}
+
+/* TEMA CLARO — mesmas variáveis, valores diferentes. Os tons de status
+   (sucesso/erro/aviso/info) e as cores de prioridade/botão-perigo ficam
+   como estão: são cores de significado (vermelho é sempre alerta), não de
+   ambiente, então não precisam de uma versão clara própria. */
+[data-theme="light"] {
+    --bg: #f1f5f9;
+    --bg-gradiente-topo: #ffffff;
+    --bg-gradiente-base: #f1f5f9;
+    --superficie: #ffffff;
+    --superficie-alt: #f8fafc;
+    --borda: rgba(15, 23, 42, 0.1);
+    --texto: #0f172a;
+    --texto-muted: #475569;
+    --texto-fraco: #64748b;
+    --marca: #2563eb;
+    --sombra-caixa: rgba(15, 23, 42, 0.1);
+    --sombra-linha: rgba(15, 23, 42, 0.08);
+    --hover-linha: rgba(15, 23, 42, 0.03);
+    --hover-pagina: rgba(15, 23, 42, 0.05);
+    --auth-glow-centro: #dbeafe;
 }
 
 * {
@@ -35,7 +70,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    background: linear-gradient(180deg, #0d1425 0%, #0b1120 100%);
+    background: linear-gradient(180deg, var(--bg-gradiente-topo) 0%, var(--bg-gradiente-base) 100%);
     color: var(--texto);
 }
 
@@ -48,7 +83,7 @@ body {
     border: 1px solid var(--borda);
     padding: 40px;
     border-radius: 18px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 10px 30px var(--sombra-caixa);
 }
 
 /* TÍTULOS */
@@ -217,7 +252,7 @@ h1 {
 }
 
 .tabela-chamados tr:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--hover-linha);
 }
 
 /* STATUS */
@@ -386,6 +421,30 @@ h1 {
     text-decoration: underline;
 }
 
+/* BOTÃO DE TROCAR TEMA (issue #44) — presente só nas telas com usuário
+   logado; ver static/js/tema.js para a lógica de aplicação e persistência.
+   O texto (emoji) só é preenchido por JS depois que a página carrega —
+   largura e altura fixas evitam que o botão "nasça" sem espaço reservado
+   e empurre o link "Sair" no instante em que o ícone aparece. */
+.botao-tema {
+    align-items: center;
+    background: var(--superficie-alt);
+    border: 1px solid var(--borda);
+    border-radius: 999px;
+    color: var(--texto);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 16px;
+    height: 32px;
+    justify-content: center;
+    line-height: 1;
+    width: 32px;
+}
+
+.botao-tema:hover {
+    background: var(--hover-pagina);
+}
+
 /* FORMULÁRIO DE BUSCA E FILTRO */
 .filtro-form {
     display: flex;
@@ -536,7 +595,7 @@ h1{
     background: var(--superficie-alt);
     border: 1px solid var(--borda);
     border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.2);
+    box-shadow:0 2px 8px var(--sombra-linha);
     margin-bottom:14px;
     padding:6px 14px;
 }
@@ -800,7 +859,7 @@ h1{
 }
 
 .pagina-link:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--hover-pagina);
 }
 
 .pagina-atual {
