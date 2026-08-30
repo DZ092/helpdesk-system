@@ -190,6 +190,7 @@ helpdesk-system/
 ├── .env.example
 ├── .gitignore
 ├── README.md
+├── SECURITY.md
 │
 ├── instance/
 │   └── chamados.db
