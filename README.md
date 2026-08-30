@@ -122,16 +122,12 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   maior. As tabelas ficam dentro de um container que rola sozinho quando o
   conteúdo não cabe, então nenhuma tela empurra a página inteira para o lado.
 
-- **Tema claro e escuro**  
-  A interface se adapta automaticamente à preferência do sistema operacional
-  do usuário (`prefers-color-scheme`), com um botão para trocar manualmente a
-  qualquer momento — a escolha fica salva no navegador e prevalece sobre a
-  detecção automática. As cores ficam em variáveis CSS (`--bg`, `--superficie`,
-  `--acento`, `--texto`, além das faixas de status) declaradas uma única vez
-  no topo do `style.css`, que é o mesmo arquivo carregado por todas as
-  páginas; o tema claro sobrescreve essas mesmas variáveis em vez de duplicar
-  regras, então mudar uma cor ali repinta dashboard, histórico, painel
-  administrativo e logs nos dois temas de uma vez, sem cor solta espalhada
+- **Tema dark**  
+  Interface escura em todas as telas. As cores ficam em variáveis CSS
+  (`--bg`, `--superficie`, `--acento`, `--texto`, além das faixas de status)
+  declaradas uma única vez no topo do `style.css`, que é o mesmo arquivo
+  carregado por todas as páginas — então mudar uma cor ali repinta dashboard,
+  histórico, painel administrativo e logs de uma vez, sem cor solta espalhada
   pelos templates.
 
 - **Tratamento próprio para login e cadastro**  
@@ -479,6 +475,18 @@ e são preenchidas no painel, nunca no repositório:
 | `MAIL_USERNAME` e `MAIL_PASSWORD` | envio das notificações |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` e `CLOUDINARY_API_SECRET` | upload de anexos (opcionais — sem elas, só o upload fica desativado) |
 | `SESSION_COOKIE_SECURE=1` | cookie de sessão só trafega por HTTPS |
+
+> Toda variável nova que entrar no `.env` local precisa ser adicionada também
+> ao `render.yaml` (com `sync: false`, se for sensível). Só editar o arquivo e
+> dar commit não é suficiente — se a variável ficar de fora do `render.yaml`,
+> o Render nunca fica sabendo que ela deveria existir, e cadastrá-la à mão no
+> painel funciona, mas volta a faltar caso o serviço seja recriado a partir do
+> blueprint. Foi exatamente o que aconteceu com o Cloudinary na issue #6: as
+> três variáveis chegaram ao `.env.example` e ao código, mas não ao
+> `render.yaml` — o upload de anexos funcionava local e falhava
+> silenciosamente em produção, sem nenhum erro visível, porque
+> `armazenamento.py` foi escrito de propósito para não travar o chamado ou o
+> comentário por causa de uma falha de upload.
 
 O comando de build é `pip install -r requirements.txt && flask db upgrade`:
 cada deploy aplica as migrações pendentes antes de o serviço subir. Se uma
