@@ -105,6 +105,14 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   5.000 linhas por exportação, para um filtro vazio num banco grande não gerar
   um documento sem limite.
 
+- **Anexo de imagens nos chamados**  
+  Tanto na abertura pública do chamado quanto em cada atualização registrada
+  por um técnico é possível anexar imagens (PNG, JPG ou WEBP, até 5 MB cada,
+  no máximo 5 por envio). O armazenamento é externo, no Cloudinary — não fica
+  em disco nem no banco, então nada se perde num redeploy. Um anexo inválido
+  ou uma falha no upload nunca derruba a ação principal: o chamado ou o
+  comentário são salvos de qualquer forma, só sem a imagem.
+
 - **Interface responsiva**  
   Layout adaptado para uso em celular. Nas telas de dashboard, histórico de
   chamados, "Meus Chamados", painel administrativo e logs de auditoria, as
@@ -130,7 +138,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 112 testes em pytest cobrindo autenticação, controle de acesso por
+  Suíte com 127 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
   responsável do chamado. Boa parte deles são testes de regressão, escritos para
   que falhas já corrigidas não voltem despercebidas. Um segundo arquivo,
@@ -151,6 +159,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - Flask-Migrate
 - Flask-WTF
 - Python-dotenv
+- Cloudinary
 - SQLite
 - SQLAlchemy
 - Werkzeug
@@ -173,6 +182,7 @@ helpdesk-system/
 │       └── tests.yml
 │
 ├── app.py
+├── armazenamento.py
 ├── auditoria.py
 ├── render.yaml
 ├── constantes.py
@@ -199,7 +209,8 @@ helpdesk-system/
 │   ├── versions/
 │   │   ├── 169fedd696d9_cria_o_esquema_inicial.py
 │   │   ├── 5995b4db02ca_adiciona_a_tabela_de_tentativas_de_.py
-│   │   └── d141e98118e1_adiciona_o_token_de_api_do_usuario.py
+│   │   ├── d141e98118e1_adiciona_o_token_de_api_do_usuario.py
+│   │   └── b3ea6a92ffd9_adiciona_a_tabela_de_anexos.py
 │   ├── alembic.ini
 │   ├── env.py
 │   ├── README
@@ -237,6 +248,7 @@ helpdesk-system/
     ├── conftest.py
     ├── test_api.py
     ├── test_app.py
+    ├── test_armazenamento.py
     ├── test_relatorios.py
     └── test_rotas.py
 ```
@@ -310,7 +322,14 @@ O conteúdo esperado é:
 SECRET_KEY=adicione-uma-chave-secreta-segura
 MAIL_USERNAME=seu-email@gmail.com
 MAIL_PASSWORD=sua-senha-de-aplicativo-do-gmail
+CLOUDINARY_CLOUD_NAME=o-cloud-name-da-sua-conta
+CLOUDINARY_API_KEY=a-api-key-da-sua-conta
+CLOUDINARY_API_SECRET=o-api-secret-da-sua-conta
 ```
+
+> As três variáveis do Cloudinary são opcionais: sem elas, o sistema funciona
+> normalmente e só o upload de anexos fica desativado (ver
+> [Configuração de anexos](#️-configuração-de-anexos-cloudinary)).
 
 Para gerar uma chave secreta segura, execute:
 
@@ -426,7 +445,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **112 passed**.
+Esperado: **127 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
@@ -454,6 +473,7 @@ e são preenchidas no painel, nunca no repositório:
 | `SECRET_KEY` | assina o cookie de sessão; sem ela a aplicação se recusa a subir |
 | `DATABASE_URL` | conexão do PostgreSQL |
 | `MAIL_USERNAME` e `MAIL_PASSWORD` | envio das notificações |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` e `CLOUDINARY_API_SECRET` | upload de anexos (opcionais — sem elas, só o upload fica desativado) |
 | `SESSION_COOKIE_SECURE=1` | cookie de sessão só trafega por HTTPS |
 
 O comando de build é `pip install -r requirements.txt && flask db upgrade`:
@@ -522,6 +542,25 @@ MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
 ```
 
 Nunca adicione credenciais reais diretamente no código ou no repositório.
+
+---
+
+## 🖼️ Configuração de anexos (Cloudinary)
+
+Imagens anexadas a um chamado ou comentário são enviadas para o Cloudinary, não
+para o disco nem para o banco. As credenciais também vêm de variáveis de
+ambiente:
+
+```python
+CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
+CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
+```
+
+Sem essas três variáveis definidas, o upload é ignorado silenciosamente — o
+chamado ou o comentário continuam sendo salvos normalmente, só sem o anexo.
+Formatos aceitos: PNG, JPG e WEBP, até 5 MB por arquivo e no máximo 5 arquivos
+por envio.
 
 ---
 
@@ -625,13 +664,6 @@ erro (bounce) de um destinatário de teste com endereço inválido, mostrando qu
 o próprio provedor avisa quando a entrega falha:
 
 https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
-
----
-
-## 🔧 Melhorias futuras
-
-- Upload de anexos nos chamados
-- Integração com serviços de armazenamento em nuvem
 
 ---
 

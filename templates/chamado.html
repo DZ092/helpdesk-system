@@ -39,7 +39,7 @@ Informe os dados do problema técnico
 
 
 
-<form method="POST" class="formulario" id="form-chamado">
+<form method="POST" class="formulario" id="form-chamado" enctype="multipart/form-data">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 
@@ -109,6 +109,23 @@ required></textarea>
 <option value="Alta">Alta</option>
 <option value="Crítica">Crítica</option>
 </select>
+
+</div>
+
+
+
+<div class="campo">
+
+<label for="anexos">Anexar imagens (opcional)</label>
+
+<input
+type="file"
+id="anexos"
+name="anexos"
+accept="image/png,image/jpeg,image/webp"
+multiple>
+
+<p class="dica-campo">Até 5 imagens (PNG, JPG ou WEBP), 5 MB cada.</p>
 
 </div>
 

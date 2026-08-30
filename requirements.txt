@@ -7,6 +7,9 @@ Flask-Mail==0.10.0
 Flask-Migrate==4.1.0
 Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.2
+# Upload dos anexos de imagem dos chamados (issue #6) para o Cloudinary — plano
+# gratuito, sem depender de disco local (não confiável no free tier do Render).
+cloudinary==1.46.2
 greenlet==3.5.4
 itsdangerous==2.2.0
 Jinja2==3.1.6

@@ -50,14 +50,14 @@
         placeholder="Buscar por título..."
         value="{{ busca }}">
 
-        <select name="status">
+        <select name="status" aria-label="Filtrar por status">
             <option value="">Todos os status</option>
             <option value="Aberto" {% if status_filtro == "Aberto" %}selected{% endif %}>Aberto</option>
             <option value="Em andamento" {% if status_filtro == "Em andamento" %}selected{% endif %}>Em andamento</option>
             <option value="Resolvido" {% if status_filtro == "Resolvido" %}selected{% endif %}>Resolvido</option>
         </select>
 
-        <select name="prioridade">
+        <select name="prioridade" aria-label="Filtrar por prioridade">
             <option value="">Todas as prioridades</option>
             <option value="Baixa" {% if prioridade_filtro == "Baixa" %}selected{% endif %}>Baixa</option>
             <option value="Média" {% if prioridade_filtro == "Média" %}selected{% endif %}>Média</option>
@@ -65,14 +65,14 @@
             <option value="Crítica" {% if prioridade_filtro == "Crítica" %}selected{% endif %}>Crítica</option>
         </select>
 
-        <select name="setor">
+        <select name="setor" aria-label="Filtrar por setor">
             <option value="">Todos os setores</option>
             {% for setor in setores %}
                 <option value="{{ setor }}" {% if setor_filtro == setor %}selected{% endif %}>{{ setor }}</option>
             {% endfor %}
         </select>
 
-        <select name="responsavel">
+        <select name="responsavel" aria-label="Filtrar por responsável">
             <option value="">Todos os responsáveis</option>
             <option value="nenhum" {% if responsavel_filtro == "nenhum" %}selected{% endif %}>Aguardando atribuição</option>
             {% for tecnico in tecnicos %}

@@ -72,6 +72,32 @@ class Comentario(db.Model):
     autor = db.relationship("Usuario", backref="comentarios")
 
 
+class Anexo(db.Model):
+    """Uma imagem enviada para um chamado, hospedada no Cloudinary.
+
+    `comentario_id` nulo é um anexo da abertura do chamado; preenchido, é um
+    anexo enviado junto de uma atualização específica — a mesma distinção que
+    `Comentario.chamado_id` faz para o texto, aqui aplicada ao arquivo.
+    """
+
+    id = db.Column(db.Integer, primary_key=True)
+    chamado_id = db.Column(db.Integer, db.ForeignKey("chamado.id"), nullable=False)
+    comentario_id = db.Column(db.Integer, db.ForeignKey("comentario.id"), nullable=True)
+    url = db.Column(db.String(500), nullable=False)
+    nome_original = db.Column(db.String(255), nullable=False)
+    criado_em = db.Column(db.DateTime, default=obter_data_utc, nullable=False)
+    # Cascade de exclusão só do lado do chamado: é ele o dono de todo anexo,
+    # com ou sem comentário associado. Repetir `cascade="all, delete-orphan"`
+    # também em `comentario` faria dois donos disputarem o mesmo `Anexo` —
+    # bastaria excluir um comentário isolado para apagar o anexo por baixo do
+    # pano, mesmo sem excluir o chamado. `comentario.anexos` continua leitura
+    # normal (usado em `detalhe_chamado.html`), só sem cascade de exclusão.
+    chamado = db.relationship(
+        "Chamado", backref=db.backref("anexos", lazy=True, cascade="all, delete-orphan")
+    )
+    comentario = db.relationship("Comentario", backref=db.backref("anexos", lazy=True))
+
+
 class TentativaAcesso(db.Model):
     """Uma tentativa registrada por um dos limitadores de abuso.
 
