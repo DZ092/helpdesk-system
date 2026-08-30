@@ -122,12 +122,16 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   maior. As tabelas ficam dentro de um container que rola sozinho quando o
   conteúdo não cabe, então nenhuma tela empurra a página inteira para o lado.
 
-- **Tema dark**  
-  Interface escura em todas as telas. As cores ficam em variáveis CSS
-  (`--bg`, `--superficie`, `--acento`, `--texto`, além das faixas de status)
-  declaradas uma única vez no topo do `style.css`, que é o mesmo arquivo
-  carregado por todas as páginas — então mudar uma cor ali repinta dashboard,
-  histórico, painel administrativo e logs de uma vez, sem cor solta espalhada
+- **Tema claro e escuro**  
+  A interface se adapta automaticamente à preferência do sistema operacional
+  do usuário (`prefers-color-scheme`), com um botão para trocar manualmente a
+  qualquer momento — a escolha fica salva no navegador e prevalece sobre a
+  detecção automática. As cores ficam em variáveis CSS (`--bg`, `--superficie`,
+  `--acento`, `--texto`, além das faixas de status) declaradas uma única vez
+  no topo do `style.css`, que é o mesmo arquivo carregado por todas as
+  páginas; o tema claro sobrescreve essas mesmas variáveis em vez de duplicar
+  regras, então mudar uma cor ali repinta dashboard, histórico, painel
+  administrativo e logs nos dois temas de uma vez, sem cor solta espalhada
   pelos templates.
 
 - **Tratamento próprio para login e cadastro**  
