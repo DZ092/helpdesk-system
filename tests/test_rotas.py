@@ -231,3 +231,168 @@ def test_exportacao_respeita_o_teto_de_linhas(client, criar_usuario, monkeypatch
     linhas = list(pasta.active.iter_rows(values_only=True))
 
     assert len(linhas) - 1 == 3  # cabeçalho + 3 linhas, não as 6 criadas
+
+
+# ==============================================================================
+# UPLOAD DE ANEXOS (issue #6)
+# ==============================================================================
+def _imagem_falsa(nome="foto.png"):
+    return (io.BytesIO(b"conteudo-de-imagem-falso"), nome)
+
+
+def _mockar_upload(monkeypatch, url="https://res.cloudinary.com/teste/imagem.png"):
+    """Substitui a chamada real ao Cloudinary por uma URL fixa.
+
+    `enviar_anexo` é importado por nome dentro de `rotas.chamados`
+    (`from armazenamento import enviar_anexo`), então o monkeypatch precisa
+    mirar a referência já importada ali — corrigir só `armazenamento.enviar_anexo`
+    não afetaria a rota, que já guarda o próprio ponteiro para a função.
+    """
+    import rotas.chamados as modulo_chamados
+
+    monkeypatch.setattr(modulo_chamados, "enviar_anexo", lambda arquivo: url)
+
+
+def test_abertura_de_chamado_aceita_anexo(client, monkeypatch):
+    _mockar_upload(monkeypatch)
+
+    resposta = client.post(
+        "/chamado",
+        data={
+            "usuario": "Rafael Souza",
+            "setor": "Financeiro",
+            "titulo": "Impressora não imprime",
+            "descricao": "A impressora aceita o trabalho mas nada sai.",
+            "prioridade": "Alta",
+            "anexos": [_imagem_falsa()],
+        },
+        content_type="multipart/form-data",
+    )
+    assert resposta.status_code == 302
+
+    from extensions import db
+    from models import Anexo
+
+    anexos = db.session.execute(db.select(Anexo)).scalars().all()
+    assert len(anexos) == 1
+    assert anexos[0].comentario_id is None
+    assert anexos[0].nome_original == "foto.png"
+
+
+def test_abertura_de_chamado_sem_anexo_continua_funcionando(client, monkeypatch):
+    """O campo é opcional — nada deve chamar o Cloudinary se nenhum arquivo vier."""
+    chamado = False
+
+    def _falha_se_chamado(arquivo):
+        nonlocal chamado
+        chamado = True
+        return "não deveria ter sido chamado"
+
+    import rotas.chamados as modulo_chamados
+
+    monkeypatch.setattr(modulo_chamados, "enviar_anexo", _falha_se_chamado)
+
+    resposta = abrir_chamado(client)
+    assert resposta.status_code == 302
+    assert chamado is False
+
+
+def test_abertura_de_chamado_ignora_extensao_nao_permitida(client, monkeypatch):
+    _mockar_upload(monkeypatch)
+
+    client.post(
+        "/chamado",
+        data={
+            "usuario": "Rafael Souza",
+            "setor": "Financeiro",
+            "titulo": "Chamado com anexo inválido",
+            "descricao": "Descrição qualquer.",
+            "prioridade": "Alta",
+            "anexos": [_imagem_falsa(nome="virus.exe")],
+        },
+        content_type="multipart/form-data",
+    )
+
+    from extensions import db
+    from models import Anexo
+
+    assert db.session.execute(db.select(Anexo)).scalars().all() == []
+
+
+def test_abertura_de_chamado_respeita_o_teto_de_anexos(client, monkeypatch):
+    """Seis arquivos enviados de uma vez — só os 5 primeiros viram Anexo."""
+    _mockar_upload(monkeypatch)
+
+    client.post(
+        "/chamado",
+        data={
+            "usuario": "Rafael Souza",
+            "setor": "Financeiro",
+            "titulo": "Chamado com vários anexos",
+            "descricao": "Descrição qualquer.",
+            "prioridade": "Alta",
+            "anexos": [_imagem_falsa(nome=f"foto{i}.png") for i in range(6)],
+        },
+        content_type="multipart/form-data",
+    )
+
+    from extensions import db
+    from models import Anexo
+
+    assert len(db.session.execute(db.select(Anexo)).scalars().all()) == 5
+
+
+def test_comentario_aceita_anexo(client, criar_usuario, monkeypatch):
+    _mockar_upload(monkeypatch)
+    entrar_como_admin(client, criar_usuario)
+    abrir_chamado(client)
+
+    client.post(
+        "/chamados/1/comentarios",
+        data={"mensagem": "Segue print do erro.", "anexos": [_imagem_falsa(nome="erro.jpg")]},
+        content_type="multipart/form-data",
+    )
+
+    from extensions import db
+    from models import Anexo, Comentario
+
+    comentario = db.session.execute(db.select(Comentario)).scalars().one()
+    anexo = db.session.execute(db.select(Anexo)).scalars().one()
+    assert anexo.comentario_id == comentario.id
+    assert anexo.chamado_id == 1
+
+
+def test_detalhe_do_chamado_exibe_anexo_da_abertura(client, criar_usuario, monkeypatch):
+    _mockar_upload(monkeypatch, url="https://res.cloudinary.com/teste/abertura.png")
+    entrar_como_admin(client, criar_usuario)
+
+    client.post(
+        "/chamado",
+        data={
+            "usuario": "Rafael Souza",
+            "setor": "Financeiro",
+            "titulo": "Chamado com anexo visível",
+            "descricao": "Descrição qualquer.",
+            "prioridade": "Alta",
+            "anexos": [_imagem_falsa()],
+        },
+        content_type="multipart/form-data",
+    )
+
+    html = client.get("/chamados/1").get_data(as_text=True)
+    assert "https://res.cloudinary.com/teste/abertura.png" in html
+
+
+def test_detalhe_do_chamado_exibe_anexo_do_comentario(client, criar_usuario, monkeypatch):
+    entrar_como_admin(client, criar_usuario)
+    abrir_chamado(client)
+    _mockar_upload(monkeypatch, url="https://res.cloudinary.com/teste/comentario.png")
+
+    client.post(
+        "/chamados/1/comentarios",
+        data={"mensagem": "Segue print.", "anexos": [_imagem_falsa()]},
+        content_type="multipart/form-data",
+    )
+
+    html = client.get("/chamados/1").get_data(as_text=True)
+    assert "https://res.cloudinary.com/teste/comentario.png" in html

@@ -26,7 +26,9 @@
         <div class="bloco-detalhe"><span>Aberto em</span><strong>{{ chamado.criado_em|data_local }}</strong></div>
         <div class="bloco-detalhe"><span>Última atualização</span><strong>{{ chamado.atualizado_em|data_local }}</strong></div>
     </section>
-    <section class="secao"><h2>Descrição do problema</h2><p class="descricao-detalhe">{{ chamado.descricao }}</p></section>
+    <section class="secao"><h2>Descrição do problema</h2><p class="descricao-detalhe">{{ chamado.descricao }}</p>
+        {% if anexos_chamado %}<div class="galeria-anexos">{% for anexo in anexos_chamado %}<a href="{{ anexo.url }}" target="_blank" rel="noopener" title="{{ anexo.nome_original }}"><img src="{{ anexo.url }}" alt="{{ anexo.nome_original }}" loading="lazy"></a>{% endfor %}</div>{% endif %}
+    </section>
 
     {% if usuario_logado.eh_tecnico and chamado.status != 'Resolvido' %}
     <section class="secao acoes-chamado"><h2>Atendimento</h2>
@@ -38,10 +40,10 @@
     </section>{% endif %}
 
     <section class="secao"><h2>Atualizações</h2>
-        {% if comentarios %}<div class="linha-do-tempo">{% for comentario in comentarios %}<article class="comentario"><div class="comentario-cabecalho"><strong>{{ comentario.autor.nome }}</strong><time>{{ comentario.criado_em|data_local }}</time></div><p>{{ comentario.mensagem }}</p></article>{% endfor %}</div>
+        {% if comentarios %}<div class="linha-do-tempo">{% for comentario in comentarios %}<article class="comentario"><div class="comentario-cabecalho"><strong>{{ comentario.autor.nome }}</strong><time>{{ comentario.criado_em|data_local }}</time></div><p>{{ comentario.mensagem }}</p>{% if comentario.anexos %}<div class="galeria-anexos">{% for anexo in comentario.anexos %}<a href="{{ anexo.url }}" target="_blank" rel="noopener" title="{{ anexo.nome_original }}"><img src="{{ anexo.url }}" alt="{{ anexo.nome_original }}" loading="lazy"></a>{% endfor %}</div>{% endif %}</article>{% endfor %}</div>
         {% else %}<p class="vazio">Ainda não há atualizações neste chamado.</p>{% endif %}
-        {% if usuario_logado.eh_tecnico %}<form method="POST" action="/chamados/{{ chamado.id }}/comentarios" class="formulario formulario-comentario">
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label for="mensagem">Adicionar atualização</label><textarea id="mensagem" name="mensagem" rows="4" placeholder="Descreva o que foi feito ou o próximo passo..." required></textarea><button class="botao" type="submit">Adicionar atualização</button></form>{% endif %}
+        {% if usuario_logado.eh_tecnico %}<form method="POST" action="/chamados/{{ chamado.id }}/comentarios" class="formulario formulario-comentario" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label for="mensagem">Adicionar atualização</label><textarea id="mensagem" name="mensagem" rows="4" placeholder="Descreva o que foi feito ou o próximo passo..." required></textarea><label for="anexos-comentario">Anexar imagens (opcional)</label><input type="file" id="anexos-comentario" name="anexos" accept="image/png,image/jpeg,image/webp" multiple><button class="botao" type="submit">Adicionar atualização</button></form>{% endif %}
     </section>
 </main>
 </body>

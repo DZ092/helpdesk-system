@@ -4,14 +4,56 @@ from datetime import datetime
 
 from flask import Blueprint, Response, flash, redirect, render_template, request
 
+from armazenamento import enviar_anexo, extensao_valida
 from auditoria import registrar_log
 from constantes import PERFIS_TECNICOS, PRIORIDADES, STATUS_CHAMADO
 from emails import notificar_tecnicos_novo_chamado
 from extensions import db
-from models import Chamado, Comentario, Usuario
+from models import Anexo, Chamado, Comentario, Usuario
 from relatorios import gerar_excel, gerar_pdf
 from seguranca import login_required, tecnico_required, usuario_atual
 from validacao import campo_obrigatorio, inteiro_ou_none
+
+# Máximo de imagens aceitas de uma vez, na abertura do chamado ou num
+# comentário. Sem teto, o `request.files.getlist` aceitaria centenas de
+# arquivos numa única requisição — mais uma salvaguarda de cota do plano
+# gratuito do Cloudinary, como `TAMANHO_MAXIMO_BYTES` em `armazenamento.py`.
+MAX_ANEXOS_POR_ENVIO = 5
+
+
+def _processar_anexos(arquivos, chamado_id, comentario_id=None):
+    """Sobe cada arquivo de imagem válido e grava um `Anexo` por upload bem-sucedido.
+
+    Não interrompe o fluxo em caso de arquivo inválido ou falha de upload: um
+    anexo é sempre complementar ao texto do chamado ou do comentário, nunca a
+    própria ação — silenciosamente ignorar o que não deu certo é melhor que
+    perder a abertura do chamado ou o comentário por causa de uma imagem.
+    """
+    enviados = 0
+    for arquivo in arquivos[:MAX_ANEXOS_POR_ENVIO]:
+        if not arquivo or not arquivo.filename:
+            continue
+        if not extensao_valida(arquivo.filename):
+            continue
+
+        url = enviar_anexo(arquivo)
+        if url is None:
+            continue
+
+        db.session.add(
+            Anexo(
+                chamado_id=chamado_id,
+                comentario_id=comentario_id,
+                url=url,
+                nome_original=arquivo.filename[:255],
+            )
+        )
+        enviados += 1
+
+    if enviados:
+        db.session.commit()
+    return enviados
+
 
 chamados = Blueprint("chamados", __name__)
 
@@ -133,6 +175,9 @@ def chamado():
         db.session.add(novo_chamado)
         db.session.commit()
         registrar_log("Abertura de chamado", f"Chamado #{novo_chamado.id}: {novo_chamado.titulo}")
+
+        _processar_anexos(request.files.getlist("anexos"), chamado_id=novo_chamado.id)
+
         notificar_tecnicos_novo_chamado(novo_chamado)
         flash("Chamado enviado com sucesso! Nossa equipe vai analisar em breve.")
         return redirect("/chamado")
@@ -249,7 +294,25 @@ def detalhe_chamado(id):
         .all()
     )
 
-    return render_template("detalhe_chamado.html", chamado=chamado, comentarios=comentarios)
+    # Só os anexos da abertura (comentario_id nulo); os anexos de comentário
+    # vêm juntos de `comentario.anexos` (backref em `models.Anexo`), lidos
+    # direto no template — não há por que duplicar a consulta aqui.
+    anexos_chamado = (
+        db.session.execute(
+            db.select(Anexo)
+            .where(Anexo.chamado_id == id, Anexo.comentario_id.is_(None))
+            .order_by(Anexo.criado_em)
+        )
+        .scalars()
+        .all()
+    )
+
+    return render_template(
+        "detalhe_chamado.html",
+        chamado=chamado,
+        comentarios=comentarios,
+        anexos_chamado=anexos_chamado,
+    )
 
 
 @chamados.route("/chamados/<int:id>/status", methods=["POST"])
@@ -295,6 +358,10 @@ def adicionar_comentario(id):
     db.session.commit()
 
     registrar_log("Comentário adicionado", f"Comentário adicionado ao chamado #{chamado.id}")
+
+    _processar_anexos(
+        request.files.getlist("anexos"), chamado_id=chamado.id, comentario_id=novo_comentario.id
+    )
 
     flash("Atualização adicionada com sucesso.")
     return redirect(f"/chamados/{id}")
