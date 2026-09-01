@@ -76,23 +76,18 @@ Olá, {{ nome }} — escolha a senha que passará a valer
 
 
 <form method="POST" class="formulario">
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{{ form.hidden_tag() }}
 
 
 <div class="campo">
 
-<label for="nova_senha">Nova senha</label>
+{{ form.nova_senha.label }}
 
 <div class="campo-input">
 <span class="icone-campo" aria-hidden="true">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
 </span>
-<input
-id="nova_senha"
-type="password"
-name="nova_senha"
-placeholder="Mínimo de 8 caracteres"
-required>
+{{ form.nova_senha(placeholder="Mínimo de 8 caracteres", required=True) }}
 </div>
 
 </div>
@@ -100,18 +95,13 @@ required>
 
 <div class="campo">
 
-<label for="confirmacao">Confirme a nova senha</label>
+{{ form.confirmacao.label(text="Confirme a nova senha") }}
 
 <div class="campo-input">
 <span class="icone-campo" aria-hidden="true">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
 </span>
-<input
-id="confirmacao"
-type="password"
-name="confirmacao"
-placeholder="Repita a nova senha"
-required>
+{{ form.confirmacao(placeholder="Repita a nova senha", required=True) }}
 </div>
 
 </div>

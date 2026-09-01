@@ -7,6 +7,9 @@ Flask-Mail==0.10.0
 Flask-Migrate==4.1.0
 Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.2
+# O validador Email() do WTForms delega para esta biblioteca (issue #50) — sem
+# ela, qualquer FlaskForm com Email() levanta exceção no primeiro validate().
+email-validator==2.3.0
 # Upload dos anexos de imagem dos chamados (issue #6) para o Cloudinary — plano
 # gratuito, sem depender de disco local (não confiável no free tier do Render).
 cloudinary==1.46.2
