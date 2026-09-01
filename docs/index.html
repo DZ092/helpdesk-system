@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help Desk System — Eduardo Coelho</title>
+<meta name="description" content="Sistema web de gerenciamento de chamados técnicos desenvolvido em Flask, com controle de acesso por perfil, dashboard, API REST e testes automatizados.">
+<style>
+:root {
+    --bg: #0b1120;
+    --bg-gradiente-topo: #0d1425;
+    --bg-gradiente-base: #0b1120;
+    --superficie: #111827;
+    --superficie-alt: #1a2436;
+    --borda: rgba(255, 255, 255, 0.08);
+    --texto: #e2e8f0;
+    --texto-muted: #94a3b8;
+    --texto-fraco: #64748b;
+    --marca: #60a5fa;
+    --acento: #3b82f6;
+    --acento-forte: #6366f1;
+    --acento-hover: #2563eb;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(180deg, var(--bg-gradiente-topo), var(--bg-gradiente-base));
+    color: var(--texto);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+header.hero {
+    padding: 96px 0 64px;
+    text-align: center;
+    border-bottom: 1px solid var(--borda);
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--superficie-alt);
+    border: 1px solid var(--borda);
+    color: var(--texto-muted);
+    font-size: 0.8rem;
+    margin-bottom: 24px;
+}
+
+h1 {
+    font-size: 2.6rem;
+    margin: 0 0 16px;
+    background: linear-gradient(135deg, var(--marca), var(--acento-forte));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.subtitulo {
+    font-size: 1.15rem;
+    color: var(--texto-muted);
+    max-width: 640px;
+    margin: 0 auto 40px;
+}
+
+.cta {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.botao {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.botao-primario {
+    background: var(--acento);
+    color: #fff;
+}
+
+.botao-primario:hover {
+    background: var(--acento-hover);
+    transform: translateY(-1px);
+}
+
+.botao-secundario {
+    background: var(--superficie-alt);
+    color: var(--texto);
+    border: 1px solid var(--borda);
+}
+
+.botao-secundario:hover {
+    background: var(--superficie);
+    transform: translateY(-1px);
+}
+
+.aviso {
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: var(--texto-fraco);
+}
+
+section {
+    padding: 64px 0;
+    border-bottom: 1px solid var(--borda);
+}
+
+section:last-of-type {
+    border-bottom: none;
+}
+
+h2 {
+    font-size: 1.6rem;
+    margin: 0 0 32px;
+    text-align: center;
+}
+
+.grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: 14px;
+    padding: 24px;
+}
+
+.card h3 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+    color: var(--marca);
+}
+
+.card p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--texto-muted);
+}
+
+.tecnologias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.tecnologias span {
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: var(--superficie-alt);
+    border: 1px solid var(--borda);
+    font-size: 0.85rem;
+    color: var(--texto-muted);
+}
+
+footer {
+    padding: 40px 0 64px;
+    text-align: center;
+    color: var(--texto-fraco);
+    font-size: 0.9rem;
+}
+
+footer a {
+    color: var(--texto-muted);
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+<div class="container">
+<span class="badge">Portfólio · Análise e Desenvolvimento de Sistemas</span>
+<h1>Help Desk System</h1>
+<p class="subtitulo">
+Sistema web para gerenciamento de chamados técnicos, com controle de acesso
+por perfil, dashboard, API REST, anexos e testes automatizados.
+</p>
+<div class="cta">
+<a class="botao botao-primario" href="https://helpdesk-system-cci1.onrender.com/login">Acessar a aplicação</a>
+<a class="botao botao-secundario" href="https://github.com/DZ092/helpdesk-system">Ver no GitHub</a>
+</div>
+<p class="aviso">
+Hospedada em plano gratuito: o primeiro carregamento pode levar cerca de um
+minuto enquanto o serviço acorda.
+</p>
+</div>
+</header>
+
+<section>
+<div class="container">
+<h2>Funcionalidades</h2>
+<div class="grid-cards">
+<div class="card">
+<h3>Perfis de acesso</h3>
+<p>Controle de permissões para Usuário, Técnico e Administrador, relido do banco a cada requisição.</p>
+</div>
+<div class="card">
+<h3>Dashboard e histórico</h3>
+<p>Indicadores de chamados abertos, em andamento e resolvidos, com busca, filtros e paginação.</p>
+</div>
+<div class="card">
+<h3>Atendimento técnico</h3>
+<p>Técnicos e administradores assumem chamados, atualizam status e registram comentários internos.</p>
+</div>
+<div class="card">
+<h3>Notificações por e-mail</h3>
+<p>Aviso automático para técnicos e administradores a cada novo chamado aberto.</p>
+</div>
+<div class="card">
+<h3>API REST</h3>
+<p>Listagem e detalhe de chamados via token pessoal, com os mesmos filtros e regras da interface.</p>
+</div>
+<div class="card">
+<h3>Anexos e relatórios</h3>
+<p>Upload de imagens via Cloudinary e exportação da listagem em Excel ou PDF.</p>
+</div>
+<div class="card">
+<h3>Auditoria</h3>
+<p>Registro de ações importantes com data, hora e autor, consultável pelo painel administrativo.</p>
+</div>
+<div class="card">
+<h3>Testes automatizados</h3>
+<p>Suíte com mais de 120 testes em pytest, rodando no GitHub Actions a cada push e pull request.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="container">
+<h2>Tecnologias</h2>
+<div class="tecnologias">
+<span>Python</span>
+<span>Flask</span>
+<span>Flask-SQLAlchemy</span>
+<span>Flask-WTF</span>
+<span>Flask-Mail</span>
+<span>Flask-Migrate</span>
+<span>PostgreSQL</span>
+<span>SQLite</span>
+<span>Cloudinary</span>
+<span>Pytest</span>
+<span>GitHub Actions</span>
+<span>Waitress</span>
+</div>
+</div>
+</section>
+
+<footer>
+<div class="container">
+<p>Desenvolvido por <a href="https://github.com/DZ092">Eduardo Coelho</a> — projeto de portfólio, Análise e Desenvolvimento de Sistemas (UniCesumar).</p>
+</div>
+</footer>
+
+</body>
+</html>
