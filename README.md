@@ -4,6 +4,8 @@
 
 [![tests](https://github.com/DZ092/helpdesk-system/actions/workflows/tests.yml/badge.svg)](https://github.com/DZ092/helpdesk-system/actions/workflows/tests.yml)
 
+🔗 [Página de apresentação do projeto](https://dz092.github.io/helpdesk-system/)
+
 > Hospedada em plano gratuito: o serviço hiberna depois de alguns minutos sem
 > acesso, então o primeiro carregamento pode levar cerca de um minuto. Os
 > seguintes são imediatos.
@@ -186,6 +188,8 @@ helpdesk-system/
 ├── auditoria.py
 ├── render.yaml
 ├── constantes.py
+├── docs/
+│   └── index.html
 ├── emails.py
 ├── extensions.py
 ├── formularios.py
