@@ -14,10 +14,10 @@ senha comum, só números etc.), para o formulário já recusar isso sozinho.
 """
 
 from flask_wtf import FlaskForm
-from wtforms import EmailField, PasswordField, StringField, SubmitField
+from wtforms import EmailField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 
-from constantes import TAMANHO_MINIMO_SENHA
+from constantes import PRIORIDADES, STATUS_CHAMADO, TAMANHO_MINIMO_SENHA
 from seguranca import validar_forca_senha
 
 
@@ -85,3 +85,55 @@ class FormularioRedefinirSenha(FlaskForm):
         ],
     )
     submit = SubmitField("Redefinir senha")
+
+
+class FormularioChamado(FlaskForm):
+    """Abertura pública de chamado (rota `/chamado`).
+
+    Sem `submit`/CSRF diferentes do padrão: o template já usa `csrf_token()`
+    manual, que o `FlaskForm` também aceita — nenhuma mudança de template é
+    necessária além de trocar os `name=` soltos pelos campos do form.
+    """
+
+    usuario = StringField(
+        "Usuário",
+        validators=[DataRequired(message="Preencha todos os campos do chamado."), Length(max=100)],
+    )
+    setor = StringField(
+        "Setor",
+        validators=[DataRequired(message="Preencha todos os campos do chamado."), Length(max=100)],
+    )
+    titulo = StringField(
+        "Título do problema",
+        validators=[DataRequired(message="Preencha todos os campos do chamado."), Length(max=200)],
+    )
+    descricao = TextAreaField(
+        "Descrição",
+        validators=[DataRequired(message="Preencha todos os campos do chamado.")],
+    )
+    # Sem `choices` restritas: um valor fora de `PRIORIDADES` (campo adulterado
+    # no cliente, por exemplo) precisa continuar caindo no reaproveitamento
+    # silencioso para "Média" que a rota já fazia, não virar erro de validação.
+    prioridade = StringField("Prioridade")
+    submit = SubmitField("Enviar chamado")
+
+
+class FormularioStatusChamado(FlaskForm):
+    """Atualização de status pelo técnico/administrador (`/chamados/<id>/status`)."""
+
+    status = SelectField(
+        "Status",
+        choices=[(valor, valor) for valor in STATUS_CHAMADO],
+        validators=[DataRequired(message="Status inválido.")],
+    )
+    submit = SubmitField("Atualizar status")
+
+
+class FormularioComentarioChamado(FlaskForm):
+    """Comentário interno de atendimento (`/chamados/<id>/comentarios`)."""
+
+    mensagem = TextAreaField(
+        "Adicionar atualização",
+        validators=[DataRequired(message="A mensagem da atualização não pode ficar vazia.")],
+    )
+    submit = SubmitField("Adicionar atualização")

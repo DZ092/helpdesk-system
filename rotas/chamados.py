@@ -9,10 +9,11 @@ from auditoria import registrar_log
 from constantes import PERFIS_TECNICOS, PRIORIDADES, STATUS_CHAMADO
 from emails import notificar_tecnicos_novo_chamado
 from extensions import db
+from formularios import FormularioChamado, FormularioComentarioChamado, FormularioStatusChamado
 from models import Anexo, Chamado, Comentario, Usuario
 from relatorios import gerar_excel, gerar_pdf
 from seguranca import login_required, tecnico_required, usuario_atual
-from validacao import campo_obrigatorio, inteiro_ou_none
+from validacao import inteiro_ou_none
 
 # Máximo de imagens aceitas de uma vez, na abertura do chamado ou num
 # comentário. Sem teto, o `request.files.getlist` aceitaria centenas de
@@ -56,6 +57,18 @@ def _processar_anexos(arquivos, chamado_id, comentario_id=None):
 
 
 chamados = Blueprint("chamados", __name__)
+
+
+def _primeiro_erro(form):
+    """Primeira mensagem de validação do form, ou None se não houve erro.
+
+    Mesmo padrão de `rotas/auth.py`: os templates deste módulo também mostram
+    um único bloco `{% if erro %}`, não uma lista por campo.
+    """
+    for erros_do_campo in form.errors.values():
+        if erros_do_campo:
+            return erros_do_campo[0]
+    return None
 
 
 def query_chamados_filtrados(args):
@@ -147,17 +160,13 @@ def dashboard():
 
 @chamados.route("/chamado", methods=["GET", "POST"])
 def chamado():
-    if request.method == "POST":
-        usuario = campo_obrigatorio("usuario", 100)
-        setor = campo_obrigatorio("setor", 100)
-        titulo = campo_obrigatorio("titulo", 200)
-        descricao = request.form.get("descricao", "").strip()
-        prioridade = request.form.get("prioridade", "Média")
-
-        if not all((usuario, setor, titulo, descricao)):
-            return render_template(
-                "chamado.html", erro="Preencha todos os campos do chamado."
-            )
+    form = FormularioChamado()
+    if form.validate_on_submit():
+        usuario = form.usuario.data.strip()[:100]
+        setor = form.setor.data.strip()[:100]
+        titulo = form.titulo.data.strip()[:200]
+        descricao = form.descricao.data.strip()
+        prioridade = form.prioridade.data or "Média"
 
         # Sem essa checagem, qualquer valor enviado no formulário era gravado
         # como prioridade e escapava dos filtros e das cores da interface.
@@ -181,7 +190,7 @@ def chamado():
         notificar_tecnicos_novo_chamado(novo_chamado)
         flash("Chamado enviado com sucesso! Nossa equipe vai analisar em breve.")
         return redirect("/chamado")
-    return render_template("chamado.html")
+    return render_template("chamado.html", form=form, erro=_primeiro_erro(form))
 
 
 @chamados.route("/chamados")
@@ -320,22 +329,21 @@ def detalhe_chamado(id):
 def atualizar_status_chamado(id):
     chamado = db.get_or_404(Chamado, id)
 
-    novo_status = request.form.get("status")
-
-    if novo_status not in STATUS_CHAMADO:
-        flash("Status inválido.")
+    form = FormularioStatusChamado()
+    if not form.validate_on_submit():
+        flash(_primeiro_erro(form) or "Status inválido.")
         return redirect(f"/chamados/{id}")
 
-    chamado.status = novo_status
+    chamado.status = form.status.data
 
     if chamado.responsavel_id is None:
         chamado.responsavel_id = usuario_atual().id
 
     db.session.commit()
 
-    registrar_log("Atualização de status", f"Chamado #{chamado.id} alterado para '{novo_status}'")
+    registrar_log("Atualização de status", f"Chamado #{chamado.id} alterado para '{chamado.status}'")
 
-    flash(f"Status do chamado atualizado para '{novo_status}'.")
+    flash(f"Status do chamado atualizado para '{chamado.status}'.")
     return redirect(f"/chamados/{id}")
 
 
@@ -344,15 +352,15 @@ def atualizar_status_chamado(id):
 def adicionar_comentario(id):
     chamado = db.get_or_404(Chamado, id)
 
-    mensagem = request.form.get("mensagem", "").strip()
-    if not mensagem:
-        flash("A mensagem da atualização não pode ficar vazia.")
+    form = FormularioComentarioChamado()
+    if not form.validate_on_submit():
+        flash(_primeiro_erro(form) or "A mensagem da atualização não pode ficar vazia.")
         return redirect(f"/chamados/{id}")
 
     novo_comentario = Comentario(
         chamado_id=chamado.id,
         autor_id=usuario_atual().id,
-        mensagem=mensagem,
+        mensagem=form.mensagem.data.strip(),
     )
     db.session.add(novo_comentario)
     db.session.commit()
