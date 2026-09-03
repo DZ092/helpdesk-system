@@ -17,7 +17,7 @@ from flask_wtf import FlaskForm
 from wtforms import EmailField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 
-from constantes import PRIORIDADES, STATUS_CHAMADO, TAMANHO_MINIMO_SENHA
+from constantes import PRIORIDADES, STATUS_CHAMADO, TAMANHO_MINIMO_SENHA, TIPOS_USUARIO
 from seguranca import validar_forca_senha
 
 
@@ -137,3 +137,14 @@ class FormularioComentarioChamado(FlaskForm):
         validators=[DataRequired(message="A mensagem da atualização não pode ficar vazia.")],
     )
     submit = SubmitField("Adicionar atualização")
+
+
+class FormularioAlterarTipoUsuario(FlaskForm):
+    """Alteração de perfil pelo administrador (`/admin/usuarios/<id>/tipo`)."""
+
+    tipo_usuario = SelectField(
+        "Tipo de usuário",
+        choices=[(valor, valor) for valor in TIPOS_USUARIO],
+        validators=[DataRequired(message="Tipo de usuário inválido.")],
+    )
+    submit = SubmitField("Salvar")
