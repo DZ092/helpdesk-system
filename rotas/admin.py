@@ -1,10 +1,10 @@
 """Painel administrativo: gestão de usuários e trilha de auditoria."""
 
-from flask import Blueprint, flash, redirect, render_template, request
+from flask import Blueprint, flash, redirect, render_template
 
 from auditoria import registrar_log
-from constantes import TIPOS_USUARIO
 from extensions import db
+from formularios import FormularioAlterarTipoUsuario
 from models import Chamado, Comentario, LogAuditoria, Usuario
 from seguranca import admin_required, usuario_atual
 
@@ -26,11 +26,12 @@ def admin_usuarios():
 def admin_alterar_tipo(id):
     usuario = db.get_or_404(Usuario, id)
 
-    novo_tipo = request.form.get("tipo_usuario")
-
-    if novo_tipo not in TIPOS_USUARIO:
+    form = FormularioAlterarTipoUsuario()
+    if not form.validate_on_submit():
         flash("Tipo de usuário inválido.")
         return redirect("/admin/usuarios")
+
+    novo_tipo = form.tipo_usuario.data
 
     if usuario.id == usuario_atual().id and novo_tipo != "Administrador":
         flash("Você não pode remover seu próprio acesso de Administrador.")
