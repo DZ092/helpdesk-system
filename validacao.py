@@ -1,16 +1,10 @@
-"""Leitura e saneamento de campos de formulário.
+"""Leitura e saneamento de valores de filtro.
 
-Enquanto os formulários não forem classes do Flask-WTF, estes dois helpers
-evitam repetir `request.form.get(...).strip()[:n]` em cada rota.
+`campo_obrigatorio` existiu aqui enquanto as rotas liam formulários direto de
+`request.form`; a migração para Flask-WTF (issues #15/#50/#51/#54/#55) tirou
+essa responsabilidade das rotas e a função ficou sem nenhuma chamada — removida
+nesta limpeza. `inteiro_ou_none` continua em uso (filtros de `/chamados`).
 """
-
-from flask import request
-
-
-def campo_obrigatorio(nome, tamanho_maximo):
-    """Lê um campo do formulário, remove espaços e corta no tamanho da coluna."""
-    valor = request.form.get(nome, "").strip()
-    return valor[:tamanho_maximo]
 
 
 def inteiro_ou_none(valor):
