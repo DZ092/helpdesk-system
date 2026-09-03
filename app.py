@@ -10,7 +10,7 @@ import os
 from datetime import timedelta, timezone
 
 from dotenv import load_dotenv
-from flask import Flask, g
+from flask import Flask, g, render_template
 
 from constantes import FUSO_EXIBICAO
 from extensions import csrf, db, mail, migrate
@@ -100,6 +100,29 @@ def _registrar_ganchos(app):
     def injetar_usuario():
         """Deixa `usuario_logado` disponível em todos os templates."""
         return {"usuario_logado": usuario_atual()}
+
+    @app.errorhandler(403)
+    def erro_403(excecao):
+        return render_template(
+            "erro.html", codigo=403, mensagem="Você não tem permissão para acessar esta página."
+        ), 403
+
+    @app.errorhandler(404)
+    def erro_404(excecao):
+        return render_template(
+            "erro.html", codigo=404, mensagem="Esta página não existe ou foi removida."
+        ), 404
+
+    @app.errorhandler(500)
+    def erro_500(excecao):
+        # O SQLAlchemy deixa a sessão "suja" depois de uma exceção não tratada
+        # (uma transação pendente, por exemplo); sem o rollback, a primeira
+        # consulta da próxima requisição herdaria esse estado e falharia
+        # também, mesmo sendo uma requisição sem nenhum problema.
+        db.session.rollback()
+        return render_template(
+            "erro.html", codigo=500, mensagem="Algo deu errado do nosso lado. Tente novamente em instantes."
+        ), 500
 
 
 def create_app(ajustes=None):
