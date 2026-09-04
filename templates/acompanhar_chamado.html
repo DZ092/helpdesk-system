@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Acompanhar Chamado</title>
+
+<script>
+// Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
+// para não piscar no tema errado por uma fração de segundo. Lógica completa
+// e comentada em static/js/tema.js — este trecho precisa ser inline e vir
+// antes do <link> do CSS, senão o navegador já pintou a tela no tema padrão.
+(function () {
+    var tema;
+    try {
+        tema = localStorage.getItem("tema-preferido");
+    } catch (erro) {
+        tema = null;
+    }
+    if (!tema) {
+        var prefereClaro = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+        tema = prefereClaro ? "light" : "dark";
+    }
+    document.documentElement.setAttribute("data-theme", tema);
+})();
+</script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="{{ url_for('static', filename='js/tema.js') }}"></script>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>🔎 Acompanhar Chamado</h1>
+
+<p class="subtitulo">
+Informe o código de acompanhamento recebido na abertura
+</p>
+
+
+{% if erro %}
+<p class="erro">{{ erro }}</p>
+{% endif %}
+
+
+<form method="POST" class="formulario">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+<div class="campo">
+
+{{ form.codigo.label }}
+
+{{ form.codigo(placeholder="Cole aqui o código recebido") }}
+
+</div>
+
+<button class="botao" type="submit">Consultar chamado</button>
+
+</form>
+
+
+{% if chamado %}
+<section class="secao">
+    <div class="cabecalho-chamado">
+        <div><p class="eyebrow">Chamado #{{ chamado.id }}</p><h2>{{ chamado.titulo }}</h2></div>
+        {% if chamado.status == 'Aberto' %}<span class="status status-aberto">🔴 Aberto</span>
+        {% elif chamado.status == 'Em andamento' %}<span class="status status-andamento">🟡 Em andamento</span>
+        {% else %}<span class="status status-resolvido">🟢 Resolvido</span>{% endif %}
+    </div>
+
+    <section class="detalhes-grid">
+        <div class="bloco-detalhe"><span>Setor</span><strong>{{ chamado.setor }}</strong></div>
+        <div class="bloco-detalhe"><span>Prioridade</span><strong>{{ chamado.prioridade }}</strong></div>
+        <div class="bloco-detalhe"><span>Aberto em</span><strong>{{ chamado.criado_em|data_local }}</strong></div>
+        <div class="bloco-detalhe"><span>Última atualização</span><strong>{{ chamado.atualizado_em|data_local }}</strong></div>
+    </section>
+
+    <section class="secao">
+        <h2>Descrição do problema</h2>
+        <p class="descricao-detalhe">{{ chamado.descricao }}</p>
+    </section>
+
+    <section class="secao">
+        <h2>Atualizações</h2>
+        {% if comentarios %}
+        <div class="linha-do-tempo">
+            {% for comentario in comentarios %}
+            <article class="comentario">
+                <div class="comentario-cabecalho"><time>{{ comentario.criado_em|data_local }}</time></div>
+                <p>{{ comentario.mensagem }}</p>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="vazio">Ainda não há atualizações neste chamado.</p>
+        {% endif %}
+    </section>
+</section>
+{% endif %}
+
+
+<p class="link-secundario">
+<a href="/chamado">Abrir um novo chamado</a>
+</p>
+
+
+</div>
+
+
+</body>
+
+</html>

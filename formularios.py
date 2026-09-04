@@ -118,6 +118,17 @@ class FormularioChamado(FlaskForm):
     submit = SubmitField("Enviar chamado")
 
 
+class FormularioAcompanharChamado(FlaskForm):
+    """Consulta pública de um chamado pelo código de acompanhamento
+    (`/chamado/acompanhar`), sem exigir login."""
+
+    codigo = StringField(
+        "Código de acompanhamento",
+        validators=[DataRequired(message="Informe o código de acompanhamento."), Length(max=64)],
+    )
+    submit = SubmitField("Consultar chamado")
+
+
 class FormularioStatusChamado(FlaskForm):
     """Atualização de status pelo técnico/administrador (`/chamados/<id>/status`)."""
 

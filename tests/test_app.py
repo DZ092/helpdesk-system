@@ -172,6 +172,50 @@ def test_chamado_incompleto_e_recusado(client):
     assert total == 0
 
 
+def test_abrir_chamado_gera_codigo_de_acompanhamento(client):
+    """A confirmação mostra um código, e é o único lugar onde ele existe em
+    texto puro — o banco guarda só o hash (ver `gerar_codigo_acompanhamento`)."""
+    from extensions import db
+    from models import Chamado
+
+    resposta = abrir_chamado(client)
+    assert "código".encode() in resposta.data
+
+    chamado = db.session.execute(
+        db.select(Chamado).order_by(Chamado.id.desc())
+    ).scalars().first()
+    assert chamado.codigo_acompanhamento_hash is not None
+
+
+def test_acompanhar_chamado_com_codigo_valido(client):
+    from seguranca import gerar_codigo_acompanhamento
+    from extensions import db
+    from models import Chamado
+
+    abrir_chamado(client, titulo="Monitor piscando")
+    chamado = db.session.execute(
+        db.select(Chamado).order_by(Chamado.id.desc())
+    ).scalars().first()
+    codigo = gerar_codigo_acompanhamento(chamado)
+
+    resposta = client.post(
+        "/chamado/acompanhar", data={"codigo": codigo}, follow_redirects=True
+    )
+    assert resposta.status_code == 200
+    assert "Monitor piscando".encode() in resposta.data
+
+
+def test_acompanhar_chamado_com_codigo_invalido_nao_vaza_dados(client):
+    abrir_chamado(client, titulo="Computador não liga")
+
+    resposta = client.post(
+        "/chamado/acompanhar", data={"codigo": "codigo-que-nao-existe"}, follow_redirects=True
+    )
+    assert resposta.status_code == 200
+    assert "Computador não liga".encode() not in resposta.data
+    assert "inválido".encode() in resposta.data
+
+
 def test_tecnico_assume_chamado_vira_responsavel(client, criar_usuario):
     criar_usuario(email="tecnico@teste.com", tipo="Técnico")
     fazer_login(client, email="tecnico@teste.com")

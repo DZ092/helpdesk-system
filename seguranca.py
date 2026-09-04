@@ -26,7 +26,7 @@ from constantes import (
     VALIDADE_TOKEN_SENHA_SEGUNDOS,
 )
 from extensions import db
-from models import TentativaAcesso, Usuario, obter_data_utc
+from models import Chamado, TentativaAcesso, Usuario, obter_data_utc
 
 
 def impressao_sessao(usuario):
@@ -356,3 +356,41 @@ def tecnico_api_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+
+# ==============================================================================
+# CÓDIGO DE ACOMPANHAMENTO PÚBLICO DE CHAMADO
+# ==============================================================================
+def _hash_codigo_acompanhamento(codigo):
+    """SHA-256 do código de acompanhamento, o que fica gravado no banco.
+
+    Mesmo raciocínio de `_hash_token_api`: o código já nasce com entropia alta
+    (16 bytes aleatórios via `secrets`), então um hash simples basta — não há
+    o risco de dicionário que justificaria um algoritmo mais caro como o usado
+    na senha, escolhida por uma pessoa.
+    """
+    return hashlib.sha256(codigo.encode()).hexdigest()
+
+
+def gerar_codigo_acompanhamento(chamado):
+    """Cria o código de acompanhamento de um chamado e devolve o valor em texto puro.
+
+    É a única vez que o valor bruto existe: só o hash é gravado em
+    `Chamado.codigo_acompanhamento_hash`. Chamado a mais de uma vez para o
+    mesmo chamado, substitui o código anterior — o antigo deixa de funcionar.
+    """
+    codigo = secrets.token_urlsafe(16)
+    chamado.codigo_acompanhamento_hash = _hash_codigo_acompanhamento(codigo)
+    db.session.commit()
+    return codigo
+
+
+def chamado_do_codigo_acompanhamento(codigo):
+    """Chamado dono do código, ou None se o código não existir ou não bater."""
+    if not codigo:
+        return None
+    return db.session.execute(
+        db.select(Chamado).where(
+            Chamado.codigo_acompanhamento_hash == _hash_codigo_acompanhamento(codigo)
+        )
+    ).scalar_one_or_none()

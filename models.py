@@ -38,6 +38,13 @@ class Chamado(db.Model):
     )
     responsavel = db.relationship("Usuario", backref="chamados_responsaveis")
 
+    # Hash do código de acompanhamento público (ver `gerar_codigo_acompanhamento`
+    # em seguranca.py), nunca o código em si — mesmo raciocínio do token de API
+    # do usuário: o banco guarda só o que serve para *conferir* o código, então
+    # um vazamento do banco não entrega nada que sirva para consultar o chamado
+    # de outra pessoa. É None nos chamados criados antes desta coluna existir.
+    codigo_acompanhamento_hash = db.Column(db.String(64), unique=True, nullable=True, index=True)
+
 
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
