@@ -9,10 +9,21 @@ from auditoria import registrar_log
 from constantes import PERFIS_TECNICOS, PRIORIDADES, STATUS_CHAMADO
 from emails import notificar_tecnicos_novo_chamado
 from extensions import db
-from formularios import FormularioChamado, FormularioComentarioChamado, FormularioStatusChamado
+from formularios import (
+    FormularioAcompanharChamado,
+    FormularioChamado,
+    FormularioComentarioChamado,
+    FormularioStatusChamado,
+)
 from models import Anexo, Chamado, Comentario, Usuario
 from relatorios import gerar_excel, gerar_pdf
-from seguranca import login_required, tecnico_required, usuario_atual
+from seguranca import (
+    chamado_do_codigo_acompanhamento,
+    gerar_codigo_acompanhamento,
+    login_required,
+    tecnico_required,
+    usuario_atual,
+)
 from validacao import inteiro_ou_none
 
 # Máximo de imagens aceitas de uma vez, na abertura do chamado ou num
@@ -188,9 +199,57 @@ def chamado():
         _processar_anexos(request.files.getlist("anexos"), chamado_id=novo_chamado.id)
 
         notificar_tecnicos_novo_chamado(novo_chamado)
-        flash("Chamado enviado com sucesso! Nossa equipe vai analisar em breve.")
-        return redirect("/chamado")
+
+        # Única vez em que o código existe em texto puro (ver docstring de
+        # `gerar_codigo_acompanhamento`) — por isso vai direto para o template
+        # de confirmação, em vez de um redirect que o perderia no caminho.
+        codigo_acompanhamento = gerar_codigo_acompanhamento(novo_chamado)
+
+        return render_template(
+            "chamado_confirmacao.html", codigo_acompanhamento=codigo_acompanhamento
+        )
     return render_template("chamado.html", form=form, erro=_primeiro_erro(form))
+
+
+@chamados.route("/chamado/acompanhar", methods=["GET", "POST"])
+def acompanhar_chamado():
+    """Consulta pública de um chamado pelo código de acompanhamento, sem login.
+
+    Devolve o mesmo template tanto para "informe o código" (GET, ou POST com
+    código inválido) quanto para o resultado da consulta — a diferença é só
+    se `chamado` vem preenchido ou None, o que já cobre "código errado" e
+    "código de outra pessoa" com a mesma mensagem genérica, sem entregar qual
+    dos dois casos aconteceu.
+    """
+    form = FormularioAcompanharChamado()
+    chamado_encontrado = None
+    comentarios = []
+    erro = None
+
+    if form.validate_on_submit():
+        chamado_encontrado = chamado_do_codigo_acompanhamento(form.codigo.data.strip())
+        if chamado_encontrado is None:
+            erro = "Código de acompanhamento inválido."
+        else:
+            comentarios = (
+                db.session.execute(
+                    db.select(Comentario)
+                    .where(Comentario.chamado_id == chamado_encontrado.id)
+                    .order_by(Comentario.criado_em)
+                )
+                .scalars()
+                .all()
+            )
+    elif request.method == "POST":
+        erro = _primeiro_erro(form)
+
+    return render_template(
+        "acompanhar_chamado.html",
+        form=form,
+        chamado=chamado_encontrado,
+        comentarios=comentarios,
+        erro=erro,
+    )
 
 
 @chamados.route("/chamados")

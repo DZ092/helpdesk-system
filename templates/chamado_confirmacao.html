@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Chamado enviado</title>
+
+<script>
+// Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
+// para não piscar no tema errado por uma fração de segundo. Lógica completa
+// e comentada em static/js/tema.js — este trecho precisa ser inline e vir
+// antes do <link> do CSS, senão o navegador já pintou a tela no tema padrão.
+(function () {
+    var tema;
+    try {
+        tema = localStorage.getItem("tema-preferido");
+    } catch (erro) {
+        tema = null;
+    }
+    if (!tema) {
+        var prefereClaro = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+        tema = prefereClaro ? "light" : "dark";
+    }
+    document.documentElement.setAttribute("data-theme", tema);
+})();
+</script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="{{ url_for('static', filename='js/tema.js') }}"></script>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>✅ Chamado enviado com sucesso</h1>
+
+<p class="subtitulo">
+Nossa equipe vai analisar em breve
+</p>
+
+
+<p>
+Guarde o código abaixo: é a única forma de consultar o andamento deste chamado depois, sem precisar criar conta.
+</p>
+
+<p class="token-gerado"><code>{{ codigo_acompanhamento }}</code></p>
+
+
+<p class="link-secundario">
+<a href="/chamado/acompanhar">Consultar um chamado com o código</a>
+</p>
+
+<p class="link-secundario">
+<a href="/chamado">Abrir outro chamado</a>
+</p>
+
+
+</div>
+
+
+</body>
+
+</html>

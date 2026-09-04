@@ -268,7 +268,10 @@ def test_abertura_de_chamado_aceita_anexo(client, monkeypatch):
         },
         content_type="multipart/form-data",
     )
-    assert resposta.status_code == 302
+    # A abertura bem-sucedida agora renderiza a tela de confirmação com o
+    # código de acompanhamento (ver rotas/chamados.py::chamado), em vez de
+    # redirecionar de volta para /chamado.
+    assert resposta.status_code == 200
 
     from extensions import db
     from models import Anexo
@@ -293,7 +296,7 @@ def test_abertura_de_chamado_sem_anexo_continua_funcionando(client, monkeypatch)
     monkeypatch.setattr(modulo_chamados, "enviar_anexo", _falha_se_chamado)
 
     resposta = abrir_chamado(client)
-    assert resposta.status_code == 302
+    assert resposta.status_code == 200
     assert chamado is False
 
 
