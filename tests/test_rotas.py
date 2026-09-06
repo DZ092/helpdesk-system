@@ -132,6 +132,55 @@ def test_logs_registram_o_que_aconteceu(client, criar_usuario):
     assert "Abertura de chamado" in logs
 
 
+def test_admin_logs_pagina_alem_do_total_nao_quebra(client, criar_usuario):
+    """Regressão do limit(200) fixo: sem paginação, não havia como pedir uma
+    página que simplesmente não existe — agora isso é um caso normal."""
+    entrar_como_admin(client, criar_usuario)
+    assert client.get("/admin/logs?pagina=999").status_code == 200
+
+
+def test_admin_logs_pagina_invalida_nao_quebra(client, criar_usuario):
+    entrar_como_admin(client, criar_usuario)
+    assert client.get("/admin/logs?pagina=abc").status_code == 200
+
+
+def test_admin_logs_pagina_2_mostra_registros_mais_antigos(client, criar_usuario, monkeypatch):
+    """Antes, passado o teto de 200 registros, os mais antigos simplesmente
+    somem da tela sem aviso e sem forma de navegar até eles (issue #57) — aqui
+    reduzimos o teto por página para não precisar criar centenas de logs."""
+    import rotas.admin as modulo_admin
+
+    monkeypatch.setattr(modulo_admin, "LOGS_POR_PAGINA", 2)
+
+    entrar_como_admin(client, criar_usuario)
+    for i in range(3):
+        abrir_chamado(client, titulo=f"Chamado {i}")
+
+    # 1 login do admin + 3 aberturas de chamado = 4 logs, 2 por página
+    pagina_1 = client.get("/admin/logs").get_data(as_text=True)
+    pagina_2 = client.get("/admin/logs?pagina=2").get_data(as_text=True)
+
+    assert "Chamado 2" in pagina_1
+    assert "Chamado 2" not in pagina_2
+    assert "Login realizado" in pagina_2
+    assert "Login realizado" not in pagina_1
+
+
+def test_admin_logs_mostra_contagem_e_navegacao(client, criar_usuario, monkeypatch):
+    import rotas.admin as modulo_admin
+
+    monkeypatch.setattr(modulo_admin, "LOGS_POR_PAGINA", 2)
+
+    entrar_como_admin(client, criar_usuario)
+    for i in range(3):
+        abrir_chamado(client, titulo=f"Chamado {i}")
+
+    html = client.get("/admin/logs").get_data(as_text=True)
+    assert "de 4 registro" in html
+    assert "página 1 de 2" in html
+    assert "Próxima" in html
+
+
 def test_telas_de_autenticacao_carregam_os_dois_css(client):
     """O auth.css vale só no login e no cadastro; o style.css, em tudo."""
     for rota in ("/login", "/cadastro"):

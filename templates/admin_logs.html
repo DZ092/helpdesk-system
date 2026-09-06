@@ -56,11 +56,6 @@
     </a>
 
 
-    <p class="vazio">
-        Mostrando os 200 registros mais recentes.
-    </p>
-
-
     <div class="tabela-rolavel">
     <table class="tabela-chamados">
 
@@ -122,6 +117,56 @@
 
     </table>
     </div>
+
+
+    {% if paginacao.total > 0 %}
+
+        <p class="vazio">
+            Mostrando {{ logs|length }} de {{ paginacao.total }} registro(s) — página {{ paginacao.page }} de {{ paginacao.pages }}
+        </p>
+
+    {% else %}
+
+        <p class="vazio">
+            Nenhum registro de auditoria encontrado.
+        </p>
+
+    {% endif %}
+
+
+    {% if paginacao.pages > 1 %}
+
+        <div class="paginacao">
+
+            {% if paginacao.has_prev %}
+                <a class="botao-filtro" href="{{ url_for('admin.admin_logs', pagina=paginacao.prev_num) }}">← Anterior</a>
+            {% endif %}
+
+            {% for numero in paginacao.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+
+                {% if numero %}
+
+                    {% if numero == paginacao.page %}
+                        <span class="pagina-atual">{{ numero }}</span>
+                    {% else %}
+                        <a class="pagina-link" href="{{ url_for('admin.admin_logs', pagina=numero) }}">{{ numero }}</a>
+                    {% endif %}
+
+                {% else %}
+
+                    <span class="pagina-reticencias">…</span>
+
+                {% endif %}
+
+            {% endfor %}
+
+            {% if paginacao.has_next %}
+                <a class="botao-filtro" href="{{ url_for('admin.admin_logs', pagina=paginacao.next_num) }}">Próxima →</a>
+            {% endif %}
+
+        </div>
+
+    {% endif %}
 
 
 </div>
