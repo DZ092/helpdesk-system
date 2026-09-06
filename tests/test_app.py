@@ -724,6 +724,15 @@ def test_excluir_usuario_com_comentario_associado_e_recusado(client, criar_usuar
 
 
 def test_excluir_usuario_com_sucesso_remove_do_banco_e_zera_logs(client, criar_usuario):
+    """A exclusão remove o usuário e não deixa nenhum log de auditoria com uma
+    FK órfã apontando para um id que não existe mais.
+
+    Um log fica com `usuario_id` do alvo quando a ação foi feita *pelo próprio
+    alvo* (ex.: login dele) — não quando o admin age sobre ele, caso em que
+    `registrar_log` grava o autor da ação (usuario_atual()), e o nome do alvo
+    vira só texto em `detalhes`. Por isso o log com FK a zerar é o do login do
+    próprio alvo, gerado antes da exclusão.
+    """
     from extensions import db
     from models import LogAuditoria, Usuario
 
@@ -731,21 +740,26 @@ def test_excluir_usuario_com_sucesso_remove_do_banco_e_zera_logs(client, criar_u
     alvo = criar_usuario(nome="Vítima", email="vitima@teste.com", tipo="Usuário")
     alvo_id = alvo.id
 
-    fazer_login(client, email="admin@teste.com")
+    # login do próprio alvo gera um log com usuario_id apontando para ele
+    outro_cliente = client.application.test_client()
+    fazer_login(outro_cliente, email="vitima@teste.com")
 
-    # gera um log de auditoria atribuído ao próprio alvo antes de excluí-lo
-    client.post(f"/admin/usuarios/{alvo_id}/tipo", data={"tipo_usuario": "Técnico"})
+    fazer_login(client, email="admin@teste.com")
 
     resposta = client.post(f"/admin/usuarios/{alvo_id}/excluir", follow_redirects=True)
     assert "excluído com sucesso".encode() in resposta.data
     assert db.session.get(Usuario, alvo_id) is None
 
-    logs = (
-        db.session.execute(
-            db.select(LogAuditoria).where(LogAuditoria.usuario_nome == "Vítima")
+    log_do_login = db.session.execute(
+        db.select(LogAuditoria).where(
+            LogAuditoria.usuario_nome == "Vítima", LogAuditoria.acao == "Login realizado"
         )
-        .scalars()
-        .all()
-    )
-    assert len(logs) >= 1
-    assert all(log.usuario_id is None for log in logs)
+    ).scalars().first()
+    assert log_do_login is not None
+    assert log_do_login.usuario_id is None
+
+    log_da_exclusao = db.session.execute(
+        db.select(LogAuditoria).where(LogAuditoria.acao == "Exclusão de usuário")
+    ).scalars().first()
+    assert log_da_exclusao is not None
+    assert "Vítima" in log_da_exclusao.detalhes
