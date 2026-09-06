@@ -1,6 +1,6 @@
 """Painel administrativo: gestão de usuários e trilha de auditoria."""
 
-from flask import Blueprint, flash, redirect, render_template
+from flask import Blueprint, flash, redirect, render_template, request
 
 from auditoria import registrar_log
 from extensions import db
@@ -9,6 +9,12 @@ from models import Chamado, Comentario, LogAuditoria, Usuario
 from seguranca import admin_required, usuario_atual
 
 admin = Blueprint("admin", __name__)
+
+# Quantos logs a tela mostra por página. Extraído como constante (em vez de
+# um literal dentro da rota) para o teste de paginação poder reduzi-lo via
+# monkeypatch, no mesmo padrão de LIMITE_EXPORTACAO em rotas/chamados.py —
+# sem isso, exercitar uma segunda página exigiria criar dezenas de logs.
+LOGS_POR_PAGINA = 50
 
 
 @admin.route("/admin/usuarios")
@@ -99,12 +105,9 @@ def admin_excluir_usuario(id):
 @admin.route("/admin/logs")
 @admin_required
 def admin_logs():
-    logs = (
-        db.session.execute(
-            db.select(LogAuditoria).order_by(LogAuditoria.id.desc()).limit(200)
-        )
-        .scalars()
-        .all()
-    )
+    pagina = request.args.get("pagina", 1, type=int)
 
-    return render_template("admin_logs.html", logs=logs)
+    stmt = db.select(LogAuditoria).order_by(LogAuditoria.id.desc())
+    paginacao = db.paginate(stmt, page=pagina, per_page=LOGS_POR_PAGINA, error_out=False)
+
+    return render_template("admin_logs.html", logs=paginacao.items, paginacao=paginacao)
