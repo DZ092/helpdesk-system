@@ -608,3 +608,158 @@ def test_tentativas_antigas_saem_da_janela(app):
         .all()
     )
     assert len(restantes) == 1
+
+
+# ==============================================================================
+# ADMINISTRAÇÃO DE USUÁRIOS (admin.py)
+# ==============================================================================
+def test_alterar_tipo_com_valor_invalido_e_recusado(client, criar_usuario):
+    criar_usuario(nome="Adm", email="admin@teste.com", tipo="Administrador")
+    alvo = criar_usuario(email="alvo@teste.com", tipo="Usuário")
+    fazer_login(client, email="admin@teste.com")
+
+    resposta = client.post(
+        f"/admin/usuarios/{alvo.id}/tipo",
+        data={"tipo_usuario": "Superusuario"},
+        follow_redirects=True,
+    )
+    assert "inválido".encode() in resposta.data
+    assert alvo.tipo_usuario == "Usuário"
+
+
+def test_admin_nao_remove_o_proprio_acesso_de_administrador(client, criar_usuario):
+    admin = criar_usuario(email="admin@teste.com", tipo="Administrador")
+    fazer_login(client, email="admin@teste.com")
+
+    resposta = client.post(
+        f"/admin/usuarios/{admin.id}/tipo",
+        data={"tipo_usuario": "Usuário"},
+        follow_redirects=True,
+    )
+    assert "não pode remover seu próprio acesso".encode() in resposta.data
+    assert admin.tipo_usuario == "Administrador"
+
+
+def test_alterar_tipo_com_sucesso_atualiza_banco_e_gera_log(client, criar_usuario):
+    from extensions import db
+    from models import LogAuditoria
+
+    criar_usuario(nome="Adm", email="admin@teste.com", tipo="Administrador")
+    alvo = criar_usuario(email="alvo@teste.com", tipo="Usuário")
+    fazer_login(client, email="admin@teste.com")
+
+    resposta = client.post(
+        f"/admin/usuarios/{alvo.id}/tipo",
+        data={"tipo_usuario": "Técnico"},
+        follow_redirects=True,
+    )
+    assert "atualizado para".encode() in resposta.data
+    assert alvo.tipo_usuario == "Técnico"
+
+    log = db.session.execute(
+        db.select(LogAuditoria).order_by(LogAuditoria.id.desc())
+    ).scalars().first()
+    assert log.acao == "Alteração de perfil"
+    assert "Técnico" in log.detalhes
+    assert alvo.nome in log.detalhes
+
+
+def test_admin_nao_exclui_a_propria_conta(client, criar_usuario):
+    admin = criar_usuario(email="admin@teste.com", tipo="Administrador")
+    fazer_login(client, email="admin@teste.com")
+
+    resposta = client.post(f"/admin/usuarios/{admin.id}/excluir", follow_redirects=True)
+    assert "não pode excluir a própria conta".encode() in resposta.data
+
+    from extensions import db
+    from models import Usuario
+
+    assert db.session.get(Usuario, admin.id) is not None
+
+
+def test_excluir_usuario_com_chamado_associado_e_recusado(client, criar_usuario):
+    from extensions import db
+    from models import Chamado, Usuario
+
+    criar_usuario(nome="Adm", email="admin@teste.com", tipo="Administrador")
+    tecnico = criar_usuario(email="tecnico@teste.com", tipo="Técnico")
+
+    chamado = Chamado(
+        usuario="Maria",
+        setor="TI",
+        titulo="Impressora",
+        descricao="Sem tinta",
+        responsavel_id=tecnico.id,
+    )
+    db.session.add(chamado)
+    db.session.commit()
+
+    fazer_login(client, email="admin@teste.com")
+    resposta = client.post(f"/admin/usuarios/{tecnico.id}/excluir", follow_redirects=True)
+
+    assert "não pode ser".encode() in resposta.data
+    assert db.session.get(Usuario, tecnico.id) is not None
+
+
+def test_excluir_usuario_com_comentario_associado_e_recusado(client, criar_usuario):
+    from extensions import db
+    from models import Chamado, Comentario, Usuario
+
+    criar_usuario(nome="Adm", email="admin@teste.com", tipo="Administrador")
+    tecnico = criar_usuario(email="tecnico@teste.com", tipo="Técnico")
+
+    chamado = Chamado(usuario="Maria", setor="TI", titulo="Impressora", descricao="Sem tinta")
+    db.session.add(chamado)
+    db.session.commit()
+
+    comentario = Comentario(chamado_id=chamado.id, autor_id=tecnico.id, mensagem="Verificando.")
+    db.session.add(comentario)
+    db.session.commit()
+
+    fazer_login(client, email="admin@teste.com")
+    resposta = client.post(f"/admin/usuarios/{tecnico.id}/excluir", follow_redirects=True)
+
+    assert "não pode ser".encode() in resposta.data
+    assert db.session.get(Usuario, tecnico.id) is not None
+
+
+def test_excluir_usuario_com_sucesso_remove_do_banco_e_zera_logs(client, criar_usuario):
+    """A exclusão remove o usuário e não deixa nenhum log de auditoria com uma
+    FK órfã apontando para um id que não existe mais.
+
+    Um log fica com `usuario_id` do alvo quando a ação foi feita *pelo próprio
+    alvo* (ex.: login dele) — não quando o admin age sobre ele, caso em que
+    `registrar_log` grava o autor da ação (usuario_atual()), e o nome do alvo
+    vira só texto em `detalhes`. Por isso o log com FK a zerar é o do login do
+    próprio alvo, gerado antes da exclusão.
+    """
+    from extensions import db
+    from models import LogAuditoria, Usuario
+
+    criar_usuario(nome="Adm", email="admin@teste.com", tipo="Administrador")
+    alvo = criar_usuario(nome="Vítima", email="vitima@teste.com", tipo="Usuário")
+    alvo_id = alvo.id
+
+    # login do próprio alvo gera um log com usuario_id apontando para ele
+    outro_cliente = client.application.test_client()
+    fazer_login(outro_cliente, email="vitima@teste.com")
+
+    fazer_login(client, email="admin@teste.com")
+
+    resposta = client.post(f"/admin/usuarios/{alvo_id}/excluir", follow_redirects=True)
+    assert "excluído com sucesso".encode() in resposta.data
+    assert db.session.get(Usuario, alvo_id) is None
+
+    log_do_login = db.session.execute(
+        db.select(LogAuditoria).where(
+            LogAuditoria.usuario_nome == "Vítima", LogAuditoria.acao == "Login realizado"
+        )
+    ).scalars().first()
+    assert log_do_login is not None
+    assert log_do_login.usuario_id is None
+
+    log_da_exclusao = db.session.execute(
+        db.select(LogAuditoria).where(LogAuditoria.acao == "Exclusão de usuário")
+    ).scalars().first()
+    assert log_da_exclusao is not None
+    assert "Vítima" in log_da_exclusao.detalhes
