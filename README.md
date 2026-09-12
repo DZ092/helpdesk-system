@@ -703,7 +703,7 @@ https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 
 Estudante de **Análise e Desenvolvimento de Sistemas** — UniCesumar
 
-GitHub: [DZ092](https://github.com/DZ092)
+GitHub: [Eduardo Jr. Coelho](https://github.com/DZ092)
 
 ---
 
