@@ -23,6 +23,13 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - **Abertura pública de chamados**  
   Qualquer pessoa pode registrar um problema técnico sem precisar possuir uma conta.
 
+- **Consulta pública de chamados por código de acompanhamento**  
+  Quem abre um chamado sem estar logado recebe um código de acompanhamento
+  único na confirmação — a única vez que ele aparece em texto puro. Com esse
+  código, dá para consultar o status e os comentários do chamado a qualquer
+  momento numa tela pública dedicada, sem precisar criar conta. O código fica
+  guardado como hash no banco, no mesmo padrão do token de API.
+
 - **Autenticação de usuários**  
   Sistema de cadastro, login e logout com armazenamento seguro das senhas utilizando hash.
 
@@ -215,7 +222,8 @@ helpdesk-system/
 │   │   ├── 169fedd696d9_cria_o_esquema_inicial.py
 │   │   ├── 5995b4db02ca_adiciona_a_tabela_de_tentativas_de_.py
 │   │   ├── d141e98118e1_adiciona_o_token_de_api_do_usuario.py
-│   │   └── b3ea6a92ffd9_adiciona_a_tabela_de_anexos.py
+│   │   ├── b3ea6a92ffd9_adiciona_a_tabela_de_anexos.py
+│   │   └── b15cea77954b_adiciona_o_codigo_de_acompanhamento_do_.py
 │   ├── alembic.ini
 │   ├── env.py
 │   ├── README
@@ -229,9 +237,11 @@ helpdesk-system/
 │   └── chamados.py
 │
 ├── static/
-│   └── css/
-│       ├── style.css
-│       └── auth.css
+│   ├── css/
+│   │   ├── style.css
+│   │   └── auth.css
+│   └── js/
+│       └── tema.js
 │
 ├── templates/
 │   ├── index.html
@@ -239,8 +249,11 @@ helpdesk-system/
 │   ├── cadastro.html
 │   ├── dashboard.html
 │   ├── chamado.html
+│   ├── chamado_confirmacao.html
+│   ├── acompanhar_chamado.html
 │   ├── chamados.html
 │   ├── detalhe_chamado.html
+│   ├── erro.html
 │   ├── esqueci_senha.html
 │   ├── redefinir_senha.html
 │   ├── admin_usuarios.html
