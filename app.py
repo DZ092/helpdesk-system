@@ -76,6 +76,30 @@ def _configurar(app, ajustes):
 def _registrar_ganchos(app):
     """Filtro de template e ganchos de requisição que valem para o app inteiro."""
 
+    @app.after_request
+    def _headers_de_seguranca(resposta):
+        """Cabeçalhos HTTP de segurança que o Flask não define por padrão.
+
+        Nenhum sozinho impede um ataque — são instruções para o navegador não
+        fazer coisas que abrem brecha: não deixar a página entrar num
+        <iframe> de outro site (clickjacking), não tentar adivinhar o tipo de
+        um arquivo servido (MIME sniffing) e não vazar a URL completa como
+        referrer para outro site. Content-Security-Policy fica de fora por
+        enquanto: os templates têm um <script> inline de propósito (evita
+        piscar no tema errado antes do CSS carregar — ver tema.js) e um CSP
+        correto exigiria nonce por requisição em cada um deles — capítulo
+        separado.
+        """
+        resposta.headers["X-Frame-Options"] = "DENY"
+        resposta.headers["X-Content-Type-Options"] = "nosniff"
+        resposta.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        if app.config.get("SESSION_COOKIE_SECURE"):
+            # Mesma flag que endurece o cookie de sessão: só faz sentido pedir
+            # HTTPS na próxima visita quando a aplicação já está servindo por
+            # HTTPS.
+            resposta.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return resposta
+
     @app.template_filter("data_local")
     def formatar_data_local(valor, formato="%d/%m/%Y às %H:%M"):
         """Converte um datetime UTC do banco para o horário de Brasília."""
