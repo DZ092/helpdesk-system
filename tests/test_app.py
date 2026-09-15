@@ -763,3 +763,25 @@ def test_excluir_usuario_com_sucesso_remove_do_banco_e_zera_logs(client, criar_u
     ).scalars().first()
     assert log_da_exclusao is not None
     assert "Vítima" in log_da_exclusao.detalhes
+
+
+# ==============================================================================
+# SEGURANÇA: HEADERS HTTP
+# ==============================================================================
+def test_resposta_tem_headers_de_seguranca(client):
+    resposta = client.get("/login")
+    assert resposta.headers["X-Frame-Options"] == "DENY"
+    assert resposta.headers["X-Content-Type-Options"] == "nosniff"
+    assert resposta.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
+
+
+def test_hsts_so_aparece_com_cookie_seguro_ligado(client):
+    # CONFIG_DE_TESTE não liga SESSION_COOKIE_SECURE, então por padrão o
+    # header não deve aparecer — pedir HTTPS sem estar servindo por HTTPS não
+    # faz sentido.
+    resposta = client.get("/login")
+    assert "Strict-Transport-Security" not in resposta.headers
+
+    client.application.config["SESSION_COOKIE_SECURE"] = True
+    resposta = client.get("/login")
+    assert resposta.headers["Strict-Transport-Security"] == "max-age=31536000; includeSubDomains"
