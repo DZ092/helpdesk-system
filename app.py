@@ -101,22 +101,22 @@ def _registrar_ganchos(app):
         nunca decide para onde o redirect aponta — só o caminho e a
         querystring vêm da requisição, o domínio é sempre o nosso.
 
-        O helpdesk-system no Render fica atrás do Cloudflare (CDN na frente
-        do origin) — mais de um proxy no caminho até a aplicação. Cada um
-        pode ANEXAR ao X-Forwarded-Proto em vez de substituir, e o valor
-        chega como "https, http" em vez de só "https". Comparar a string
-        inteira nunca bate nesse caso: a aplicação acha que nunca está em
-        HTTPS e redireciona pra sempre, mesmo já estando em HTTPS — foi
-        exatamente o loop (ERR_TOO_MANY_REDIRECTS) que derrubou a produção
-        em 16/09/2026. Por isso só o primeiro valor da lista é comparado —
-        é sempre o mais próximo do cliente, o único que interessa aqui.
+        A regra é deliberadamente restrita: só redireciona quando o cabeçalho
+        existe E diz "http". Cabeçalho ausente significa que não dá para saber
+        o esquema de origem, e redirecionar nesse caso é justamente o que
+        derrubou a produção em 16/09/2026 — o Waitress apagava o cabeçalho
+        (ver `opcoes_de_proxy` em serve.py), a aplicação assumia HTTP e
+        redirecionava para a mesma URL infinitamente (ERR_TOO_MANY_REDIRECTS).
+        Na dúvida, servir a página é sempre melhor que entrar em loop.
+
+        Não é preciso tratar o cabeçalho com vários valores ("https, http",
+        que acontece quando cada proxy anexa em vez de substituir): o próprio
+        Waitress recusa essa requisição com 400 antes de chegar aqui.
         """
         if not app.config.get("SESSION_COOKIE_SECURE"):
             return None
 
-        protocolo = request.headers.get("X-Forwarded-Proto", request.scheme)
-        protocolo = protocolo.split(",")[0].strip()
-        if protocolo == "https":
+        if request.headers.get("X-Forwarded-Proto") != "http":
             return None
 
         caminho = request.full_path if request.query_string else request.path

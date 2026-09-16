@@ -844,12 +844,28 @@ def test_redirect_https_preserva_caminho_e_querystring(client):
     )
 
 
-def test_nao_redireciona_com_varios_valores_no_x_forwarded_proto(client):
-    """Reproduz o incidente de produção de 16/09/2026: com o Cloudflare na
-    frente do Render, o cabeçalho pode chegar como "https, http" em vez de
-    só "https" (mais de um proxy anexando ao valor). Comparar a string
-    inteira nunca bate, e a aplicação entra em loop de redirecionamento
-    mesmo já estando em HTTPS."""
+def test_nao_redireciona_quando_o_cabecalho_de_proxy_esta_ausente(client):
+    """Trava contra loop, do incidente de 16/09/2026.
+
+    O Waitress apagava o X-Forwarded-Proto antes de a requisição chegar ao
+    Flask (ver `opcoes_de_proxy` em serve.py). Sem o cabeçalho não há como
+    saber o esquema de origem, e redirecionar assumindo HTTP fazia a aplicação
+    apontar para a própria URL sem parar. Sem cabeçalho, serve a página.
+    """
+    client.application.config["SESSION_COOKIE_SECURE"] = True
+
+    resposta = client.get("/login", environ_overrides={"wsgi.url_scheme": "http"})
+
+    assert resposta.status_code == 200
+
+
+def test_nao_redireciona_com_valor_inesperado_no_x_forwarded_proto(client):
+    """Qualquer valor que não seja exatamente "http" serve a página.
+
+    Em produção o Waitress já recusa com 400 o cabeçalho com múltiplos valores
+    ("https, http"), então ele nunca chega até aqui — mas a regra restrita
+    garante que nenhum valor inesperado vire redirecionamento em loop.
+    """
     client.application.config["SESSION_COOKIE_SECURE"] = True
 
     resposta = client.get(
@@ -857,3 +873,27 @@ def test_nao_redireciona_com_varios_valores_no_x_forwarded_proto(client):
     )
 
     assert resposta.status_code == 200
+
+
+def test_serve_confia_nos_cabecalhos_de_proxy_em_producao(monkeypatch):
+    """Em produção o Waitress precisa preservar os X-Forwarded-*.
+
+    Sem isso ele apaga o X-Forwarded-Proto e o `_forcar_https` entra em loop —
+    foi o que derrubou a produção em 16/09/2026.
+    """
+    from serve import opcoes_de_proxy
+
+    monkeypatch.setenv("SESSION_COOKIE_SECURE", "1")
+    opcoes = opcoes_de_proxy()
+
+    assert opcoes["trusted_proxy"] == "*"
+    assert "x-forwarded-proto" in opcoes["trusted_proxy_headers"]
+
+
+def test_serve_nao_confia_em_proxy_fora_de_producao(monkeypatch):
+    """Sem a flag de produção não há proxy nenhum: o Waitress segue limpando."""
+    from serve import opcoes_de_proxy
+
+    monkeypatch.delenv("SESSION_COOKIE_SECURE", raising=False)
+
+    assert opcoes_de_proxy() == {}
