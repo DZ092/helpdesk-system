@@ -10,7 +10,7 @@ import os
 from datetime import timedelta, timezone
 
 from dotenv import load_dotenv
-from flask import Flask, g, render_template
+from flask import Flask, g, redirect, render_template, request
 
 from constantes import FUSO_EXIBICAO
 from extensions import csrf, db, mail, migrate
@@ -75,6 +75,28 @@ def _configurar(app, ajustes):
 
 def _registrar_ganchos(app):
     """Filtro de template e ganchos de requisição que valem para o app inteiro."""
+
+    @app.before_request
+    def _forcar_https():
+        """Redireciona para HTTPS quando a aplicação espera servir por HTTPS.
+
+        O Render termina o TLS antes da aplicação: a requisição chega ao
+        Flask como HTTP simples, e o proxy anota o esquema original em
+        X-Forwarded-Proto. Sem ProxyFix, `request.is_secure` não reflete
+        isso — por isso a checagem lê o cabeçalho direto. Usa a mesma flag
+        de `SESSION_COOKIE_SECURE`: só faz sentido exigir HTTPS quando a
+        aplicação já está configurada para servir por HTTPS (produção); em
+        desenvolvimento local, sem essa flag, o redirecionamento fica
+        desligado para não atrapalhar quem roda `flask run` em HTTP puro.
+        """
+        if not app.config.get("SESSION_COOKIE_SECURE"):
+            return None
+
+        if request.headers.get("X-Forwarded-Proto", request.scheme) == "https":
+            return None
+
+        url_https = request.url.replace("http://", "https://", 1)
+        return redirect(url_https, code=308)
 
     @app.after_request
     def _headers_de_seguranca(resposta):

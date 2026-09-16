@@ -785,3 +785,28 @@ def test_hsts_so_aparece_com_cookie_seguro_ligado(client):
     client.application.config["SESSION_COOKIE_SECURE"] = True
     resposta = client.get("/login")
     assert resposta.headers["Strict-Transport-Security"] == "max-age=31536000; includeSubDomains"
+
+
+def test_nao_forca_https_com_cookie_seguro_desligado(client):
+    # Mesma flag do teste acima: sem SESSION_COOKIE_SECURE, a aplicação está
+    # em desenvolvimento local, e `flask run` normalmente só serve HTTP — o
+    # redirecionamento tem que ficar desligado, ou ninguém consegue rodar o
+    # projeto localmente.
+    resposta = client.get("/login")
+    assert resposta.status_code == 200
+
+
+def test_forca_https_quando_proxy_indica_http(client):
+    # O Render entrega a requisição à aplicação como HTTP simples e anota o
+    # esquema original do visitante em X-Forwarded-Proto — sem esse cabeçalho
+    # dizendo "https", a aplicação trata a requisição como insegura.
+    client.application.config["SESSION_COOKIE_SECURE"] = True
+    resposta = client.get("/login", headers={"X-Forwarded-Proto": "http"})
+    assert resposta.status_code == 308
+    assert resposta.headers["Location"].startswith("https://")
+
+
+def test_nao_redireciona_quando_proxy_ja_indica_https(client):
+    client.application.config["SESSION_COOKIE_SECURE"] = True
+    resposta = client.get("/login", headers={"X-Forwarded-Proto": "https"})
+    assert resposta.status_code == 200
