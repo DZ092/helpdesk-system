@@ -842,3 +842,18 @@ def test_redirect_https_preserva_caminho_e_querystring(client):
     assert resposta.headers["Location"] == (
         "https://helpdesk-system-cci1.onrender.com/chamados?status=Aberto"
     )
+
+
+def test_nao_redireciona_com_varios_valores_no_x_forwarded_proto(client):
+    """Reproduz o incidente de produção de 16/09/2026: com o Cloudflare na
+    frente do Render, o cabeçalho pode chegar como "https, http" em vez de
+    só "https" (mais de um proxy anexando ao valor). Comparar a string
+    inteira nunca bate, e a aplicação entra em loop de redirecionamento
+    mesmo já estando em HTTPS."""
+    client.application.config["SESSION_COOKIE_SECURE"] = True
+
+    resposta = client.get(
+        "/login", headers={"X-Forwarded-Proto": "https, http"}
+    )
+
+    assert resposta.status_code == 200

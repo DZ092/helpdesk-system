@@ -100,11 +100,23 @@ def _registrar_ganchos(app):
         vez do host da própria requisição: um `Host` forjado pelo cliente
         nunca decide para onde o redirect aponta — só o caminho e a
         querystring vêm da requisição, o domínio é sempre o nosso.
+
+        O helpdesk-system no Render fica atrás do Cloudflare (CDN na frente
+        do origin) — mais de um proxy no caminho até a aplicação. Cada um
+        pode ANEXAR ao X-Forwarded-Proto em vez de substituir, e o valor
+        chega como "https, http" em vez de só "https". Comparar a string
+        inteira nunca bate nesse caso: a aplicação acha que nunca está em
+        HTTPS e redireciona pra sempre, mesmo já estando em HTTPS — foi
+        exatamente o loop (ERR_TOO_MANY_REDIRECTS) que derrubou a produção
+        em 16/09/2026. Por isso só o primeiro valor da lista é comparado —
+        é sempre o mais próximo do cliente, o único que interessa aqui.
         """
         if not app.config.get("SESSION_COOKIE_SECURE"):
             return None
 
-        if request.headers.get("X-Forwarded-Proto", request.scheme) == "https":
+        protocolo = request.headers.get("X-Forwarded-Proto", request.scheme)
+        protocolo = protocolo.split(",")[0].strip()
+        if protocolo == "https":
             return None
 
         caminho = request.full_path if request.query_string else request.path
