@@ -810,3 +810,35 @@ def test_nao_redireciona_quando_proxy_ja_indica_https(client):
     client.application.config["SESSION_COOKIE_SECURE"] = True
     resposta = client.get("/login", headers={"X-Forwarded-Proto": "https"})
     assert resposta.status_code == 200
+
+
+def test_redirect_https_ignora_host_forjado_na_requisicao(client):
+    # O destino do redirect vem de HOST_CONFIAVEL (config), nunca do Host da
+    # requisição — um cliente não consegue desviar o redirecionamento para um
+    # domínio diferente só forjando esse cabeçalho (open redirect).
+    client.application.config["SESSION_COOKIE_SECURE"] = True
+    client.application.config["HOST_CONFIAVEL"] = "helpdesk-system-cci1.onrender.com"
+
+    resposta = client.get(
+        "/login",
+        headers={"X-Forwarded-Proto": "http", "Host": "site-malicioso.com"},
+    )
+
+    assert resposta.status_code == 308
+    assert resposta.headers["Location"] == "https://helpdesk-system-cci1.onrender.com/login"
+
+
+def test_redirect_https_preserva_caminho_e_querystring(client):
+    client.application.config["SESSION_COOKIE_SECURE"] = True
+    client.application.config["HOST_CONFIAVEL"] = "helpdesk-system-cci1.onrender.com"
+
+    resposta = client.get(
+        "/chamados?status=Aberto",
+        headers={"X-Forwarded-Proto": "http"},
+        follow_redirects=False,
+    )
+
+    assert resposta.status_code == 308
+    assert resposta.headers["Location"] == (
+        "https://helpdesk-system-cci1.onrender.com/chamados?status=Aberto"
+    )

@@ -49,6 +49,13 @@ def _configurar(app, ajustes):
     app.config["SESSION_COOKIE_SECURE"] = os.environ.get("SESSION_COOKIE_SECURE", "0") == "1"
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
 
+    # Host fixo para o redirecionamento HTTPS (ver `_forcar_https`). Vem do
+    # ambiente, nunca da requisição: um `Host` forjado não pode influenciar
+    # para onde o redirect aponta.
+    app.config["HOST_CONFIAVEL"] = os.environ.get(
+        "HOST_CONFIAVEL", "helpdesk-system-cci1.onrender.com"
+    )
+
     app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
     app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", 587))
     app.config["MAIL_USE_TLS"] = True
@@ -88,6 +95,11 @@ def _registrar_ganchos(app):
         aplicação já está configurada para servir por HTTPS (produção); em
         desenvolvimento local, sem essa flag, o redirecionamento fica
         desligado para não atrapalhar quem roda `flask run` em HTTP puro.
+
+        A URL de destino usa `HOST_CONFIAVEL` (config, vindo do ambiente) em
+        vez do host da própria requisição: um `Host` forjado pelo cliente
+        nunca decide para onde o redirect aponta — só o caminho e a
+        querystring vêm da requisição, o domínio é sempre o nosso.
         """
         if not app.config.get("SESSION_COOKIE_SECURE"):
             return None
@@ -95,7 +107,8 @@ def _registrar_ganchos(app):
         if request.headers.get("X-Forwarded-Proto", request.scheme) == "https":
             return None
 
-        url_https = request.url.replace("http://", "https://", 1)
+        caminho = request.full_path if request.query_string else request.path
+        url_https = f"https://{app.config['HOST_CONFIAVEL']}{caminho}"
         return redirect(url_https, code=308)
 
     @app.after_request
