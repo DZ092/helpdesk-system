@@ -54,7 +54,10 @@ Nossa equipe vai analisar em breve
 Guarde o código abaixo: é a única forma de consultar o andamento deste chamado depois, sem precisar criar conta.
 </p>
 
-<p class="token-gerado"><code>{{ codigo_acompanhamento }}</code></p>
+<p class="token-gerado">
+<code>{{ codigo_acompanhamento }}</code>
+<button type="button" class="botao-copiar" id="botao-copiar-codigo" data-token="{{ codigo_acompanhamento }}">Copiar</button>
+</p>
 
 
 <p class="link-secundario">
@@ -68,6 +71,34 @@ Guarde o código abaixo: é a única forma de consultar o andamento deste chamad
 
 </div>
 
+
+<script>
+(function () {
+    var botao = document.getElementById("botao-copiar-codigo");
+    if (!botao) {
+        return;
+    }
+    var textoOriginal = botao.textContent;
+    botao.addEventListener("click", function () {
+        var codigo = botao.getAttribute("data-token");
+        function avisar() {
+            botao.textContent = "Copiado!";
+            botao.classList.add("copiado");
+            setTimeout(function () {
+                botao.textContent = textoOriginal;
+                botao.classList.remove("copiado");
+            }, 2000);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(codigo).then(avisar, function () {
+                window.prompt("Copie o código:", codigo);
+            });
+        } else {
+            window.prompt("Copie o código:", codigo);
+        }
+    });
+})();
+</script>
 
 </body>
 

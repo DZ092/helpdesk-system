@@ -48,7 +48,7 @@ body.pagina-auth::after {
 body.pagina-auth .container {
     animation: entrada-auth 0.5s ease-out;
     margin: 20px;
-    max-width: 420px;
+    max-width: 460px;
     padding: 44px 38px;
     position: relative;
     width: 100%;
