@@ -25,6 +25,10 @@
     --sucesso-bg: rgba(34, 197, 94, 0.14);
     --sucesso-texto: #86efac;
     --sucesso-borda: rgba(34, 197, 94, 0.28);
+    --sucesso-solido: #22c55e;
+    --sucesso-solido-forte: #16a34a;
+    --sucesso-solido-hover: #16a34a;
+    --sucesso-solido-hover-forte: #15803d;
     --erro-bg: rgba(239, 68, 68, 0.14);
     --erro-texto: #fca5a5;
     --erro-borda: rgba(239, 68, 68, 0.28);
@@ -251,6 +255,13 @@ h1 {
     border-bottom: 1px solid var(--borda);
 }
 
+/* A coluna Ação é a última e concentra o botão circular: um pouco mais de
+   respiro horizontal evita que ele fique colado na coluna de Responsável. */
+.tabela-chamados td:last-child {
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
 .tabela-chamados tr:hover {
     background: var(--hover-linha);
 }
@@ -307,6 +318,18 @@ h1 {
 
 .acao:hover {
     background: linear-gradient(135deg, var(--acento-hover), var(--acento-hover-forte));
+}
+
+/* Botão de "finalizado": mesma geometria circular do .acao, mas em verde
+   sólido — sinaliza que a ação já foi concluída, sem convidar a um novo
+   clique. Sem texto visível: a legenda vira title, só aparece no hover. */
+.acao-finalizado {
+    background: linear-gradient(135deg, var(--sucesso-solido), var(--sucesso-solido-forte));
+    cursor: default;
+}
+
+.acao-finalizado:hover {
+    background: linear-gradient(135deg, var(--sucesso-solido-hover), var(--sucesso-solido-hover-forte));
 }
 
 /* FINALIZADO (sem ação disponível) */
