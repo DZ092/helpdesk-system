@@ -94,6 +94,22 @@ body.pagina-apresentacao {
     justify-content: flex-start;
 }
 
+.link-secundario-apresentacao {
+    margin-top: 14px;
+    font-size: 0.85rem;
+    color: var(--texto-muted);
+}
+
+.link-secundario-apresentacao a {
+    color: var(--marca);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.link-secundario-apresentacao a:hover {
+    text-decoration: underline;
+}
+
 .hero-mini-stats {
     margin-top: 28px;
     display: flex;
