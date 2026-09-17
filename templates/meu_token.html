@@ -66,7 +66,10 @@ Token gerado. Copie agora — ele só aparece esta vez, e gerar um novo substitu
 este.
 </p>
 
-<p class="token-gerado"><code>{{ token_gerado }}</code></p>
+<p class="token-gerado">
+<code>{{ token_gerado }}</code>
+<button type="button" class="botao-copiar" id="botao-copiar-token" data-token="{{ token_gerado }}">Copiar</button>
+</p>
 
 <p class="vazio">
 Envie-o no cabeçalho <code>Authorization: Bearer {{ token_gerado }}</code> das
@@ -102,6 +105,34 @@ Você ainda não gerou nenhum token.
 
 </div>
 
+
+<script>
+(function () {
+    var botao = document.getElementById("botao-copiar-token");
+    if (!botao) {
+        return;
+    }
+    var textoOriginal = botao.textContent;
+    botao.addEventListener("click", function () {
+        var token = botao.getAttribute("data-token");
+        function avisar() {
+            botao.textContent = "Copiado!";
+            botao.classList.add("copiado");
+            setTimeout(function () {
+                botao.textContent = textoOriginal;
+                botao.classList.remove("copiado");
+            }, 2000);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(token).then(avisar, function () {
+                window.prompt("Copie o token:", token);
+            });
+        } else {
+            window.prompt("Copie o token:", token);
+        }
+    });
+})();
+</script>
 
 </body>
 
