@@ -66,28 +66,31 @@
     --auth-glow-centro: #dbeafe;
 }
 
-/* TEMA ÂMBAR (issue #79) — "fim de tarde": para quem tem sensibilidade à
-   luz branca do tema claro tradicional, mas não quer o dark puro. Fundo em
-   tom pêssego/areia quente em vez de branco, texto em marrom escuro (não
-   preto puro, para não voltar ao contraste duro que o dark evita), e o
-   acento em terracota — a mesma lógica de status/perigo do tema claro se
-   aplica aqui: cores de significado não mudam entre temas.*/
+/* TEMA ÂMBAR (issue #79, paleta ajustada depois) — "fim de tarde": para
+   quem tem sensibilidade à luz branca do tema claro tradicional, mas não
+   quer o dark puro. A primeira versão saiu clara demais (bege quase
+   branco) e ainda incomodava a vista; o fundo foi escurecido e puxado
+   mais para o laranja — mais perto do céu de um pôr do sol de verdade —
+   mantendo o texto em marrom escuro (não preto puro, para não voltar ao
+   contraste duro que o dark evita). Acento em terracota — a mesma lógica
+   de status/perigo do tema claro se aplica aqui: cores de significado não
+   mudam entre temas.*/
 [data-theme="ambar"] {
-    --bg: #fdf1e3;
-    --bg-gradiente-topo: #fff7ec;
-    --bg-gradiente-base: #fbe8d1;
-    --superficie: #fff8ef;
-    --superficie-alt: #fbecd9;
-    --borda: rgba(124, 45, 18, 0.14);
-    --texto: #4a2c1a;
-    --texto-muted: #8a5a35;
-    --texto-fraco: #a67a52;
+    --bg: #e8a86b;
+    --bg-gradiente-topo: #f0b87d;
+    --bg-gradiente-base: #de9a58;
+    --superficie: #f7e0c2;
+    --superficie-alt: #f2d1a4;
+    --borda: rgba(124, 45, 18, 0.2);
+    --texto: #3d1f0d;
+    --texto-muted: #6e3c1a;
+    --texto-fraco: #8f5527;
     --marca: #c2410c;
-    --sombra-caixa: rgba(124, 45, 18, 0.12);
-    --sombra-linha: rgba(124, 45, 18, 0.08);
-    --hover-linha: rgba(124, 45, 18, 0.05);
-    --hover-pagina: rgba(124, 45, 18, 0.08);
-    --auth-glow-centro: #fbd7a8;
+    --sombra-caixa: rgba(90, 40, 10, 0.2);
+    --sombra-linha: rgba(90, 40, 10, 0.14);
+    --hover-linha: rgba(90, 40, 10, 0.08);
+    --hover-pagina: rgba(90, 40, 10, 0.12);
+    --auth-glow-centro: #f0b87d;
 }
 
 * {
