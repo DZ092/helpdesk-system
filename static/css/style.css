@@ -66,6 +66,30 @@
     --auth-glow-centro: #dbeafe;
 }
 
+/* TEMA ÂMBAR (issue #79) — "fim de tarde": para quem tem sensibilidade à
+   luz branca do tema claro tradicional, mas não quer o dark puro. Fundo em
+   tom pêssego/areia quente em vez de branco, texto em marrom escuro (não
+   preto puro, para não voltar ao contraste duro que o dark evita), e o
+   acento em terracota — a mesma lógica de status/perigo do tema claro se
+   aplica aqui: cores de significado não mudam entre temas.*/
+[data-theme="ambar"] {
+    --bg: #fdf1e3;
+    --bg-gradiente-topo: #fff7ec;
+    --bg-gradiente-base: #fbe8d1;
+    --superficie: #fff8ef;
+    --superficie-alt: #fbecd9;
+    --borda: rgba(124, 45, 18, 0.14);
+    --texto: #4a2c1a;
+    --texto-muted: #8a5a35;
+    --texto-fraco: #a67a52;
+    --marca: #c2410c;
+    --sombra-caixa: rgba(124, 45, 18, 0.12);
+    --sombra-linha: rgba(124, 45, 18, 0.08);
+    --hover-linha: rgba(124, 45, 18, 0.05);
+    --hover-pagina: rgba(124, 45, 18, 0.08);
+    --auth-glow-centro: #fbd7a8;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -88,6 +112,17 @@ body {
     padding: 40px;
     border-radius: 18px;
     box-shadow: 0 10px 30px var(--sombra-caixa);
+    position: relative;
+}
+
+/* Nas telas públicas (sem barra de usuário logado, issue #79), o seletor de
+   tema é filho direto do .container: ancora no canto, sem disputar espaço
+   com o título. Nas telas internas ele vive dentro de .usuario-logado, que
+   já o posiciona em fluxo normal (flex) — esta regra não chega lá. */
+.container > .seletor-tema {
+    position: absolute;
+    right: 24px;
+    top: 24px;
 }
 
 /* TÍTULOS */
@@ -444,28 +479,45 @@ h1 {
     text-decoration: underline;
 }
 
-/* BOTÃO DE TROCAR TEMA (issue #44) — presente só nas telas com usuário
-   logado; ver static/js/tema.js para a lógica de aplicação e persistência.
-   O texto (emoji) só é preenchido por JS depois que a página carrega —
-   largura e altura fixas evitam que o botão "nasça" sem espaço reservado
-   e empurre o link "Sair" no instante em que o ícone aparece. */
-.botao-tema {
-    align-items: center;
+/* SELETOR DE TEMA (issue #44, ampliado para 3 temas na #79) — grupo com
+   as três opções sempre visíveis (escuro, claro, âmbar), em vez de um botão
+   único que cicla entre estados; ver static/js/tema.js para a lógica de
+   aplicação e persistência. Desde a #79 aparece também no cabeçalho de
+   login/cadastro, não só nas telas com usuário logado. Cada botão nasce
+   sem ícone (o texto é preenchido por JS depois que a página carrega) —
+   largura e altura fixas evitam que o grupo "salte" de tamanho nesse
+   instante e empurre o conteúdo ao lado. */
+.seletor-tema {
+    display: inline-flex;
+    gap: 4px;
     background: var(--superficie-alt);
     border: 1px solid var(--borda);
+    border-radius: 999px;
+    padding: 3px;
+}
+
+.seletor-tema button {
+    align-items: center;
+    background: transparent;
+    border: none;
     border-radius: 999px;
     color: var(--texto);
     cursor: pointer;
     display: inline-flex;
-    font-size: 16px;
-    height: 32px;
+    font-size: 15px;
+    height: 28px;
     justify-content: center;
     line-height: 1;
-    width: 32px;
+    width: 28px;
 }
 
-.botao-tema:hover {
+.seletor-tema button:hover {
     background: var(--hover-pagina);
+}
+
+.seletor-tema button.ativo {
+    background: var(--superficie);
+    box-shadow: 0 1px 3px var(--sombra-linha);
 }
 
 /* FORMULÁRIO DE BUSCA E FILTRO */

@@ -1,5 +1,5 @@
 /**
- * Alternância de tema claro/escuro (issue #44).
+ * Alternância de tema claro/escuro/âmbar (issue #44, ampliado na #79).
  *
  * Duas partes, de propósito separadas:
  *
@@ -8,20 +8,40 @@
  *    sempre nasceria escura (o :root de style.css) e só trocaria de cor um
  *    instante depois, quando este arquivo carregasse — um "flash" visível.
  *
- * 2. O resto deste arquivo — o botão de trocar tema e o listener de clique —
- *    só existe nas páginas que têm o botão (ver `configurarBotaoDeTema`).
- *    Páginas sem botão (login, cadastro, abertura pública de chamado) usam
- *    só a parte 1: o tema nasce certo, mas não dá pra trocar manualmente ali.
+ * 2. O resto deste arquivo — o seletor de tema e o listener de clique — só
+ *    existe nas páginas que têm o seletor (ver `configurarSeletorDeTema`).
+ *    Desde a #79 isso inclui a tela de login/cadastro e a abertura pública
+ *    de chamado, não só as telas com usuário logado: quem ainda não fez
+ *    login também pode preferir o tema âmbar em vez do claro/escuro padrão.
  *
  * Prioridade de decisão, em ordem: escolha manual salva > preferência do
  * sistema operacional > escuro (mesma prioridade nas duas partes).
+ *
+ * Três temas em vez de dois: em vez de um botão único que alterna entre dois
+ * estados, o seletor mostra as três opções de uma vez (lua, sol, pôr do
+ * sol) — com três estados um ciclo de cliques exigiria memorizar quantos
+ * cliques faltam para o tema desejado.
  */
 
 const CHAVE_TEMA = "tema-preferido";
+const TEMAS = ["dark", "light", "ambar"];
+
+const ICONE_POR_TEMA = {
+    dark: "🌙",
+    light: "☀️",
+    ambar: "🌇",
+};
+
+const NOME_POR_TEMA = {
+    dark: "Tema escuro",
+    light: "Tema claro",
+    ambar: "Tema âmbar (fim de tarde)",
+};
 
 function temaSalvo() {
     try {
-        return localStorage.getItem(CHAVE_TEMA);
+        const valor = localStorage.getItem(CHAVE_TEMA);
+        return TEMAS.includes(valor) ? valor : null;
     } catch (erro) {
         // Navegador com localStorage bloqueado (modo privado restritivo,
         // política de cookies de terceiros etc.) — segue sem persistência
@@ -57,36 +77,38 @@ function aplicarTemaSalvo() {
     aplicarTema(temaAtivo());
 }
 
-function alternarTema() {
-    const novoTema = temaAtivo() === "dark" ? "light" : "dark";
-    aplicarTema(novoTema);
-    salvarTema(novoTema);
-    atualizarIconeBotao(novoTema);
+function escolherTema(tema) {
+    aplicarTema(tema);
+    salvarTema(tema);
+    atualizarSeletor(tema);
 }
 
-function atualizarIconeBotao(tema) {
-    const botao = document.getElementById("botao-tema");
-    if (!botao) {
+/** Marca visualmente qual botão do seletor representa o tema ativo. */
+function atualizarSeletor(tema) {
+    const seletor = document.getElementById("seletor-tema");
+    if (!seletor) {
         return;
     }
-    // O ícone mostra o tema para o qual o clique vai levar, não o atual —
-    // é a mesma convenção de qualquer switch de tema: a lua aparece enquanto
-    // está claro (convida a escurecer), o sol aparece enquanto está escuro.
-    botao.textContent = tema === "dark" ? "☀️" : "🌙";
-    botao.setAttribute(
-        "aria-label",
-        tema === "dark" ? "Ativar tema claro" : "Ativar tema escuro"
-    );
+    seletor.querySelectorAll("[data-tema]").forEach((botao) => {
+        const ativo = botao.getAttribute("data-tema") === tema;
+        botao.classList.toggle("ativo", ativo);
+        botao.setAttribute("aria-pressed", ativo ? "true" : "false");
+    });
 }
 
-/** Chamada depois que o DOM carrega, só nas páginas que têm o botão. */
-function configurarBotaoDeTema() {
-    const botao = document.getElementById("botao-tema");
-    if (!botao) {
+/** Chamada depois que o DOM carrega, só nas páginas que têm o seletor. */
+function configurarSeletorDeTema() {
+    const seletor = document.getElementById("seletor-tema");
+    if (!seletor) {
         return;
     }
-    atualizarIconeBotao(temaAtivo());
-    botao.addEventListener("click", alternarTema);
+    seletor.querySelectorAll("[data-tema]").forEach((botao) => {
+        const tema = botao.getAttribute("data-tema");
+        botao.textContent = ICONE_POR_TEMA[tema] || "";
+        botao.setAttribute("aria-label", NOME_POR_TEMA[tema] || tema);
+        botao.addEventListener("click", () => escolherTema(tema));
+    });
+    atualizarSeletor(temaAtivo());
 }
 
-document.addEventListener("DOMContentLoaded", configurarBotaoDeTema);
+document.addEventListener("DOMContentLoaded", configurarSeletorDeTema);
