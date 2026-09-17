@@ -29,77 +29,143 @@
 </script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 <script src="{{ url_for('static', filename='js/tema.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/apresentacao.css') }}">
 
 </head>
 
 
-<body>
+<body class="pagina-apresentacao">
 
 
-<div class="container">
-
-
+<nav class="topo-apresentacao">
+<div class="marca-apresentacao"><span class="ponto-marca"></span> Help Desk</div>
 <div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button><button type="button" data-tema="ambar"></button></div>
+</nav>
 
 
-<h1>🖥️ Help Desk</h1>
+<header class="hero-apresentacao">
 
-<p class="subtitulo">
-Sistema de gerenciamento de chamados técnicos, feito para equipes que hoje
-resolvem suporte por planilha e WhatsApp
+<div class="hero-texto">
+
+<div class="eyebrow-apresentacao"><span class="bolinha-viva"></span> em produção — código aberto</div>
+
+<h1>Chamados de suporte, sem <span class="destaque-apresentacao">planilha</span> e sem <span class="destaque-apresentacao">grupo de WhatsApp</span>.</h1>
+
+<p class="hero-apresentacao-sub">
+Sistema de gerenciamento de chamados técnicos com controle por perfil,
+histórico completo e API própria — pensado para equipes que hoje resolvem
+suporte no improviso.
 </p>
 
-
-<div class="acoes">
-
-<a class="botao" href="/login">
-Entrar
-</a>
-
-<a class="botao botao-secundario" href="/cadastro">
-Cadastre-se
-</a>
-
-<a class="botao botao-secundario" href="/chamado">
-Abrir chamado sem login
-</a>
-
+<div class="acoes acoes-apresentacao">
+<a class="botao" href="/login">Entrar →</a>
+<a class="botao botao-secundario" href="/cadastro">Cadastre-se</a>
+<a class="botao botao-secundario" href="/chamado">Abrir chamado sem login</a>
 </div>
 
-
-<div class="cards">
-
-<div class="card">
-<h2>📋</h2>
-<p><strong>Chamados organizados</strong><br>Abertura, status e histórico num só lugar, com prioridade e responsável por chamado.</p>
-</div>
-
-<div class="card">
-<h2>🔑</h2>
-<p><strong>Acesso por perfil</strong><br>Usuário comum, técnico e administrador — cada um vê só o que precisa.</p>
-</div>
-
-<div class="card">
-<h2>🔗</h2>
-<p><strong>API com token</strong><br>Integre scripts e outros sistemas via token pessoal, sem depender do navegador.</p>
-</div>
-
-<div class="card">
-<h2>✅</h2>
-<p><strong>152 testes automatizados</strong><br>Toda regra de negócio é coberta antes de qualquer mudança ir ao ar.</p>
+<div class="hero-mini-stats">
+<div><strong>152</strong> testes automatizados</div>
+<div><strong>3</strong> perfis de acesso</div>
+<div><strong>100%</strong> código aberto</div>
 </div>
 
 </div>
 
+<div class="mockup-apresentacao" aria-hidden="true">
+<div class="mockup-barra"><span></span><span></span><span></span></div>
+<div class="mockup-corpo">
+<div class="mockup-linha-topo"><strong>📋 Chamados</strong></div>
+<div class="mockup-cards">
+<div class="mockup-card"><b>4</b><span>Abertos</span></div>
+<div class="mockup-card"><b>2</b><span>Andamento</span></div>
+<div class="mockup-card"><b>11</b><span>Resolvidos</span></div>
+</div>
+<div class="mockup-tabela-linha">
+<span>Impressora sem tinta</span>
+<span class="mockup-badge badge-aberto">Aberto</span>
+</div>
+<div class="mockup-tabela-linha">
+<span>Acesso ao sistema</span>
+<span class="mockup-badge badge-andamento">Andamento</span>
+</div>
+<div class="mockup-tabela-linha">
+<span>Solicitação de equipamento</span>
+<span class="mockup-badge badge-resolvido">Resolvido</span>
+</div>
+</div>
+</div>
 
-<footer class="rodape-app">
+</header>
+
+
+<section class="secao-numeros-apresentacao">
+<div class="numeros-grid">
+<div class="numero-item"><div class="n">152</div><div class="l">testes automatizados</div></div>
+<div class="numero-item"><div class="n">3</div><div class="l">perfis de acesso</div></div>
+<div class="numero-item"><div class="n">3</div><div class="l">temas de interface</div></div>
+<div class="numero-item"><div class="n">100%</div><div class="l">CI verde antes do deploy</div></div>
+</div>
+</section>
+
+
+<section class="secao-recursos-apresentacao">
+
+<div class="secao-head-apresentacao">
+<div class="eyebrow-secao-apresentacao">o que o sistema resolve</div>
+<h2>Tudo que hoje se perde entre abas e conversas.</h2>
+<p>Cada funcionalidade nasceu de um problema real de quem atende chamado no dia a dia.</p>
+</div>
+
+<div class="recursos-grid">
+
+<div class="recurso-apresentacao">
+<div class="recurso-icone">📋</div>
+<h3>Chamados organizados</h3>
+<p>Abertura, status e histórico num só lugar, com prioridade e responsável por chamado.</p>
+</div>
+
+<div class="recurso-apresentacao">
+<div class="recurso-icone">🔑</div>
+<h3>Acesso por perfil</h3>
+<p>Usuário comum, técnico e administrador — cada um vê só o que precisa.</p>
+</div>
+
+<div class="recurso-apresentacao">
+<div class="recurso-icone">🔗</div>
+<h3>API com token</h3>
+<p>Integre scripts e outros sistemas via token pessoal, sem depender do navegador.</p>
+</div>
+
+<div class="recurso-apresentacao">
+<div class="recurso-icone">✅</div>
+<h3>152 testes automatizados</h3>
+<p>Toda regra de negócio é coberta antes de qualquer mudança ir ao ar.</p>
+</div>
+
+</div>
+
+</section>
+
+
+<section class="secao-cta-apresentacao">
+<div class="cta-apresentacao-caixa">
+<div>
+<h2>Pronto para organizar seus chamados?</h2>
+<p>Entre com sua conta ou abra um chamado sem precisar se cadastrar.</p>
+</div>
+<div class="acoes acoes-apresentacao acoes-cta-apresentacao">
+<a class="botao" href="/login">Entrar →</a>
+<a class="botao botao-secundario" href="/chamado">Abrir chamado sem login</a>
+</div>
+</div>
+</section>
+
+
+<footer class="rodape-app rodape-apresentacao">
     <span>v1.1.0</span>
     <span aria-hidden="true">·</span>
     <span>by <a href="https://github.com/DZ092" target="_blank" rel="noopener">Eduardo Jr. Coelho</a></span>
 </footer>
-
-
-</div>
 
 
 </body>
