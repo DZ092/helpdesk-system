@@ -69,7 +69,16 @@ def test_pagina_publica_responde(client, rota):
     assert client.get(rota).status_code == 200
 
 
-def test_raiz_redireciona_para_o_dashboard(client):
+def test_raiz_mostra_apresentacao_para_visitante_deslogado(client):
+    resposta = client.get("/")
+    assert resposta.status_code == 200
+    assert b'href="/login"' in resposta.data
+    assert b'href="/cadastro"' in resposta.data
+    assert b'href="/chamado"' in resposta.data
+
+
+def test_raiz_redireciona_para_o_dashboard_quando_logado(client, criar_usuario):
+    entrar_como_admin(client, criar_usuario)
     resposta = client.get("/")
     assert resposta.status_code == 302
     assert resposta.headers["Location"].endswith("/dashboard")

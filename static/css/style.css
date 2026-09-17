@@ -211,6 +211,22 @@ h1 {
     box-shadow: 0 10px 24px rgba(59, 130, 246, 0.35);
 }
 
+/* Ação de mesmo peso visual do .botao, mas sem competir com ele por
+   atenção — usada quando mais de um caminho de entrada aparece lado a lado
+   (tela de apresentação, issue #85) e só um deles deveria puxar o olho. */
+.botao-secundario {
+    background: transparent;
+    color: var(--texto);
+    border: 1px solid var(--borda);
+    box-shadow: none;
+}
+
+.botao-secundario:hover {
+    background: var(--hover-pagina);
+    border-color: var(--marca);
+    box-shadow: none;
+}
+
 /* GRUPO DE BOTÕES DE NAVEGAÇÃO (dashboard, telas iniciais) */
 .acoes {
     display: flex;
