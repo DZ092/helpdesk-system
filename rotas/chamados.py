@@ -140,7 +140,11 @@ def query_chamados_filtrados(args):
 
 @chamados.route("/")
 def home():
-    return redirect("/dashboard")
+    # Quem já está logado não precisa ver a apresentação de novo — vai
+    # direto para o painel, como sempre funcionou (issue #85).
+    if usuario_atual():
+        return redirect("/dashboard")
+    return render_template("apresentacao.html")
 
 
 @chamados.route("/dashboard")
