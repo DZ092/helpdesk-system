@@ -75,6 +75,11 @@ def test_raiz_mostra_apresentacao_para_visitante_deslogado(client):
     assert b'href="/login"' in resposta.data
     assert b'href="/cadastro"' in resposta.data
     assert b'href="/chamado"' in resposta.data
+    assert b"apresentacao.css" in resposta.data
+
+
+def test_css_da_apresentacao_responde(client):
+    assert client.get("/static/css/apresentacao.css").status_code == 200
 
 
 def test_raiz_redireciona_para_o_dashboard_quando_logado(client, criar_usuario):
