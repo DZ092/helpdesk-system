@@ -44,6 +44,31 @@ def test_cadastro_e_login(client):
     assert b"Dashboard" in resposta.data
 
 
+def test_cadastro_envia_email_de_boas_vindas(client):
+    """Não passa pela rota HTTP de propósito: o envio roda numa thread
+    separada (ver emails.py), e testar via rota correria contra ela. Chamamos
+    a função direto, no mesmo espírito dos outros testes de e-mail do projeto."""
+    from emails import enviar_email_boas_vindas
+    from extensions import mail
+    from models import Usuario
+
+    with client.application.app_context():
+        client.application.config["MAIL_USERNAME"] = "helpdesk@teste.com"
+        # O Flask-Mail guarda o remetente padrão num objeto interno montado na
+        # inicialização do app (mail.init_app), não relido do config depois —
+        # mesmo objeto que o conftest.py já mexe pra ligar o `suppress`.
+        client.application.extensions["mail"].default_sender = "helpdesk@teste.com"
+        usuario = Usuario(nome="Fulano", email="fulano@teste.com", senha="hash", tipo_usuario="Usuário")
+
+        with mail.record_messages() as caixa_de_saida:
+            enviar_email_boas_vindas(usuario)
+            import time
+            time.sleep(0.1)  # dá tempo da thread de envio rodar
+
+        assert len(caixa_de_saida) == 1
+        assert caixa_de_saida[0].recipients == ["fulano@teste.com"]
+
+
 def test_login_com_senha_errada(client):
     cadastrar_usuario(client)
     resposta = fazer_login(client, senha="senha-errada")

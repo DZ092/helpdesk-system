@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask import url_for
 
 from auditoria import registrar_log
-from emails import enviar_email_redefinicao
+from emails import enviar_email_boas_vindas, enviar_email_redefinicao
 from extensions import db
 from formularios import (
     FormularioAlterarSenha,
@@ -71,6 +71,7 @@ def cadastro():
         db.session.add(novo_usuario)
         db.session.commit()
         registrar_log("Cadastro de usuário", f"Novo usuário: {novo_usuario.email}")
+        enviar_email_boas_vindas(novo_usuario)
         flash("Conta criada com sucesso! Faça login para continuar.")
         return redirect("/login")
 

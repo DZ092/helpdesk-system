@@ -109,3 +109,34 @@ def enviar_email_redefinicao(usuario, link):
         args=(current_app._get_current_object(), mensagem),
         daemon=True,
     ).start()
+
+
+def enviar_email_boas_vindas(usuario):
+    """Agradece o cadastro recém-criado.
+
+    Não é confirmação de e-mail: o formulário de cadastro só confere o
+    formato do endereço (validador `Email()`), não que a pessoa é dona da caixa
+    de entrada. Este e-mail é só um agradecimento pelo cadastro, no mesmo padrão
+    de envio em thread separada usado pelos outros e-mails do sistema.
+    """
+    if not current_app.config.get("MAIL_USERNAME"):
+        current_app.logger.warning(
+            "MAIL_USERNAME não configurado — e-mail de boas-vindas não enviado."
+        )
+        return
+
+    mensagem = Message(
+        subject="Bem-vindo(a) ao Help Desk!",
+        recipients=[usuario.email],
+        body=(
+            f"Olá, {usuario.nome}.\n\n"
+            "Sua conta no Help Desk foi criada com sucesso. Obrigado por se cadastrar!\n\n"
+            "Agora você já pode entrar no sistema e abrir seus chamados.\n"
+        ),
+    )
+
+    threading.Thread(
+        target=_enviar_em_segundo_plano,
+        args=(current_app._get_current_object(), mensagem),
+        daemon=True,
+    ).start()
