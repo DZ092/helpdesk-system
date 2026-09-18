@@ -13,7 +13,7 @@ email-validator==2.3.0
 # Upload dos anexos de imagem dos chamados (issue #6) para o Cloudinary — plano
 # gratuito, sem depender de disco local (não confiável no free tier do Render).
 cloudinary==1.46.2
-greenlet==3.5.4
+greenlet==3.5.6
 itsdangerous==2.2.0
 Jinja2==3.1.6
 Mako==1.4.1
