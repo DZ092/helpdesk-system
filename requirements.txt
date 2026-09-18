@@ -30,7 +30,7 @@ python-dotenv==1.2.2
 # instalado na máquina. No Render e no CI, que são Linux, ele entra normalmente.
 psycopg2-binary==2.9.10; sys_platform != "win32"
 SQLAlchemy==2.0.51
-tzdata==2025.2
+tzdata==2026.4
 typing_extensions==4.16.0
 waitress==3.0.2
 Werkzeug==3.1.8
