@@ -1,10 +1,8 @@
 # 🖥️ Help Desk System
 
-[![Acessar a aplicação](https://img.shields.io/badge/Acessar_a_aplica%C3%A7%C3%A3o-3B82F6?style=for-the-badge)](https://helpdesk-system-cci1.onrender.com)
+[![Conheça o projeto](https://img.shields.io/badge/Conhe%C3%A7a_o_projeto-3B82F6?style=for-the-badge)](https://dz092.github.io/helpdesk-system/)
 
 [![tests](https://github.com/DZ092/helpdesk-system/actions/workflows/tests.yml/badge.svg)](https://github.com/DZ092/helpdesk-system/actions/workflows/tests.yml)
-
-🔗 [Página de apresentação do projeto](https://dz092.github.io/helpdesk-system/)
 
 > Hospedada em plano gratuito: o serviço hiberna depois de alguns minutos sem
 > acesso, então o primeiro carregamento pode levar cerca de um minuto. Os
@@ -653,47 +651,6 @@ por envio.
   navegador a qualquer origem — que torna um endpoint vulnerável a CSRF. Sem
   esse mecanismo ambiente, o token de API troca de papel com o cookie e a
   proteção de CSRF é dispensada só nessas rotas.
-
----
-
-## 🎥 Demonstração
-
-### Percurso completo — do cadastro ao atendimento
-
-Uma gravação única cobrindo o sistema inteiro. Na primeira metade, uma usuária
-cria a conta do zero, faz o primeiro login, abre um chamado e encontra o
-próprio registro no histórico. Na segunda, o administrador entra, percorre os
-filtros de status, prioridade, responsável e setor, assume o chamado dela,
-registra duas atualizações técnicas, resolve, e passa pelo painel de usuários
-e pelos logs de auditoria — onde toda a sequência aparece registrada.
-
-https://github.com/user-attachments/assets/6dac345c-8ee9-48d2-82b7-22a390e737ba
-
----
-
-### Demonstrações por perfil
-
-> As quatro gravações abaixo são anteriores ao tema dark e mostram a interface
-> clara da versão original. O fluxo de trabalho continua o mesmo.
-
-**Usuário comum** — abre um chamado e acompanha o andamento do atendimento:
-
-https://github.com/user-attachments/assets/7660a055-f4c3-4855-9f9f-6203c0f05648
-
-**Técnico** — visualiza, assume, atualiza e resolve os chamados:
-
-https://github.com/user-attachments/assets/73b39249-7663-4c63-9df0-67f2d30e7677
-
-**Administrador** — possui as mesmas permissões operacionais do Técnico:
-
-https://github.com/user-attachments/assets/cbdb6652-dc39-408b-9c74-736d42d47b45
-
-**Notificação por e-mail** — login, abertura de um novo chamado e a notificação
-automática chegando na caixa de entrada. No vídeo também aparece um retorno de
-erro (bounce) de um destinatário de teste com endereço inválido, mostrando que
-o próprio provedor avisa quando a entrega falha:
-
-https://github.com/user-attachments/assets/11be8267-3dad-4315-901a-92702644da3b
 
 ---
 
