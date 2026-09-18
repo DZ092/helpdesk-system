@@ -24,7 +24,7 @@ MarkupSafe==3.0.3
 # puxam Pango/Cairo e complicam tanto o Windows local quanto o Render.
 openpyxl==3.1.5
 reportlab==4.4.10
-python-dotenv==1.2.2
+python-dotenv==1.2.3
 # Driver do PostgreSQL, usado só em produção. Fica de fora do Windows: não há
 # wheel para o Python 3.14 nessa plataforma e compilar exigiria o PostgreSQL
 # instalado na máquina. No Render e no CI, que são Linux, ele entra normalmente.
