@@ -1,4 +1,4 @@
-alembic==1.19.1
+alembic==1.20.0
 blinker==1.9.0
 click==8.4.2
 colorama==0.4.6
