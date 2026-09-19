@@ -950,3 +950,46 @@ def test_serve_nao_confia_em_proxy_fora_de_producao(monkeypatch):
     monkeypatch.delenv("SESSION_COOKIE_SECURE", raising=False)
 
     assert opcoes_de_proxy() == {}
+
+
+# ==============================================================================
+# EXPORTAÇÃO DE RELATÓRIOS
+# ==============================================================================
+def test_excel_neutraliza_titulo_com_formula_maliciosa(app):
+    """Injeção de fórmula (CSV/Excel injection).
+
+    O título e o setor vêm de quem abre o chamado — inclusive sem login (ver
+    `rotas/chamados.py`). Um valor como =HYPERLINK(...) gravado sem tratamento
+    vira fórmula de verdade na planilha, executada quando um técnico ou
+    administrador abre o relatório exportado.
+    """
+    import io
+
+    from openpyxl import load_workbook
+
+    from extensions import db
+    from models import Chamado
+    from relatorios import gerar_excel
+
+    with app.app_context():
+        chamado = Chamado(
+            usuario="Anônimo",
+            setor="=1+1",
+            titulo='=HYPERLINK("https://malicioso.exemplo","clique")',
+            descricao="Chamado de teste.",
+        )
+        db.session.add(chamado)
+        db.session.commit()
+
+        conteudo = gerar_excel([chamado])
+
+    pasta = load_workbook(io.BytesIO(conteudo))
+    aba = pasta.active
+    linha = next(aba.iter_rows(min_row=2, max_row=2))
+    celula_titulo, celula_setor = linha[1], linha[2]
+
+    # Tipo "s" (string) grava como texto puro; tipo "f" seria uma fórmula real.
+    assert celula_titulo.data_type == "s"
+    assert celula_setor.data_type == "s"
+    assert celula_titulo.value.startswith("'=")
+    assert celula_setor.value.startswith("'=")
