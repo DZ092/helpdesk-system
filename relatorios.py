@@ -23,6 +23,26 @@ from constantes import FUSO_EXIBICAO
 
 COLUNAS = ("ID", "Título", "Setor", "Status", "Prioridade", "Responsável", "Criado em")
 
+# Um título ou setor pode vir de quem abre o chamado sem estar logado (ver
+# `rotas/chamados.py`), então um valor começando com um desses caracteres
+# seria interpretado pelo Excel como fórmula ao abrir a planilha exportada —
+# de um simples =HOJE() até fórmulas que chamam programas externos
+# (injeção de fórmula / "CSV injection"). Só afeta o Excel: o PDF apenas
+# imprime o texto, sem reinterpretar nada.
+_PREFIXOS_DE_FORMULA = ("=", "+", "-", "@")
+
+
+def _celula_segura(valor):
+    """Prefixa com apóstrofo o texto que o Excel leria como fórmula.
+
+    O apóstrofo faz a célula ser gravada como texto puro (tipo "s"), nunca
+    como fórmula (tipo "f") — a fórmula maliciosa aparece como texto na
+    célula em vez de ser executada ao abrir o arquivo.
+    """
+    if isinstance(valor, str) and valor.startswith(_PREFIXOS_DE_FORMULA):
+        return "'" + valor
+    return valor
+
 
 def _linha(chamado):
     """Uma tupla por chamado, na ordem de `COLUNAS` — usada pelos dois formatos.
@@ -58,7 +78,7 @@ def gerar_excel(chamados_lista):
         celula.font = Font(bold=True)
 
     for chamado in chamados_lista:
-        aba.append(_linha(chamado))
+        aba.append(tuple(_celula_segura(valor) for valor in _linha(chamado)))
 
     # Largura automática, limitada para o título e a descrição não esticarem
     # a coluna até ficar ilegível numa tela comum.
