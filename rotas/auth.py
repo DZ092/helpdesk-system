@@ -1,6 +1,6 @@
 """Cadastro, login, logout e troca de senha."""
 
-from flask import Blueprint, flash, g, redirect, render_template, request, session
+from flask import Blueprint, current_app, flash, g, redirect, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from flask import url_for
@@ -227,7 +227,12 @@ def esqueci_senha():
         ).scalar_one_or_none()
 
         if usuario:
-            link = url_for("auth.redefinir_senha", token=gerar_token_redefinicao(usuario), _external=True)
+            # O host vem de HOST_CONFIAVEL (config), nunca da requisição — um
+            # `Host` forjado não pode fazer esse e-mail apontar para um
+            # domínio diferente do nosso (mesmo raciocínio de `_forcar_https`
+            # em app.py). `url_for` aqui gera só o caminho, sem `_external`.
+            caminho = url_for("auth.redefinir_senha", token=gerar_token_redefinicao(usuario))
+            link = f"https://{current_app.config['HOST_CONFIAVEL']}{caminho}"
             enviar_email_redefinicao(usuario, link)
             registrar_log("Redefinição de senha solicitada", f"Link enviado para {usuario.email}")
         else:

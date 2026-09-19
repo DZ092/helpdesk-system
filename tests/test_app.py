@@ -441,6 +441,34 @@ def test_esqueci_senha_responde_igual_para_email_desconhecido(client, criar_usua
     assert conhecido.get_data() == desconhecido.get_data()
 
 
+def test_link_de_redefinicao_ignora_host_forjado_na_requisicao(client, criar_usuario, monkeypatch):
+    """O link do e-mail de redefinição vem de HOST_CONFIAVEL, nunca do Host da
+    requisição — um Host forjado não pode fazer a vítima abrir o link de
+    redefinição num domínio malicioso (password-reset poisoning).
+    """
+    criar_usuario()
+    client.application.config["HOST_CONFIAVEL"] = "helpdesk-system-cci1.onrender.com"
+
+    links_enviados = []
+    monkeypatch.setattr(
+        "rotas.auth.enviar_email_redefinicao",
+        lambda usuario, link: links_enviados.append(link),
+    )
+
+    resposta = client.post(
+        "/esqueci-senha",
+        data={"email": "fulano@teste.com"},
+        headers={"Host": "site-malicioso.com"},
+    )
+
+    assert resposta.status_code == 200
+    assert len(links_enviados) == 1
+    assert links_enviados[0].startswith(
+        "https://helpdesk-system-cci1.onrender.com/redefinir-senha/"
+    )
+    assert "site-malicioso.com" not in links_enviados[0]
+
+
 def test_link_de_redefinicao_troca_a_senha(client, criar_usuario):
     criar_usuario(senha="senha-antiga-1")
     token = _token_de(client)
