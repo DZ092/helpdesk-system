@@ -528,6 +528,21 @@ h1 {
     text-decoration: underline;
 }
 
+/* O logout virou POST (issue #114) — o link antigo virou um <form> com um
+   <button>; este seletor faz o botão parecer com o link que ele substitui. */
+button.sair {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+}
+
+.form-sair {
+    display: inline-flex;
+    margin: 0;
+}
+
 /* SELETOR DE TEMA (issue #44, ampliado para 3 temas na #79) — grupo com
    as três opções sempre visíveis (escuro, claro, âmbar), em vez de um botão
    único que cicla entre estados; ver static/js/tema.js para a lógica de
