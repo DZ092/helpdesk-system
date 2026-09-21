@@ -6,10 +6,10 @@
 <title>Help Desk System — Eduardo Jr. Coelho</title>
 <meta name="description" content="Sistema web de gerenciamento de chamados técnicos desenvolvido em Flask, com controle de acesso por perfil, dashboard, API REST e 159 testes automatizados.">
 <style>
-/* Mesma identidade visual do app (static/css/style.css): fundo escuro
-   grafite-esverdeado e marca cobre/terracota, em vez do azul genérico com
-   título em gradiente que esta página tinha antes. Página estática (fora do
-   Flask), então a fonte precisa do próprio @import — não herda o de style.css. */
+/* Mesma identidade visual do app (static/css/style.css e apresentacao.css):
+   fundo escuro grafite-esverdeado, marca cobre/terracota, composição em
+   coluna única com passos numerados e recursos em lista — não a página
+   centralizada com badge, título em gradiente e grade de cards de antes. */
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap");
 
 :root {
@@ -23,7 +23,6 @@
     --texto-muted: #a2b0aa;
     --texto-fraco: #6d7b76;
     --marca: #e0904f;
-    --marca-rgb: 224, 144, 79;
     --acento-forte: #b06a30;
     --acento-hover: #ec9d5c;
     --sucesso-solido: #3fae6c;
@@ -40,14 +39,9 @@ body {
 }
 
 .container {
-    max-width: 1040px;
+    max-width: 760px;
     margin: 0 auto;
-    padding: 0 24px;
-}
-
-header.hero {
-    padding: 88px 0 56px;
-    border-bottom: 1px solid var(--borda);
+    padding: 0 32px;
 }
 
 .marca-topo {
@@ -55,7 +49,7 @@ header.hero {
     align-items: center;
     gap: 10px;
     font-weight: 800;
-    margin-bottom: 48px;
+    padding-top: 28px;
 }
 
 .marca-topo .ponto {
@@ -65,31 +59,41 @@ header.hero {
     background: var(--marca);
 }
 
+header.hero {
+    padding: 56px 0 0;
+}
+
 .eyebrow {
-    display: inline-block;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--marca);
-    border-bottom: 2px solid var(--borda);
-    padding-bottom: 6px;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
+}
+
+.bolinha-viva {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--sucesso-solido);
 }
 
 h1 {
-    font-size: clamp(2.1rem, 4vw, 2.8rem);
+    font-size: clamp(2.1rem, 5.2vw, 3.2rem);
     font-weight: 800;
-    letter-spacing: -0.01em;
-    margin: 0 0 18px;
-    max-width: 18ch;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    margin: 0 0 22px;
+    max-width: 20ch;
 }
 
 .subtitulo {
     font-size: 1.08rem;
     color: var(--texto-muted);
-    max-width: 60ch;
-    margin: 0 0 36px;
+    max-width: 55ch;
+    margin: 0 0 34px;
 }
 
 .cta {
@@ -136,87 +140,96 @@ h1 {
     color: var(--texto-fraco);
 }
 
-/* FAIXA DE NÚMEROS — ocupa o lugar de destaque que antes era das capturas
-   de tela (removidas por ora); os números já contam boa parte da história
-   sem precisar de imagem nenhuma. */
-.numeros {
-    padding: 40px 0;
-    border-bottom: 1px solid var(--borda);
+.regua {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--borda);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
 }
 
-.numeros-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
+.regua-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.numero-item {
-    border-left: 2px solid var(--borda);
-    padding-left: 16px;
-}
-
-.numero-item .n {
-    font-size: 2.2rem;
+.regua-item .n {
+    font-size: 1.6rem;
     font-weight: 800;
     color: var(--marca);
     line-height: 1;
     font-variant-numeric: tabular-nums;
 }
 
-.numero-item .l {
-    margin-top: 8px;
-    font-size: 0.85rem;
-    color: var(--texto-muted);
+.regua-item .l {
+    font-size: 0.78rem;
+    color: var(--texto-fraco);
 }
 
 section {
-    padding: 60px 0;
-    border-bottom: 1px solid var(--borda);
-}
-
-section:last-of-type {
-    border-bottom: none;
+    padding: 76px 0;
+    border-top: 1px solid var(--borda);
 }
 
 h2 {
-    font-size: 1.5rem;
+    font-size: clamp(1.4rem, 2.6vw, 1.85rem);
     font-weight: 800;
-    margin: 0 0 12px;
+    margin: 8px 0 0;
+    max-width: 32ch;
 }
 
-.secao-intro {
-    color: var(--texto-muted);
-    max-width: 60ch;
-    margin: 0 0 36px;
-    font-size: 0.95rem;
+.eyebrow-secao {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--marca);
 }
 
-.grid-cards {
+.secao-cabecalho {
+    margin-bottom: 36px;
+}
+
+.lista-recursos {
+    display: flex;
+    flex-direction: column;
+}
+
+.linha-recurso {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: var(--borda);
-    border: 1px solid var(--borda);
-    border-radius: 12px;
-    overflow: hidden;
+    grid-template-columns: 120px 1fr;
+    gap: 24px;
+    padding: 20px 0;
+    border-top: 1px solid var(--borda);
 }
 
-.card {
-    background: var(--superficie);
-    padding: 24px 22px;
+.linha-recurso:last-child {
+    border-bottom: 1px solid var(--borda);
 }
 
-.card h3 {
-    margin: 0 0 8px;
+.recurso-rotulo {
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 0.78rem;
+    color: var(--texto-fraco);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.linha-recurso h3 {
     font-size: 1rem;
     font-weight: 700;
+    margin: 0 0 6px;
     color: var(--texto);
 }
 
-.card p {
+.linha-recurso p {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     color: var(--texto-muted);
+    max-width: 58ch;
 }
 
 .tecnologias {
@@ -251,35 +264,26 @@ footer .stack {
     opacity: 0.85;
 }
 
-@media (max-width: 700px) {
-    .grid-cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .numeros-grid {
-        grid-template-columns: repeat(2, 1fr);
-        row-gap: 24px;
-    }
-}
-
-@media (max-width: 480px) {
-    header.hero {
-        padding: 64px 0 40px;
-    }
-    .grid-cards {
+@media (max-width: 560px) {
+    .linha-recurso {
         grid-template-columns: 1fr;
+        gap: 6px;
     }
-    .numeros-grid {
-        grid-template-columns: 1fr 1fr;
+    .regua {
+        gap: 20px 24px;
     }
 }
 </style>
 </head>
 <body>
 
-<header class="hero">
 <div class="container">
 <div class="marca-topo"><span class="ponto"></span> Help Desk System</div>
-<span class="eyebrow">Portfólio · Análise e Desenvolvimento de Sistemas</span>
+</div>
+
+<header class="hero">
+<div class="container">
+<span class="eyebrow"><span class="bolinha-viva"></span> em produção — código aberto</span>
 <h1>Chamados de suporte, sem planilha e sem grupo de WhatsApp.</h1>
 <p class="subtitulo">
 Sistema web para gerenciamento de chamados técnicos, com controle de acesso
@@ -293,54 +297,53 @@ por perfil, dashboard, API REST, anexos e testes automatizados.
 Hospedada em plano gratuito: o primeiro carregamento pode levar cerca de um
 minuto enquanto o serviço acorda.
 </p>
+<div class="regua">
+<div class="regua-item"><span class="n">159</span><span class="l">testes automatizados</span></div>
+<div class="regua-item"><span class="n">3</span><span class="l">níveis de usuário</span></div>
+<div class="regua-item"><span class="n">3</span><span class="l">temas de interface</span></div>
+<div class="regua-item"><span class="n">100%</span><span class="l">CI verde antes do deploy</span></div>
+</div>
 </div>
 </header>
 
-<div class="numeros">
-<div class="container numeros-grid">
-<div class="numero-item"><div class="n">159</div><div class="l">testes automatizados</div></div>
-<div class="numero-item"><div class="n">3</div><div class="l">níveis de usuário</div></div>
-<div class="numero-item"><div class="n">3</div><div class="l">temas de interface</div></div>
-<div class="numero-item"><div class="n">100%</div><div class="l">CI verde antes do deploy</div></div>
-</div>
-</div>
-
 <section>
 <div class="container">
-<h2>Funcionalidades</h2>
-<p class="secao-intro">Cada uma nasceu de um problema real de quem atende chamado no dia a dia.</p>
-<div class="grid-cards">
-<div class="card">
-<h3>Perfis de acesso</h3>
-<p>Controle de permissões para Usuário, Técnico e Administrador, relido do banco a cada requisição.</p>
+<div class="secao-cabecalho">
+<span class="eyebrow-secao">funcionalidades</span>
+<h2>Cada uma nasceu de um problema real de quem atende chamado no dia a dia.</h2>
 </div>
-<div class="card">
-<h3>Dashboard e histórico</h3>
-<p>Indicadores de chamados abertos, em andamento e resolvidos, com busca, filtros e paginação.</p>
+<div class="lista-recursos">
+<div class="linha-recurso">
+<span class="recurso-rotulo">acesso</span>
+<div><h3>Perfis de acesso</h3><p>Controle de permissões para Usuário, Técnico e Administrador, relido do banco a cada requisição.</p></div>
 </div>
-<div class="card">
-<h3>Atendimento técnico</h3>
-<p>Técnicos e administradores assumem chamados, atualizam status e registram comentários internos.</p>
+<div class="linha-recurso">
+<span class="recurso-rotulo">painel</span>
+<div><h3>Dashboard e histórico</h3><p>Indicadores de chamados abertos, em andamento e resolvidos, com busca, filtros e paginação.</p></div>
 </div>
-<div class="card">
-<h3>Notificações por e-mail</h3>
-<p>Aviso automático para técnicos e administradores a cada novo chamado aberto.</p>
+<div class="linha-recurso">
+<span class="recurso-rotulo">suporte</span>
+<div><h3>Atendimento técnico</h3><p>Técnicos e administradores assumem chamados, atualizam status e registram comentários internos.</p></div>
 </div>
-<div class="card">
-<h3>API REST</h3>
-<p>Listagem e detalhe de chamados via token pessoal, com os mesmos filtros e regras da interface.</p>
+<div class="linha-recurso">
+<span class="recurso-rotulo">e-mail</span>
+<div><h3>Notificações automáticas</h3><p>Aviso automático para técnicos e administradores a cada novo chamado aberto.</p></div>
 </div>
-<div class="card">
-<h3>Anexos e relatórios</h3>
-<p>Upload de imagens via Cloudinary e exportação da listagem em Excel ou PDF.</p>
+<div class="linha-recurso">
+<span class="recurso-rotulo">api</span>
+<div><h3>API REST</h3><p>Listagem e detalhe de chamados via token pessoal, com os mesmos filtros e regras da interface.</p></div>
 </div>
-<div class="card">
-<h3>Auditoria</h3>
-<p>Registro de ações importantes com data, hora e autor, consultável pelo painel administrativo.</p>
+<div class="linha-recurso">
+<span class="recurso-rotulo">anexos</span>
+<div><h3>Anexos e relatórios</h3><p>Upload de imagens via Cloudinary e exportação da listagem em Excel ou PDF.</p></div>
 </div>
-<div class="card">
-<h3>Testes automatizados</h3>
-<p>Suíte com 159 testes em pytest, rodando no GitHub Actions a cada push e pull request.</p>
+<div class="linha-recurso">
+<span class="recurso-rotulo">auditoria</span>
+<div><h3>Registro de ações</h3><p>Data, hora e autor de cada ação importante, consultável pelo painel administrativo.</p></div>
+</div>
+<div class="linha-recurso">
+<span class="recurso-rotulo">qualidade</span>
+<div><h3>159 testes automatizados</h3><p>Suíte em pytest, rodando no GitHub Actions a cada push e pull request.</p></div>
 </div>
 </div>
 </div>
@@ -348,7 +351,10 @@ minuto enquanto o serviço acorda.
 
 <section>
 <div class="container">
+<div class="secao-cabecalho">
+<span class="eyebrow-secao">stack</span>
 <h2>Tecnologias</h2>
+</div>
 <div class="tecnologias">
 <span>Python</span>
 <span>Flask</span>
