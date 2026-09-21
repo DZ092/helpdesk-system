@@ -1,96 +1,168 @@
 /* ==============================
    SISTEMA HELP DESK - ESTILO GERAL
-   Tema escuro é o padrão (:root). O tema claro (issue #44) sobrescreve as
-   mesmas variáveis em [data-theme="light"] — nenhuma regra abaixo deste
-   bloco deveria usar cor literal fora dessas variáveis, senão ela não
-   reage à troca de tema. `static/js/tema.js` decide qual atributo aplicar
-   no <html> (escolha salva > preferência do sistema > escuro).
+   Tema escuro é o padrão (:root). O tema claro e o âmbar (issues #44 e #79)
+   sobrescrevem as mesmas variáveis em [data-theme="light"]/[data-theme="ambar"]
+   — nenhuma regra abaixo deste bloco deveria usar cor literal fora dessas
+   variáveis, senão ela não reage à troca de tema. `static/js/tema.js` decide
+   qual atributo aplicar no <html> (escolha salva > preferência do sistema >
+   escuro).
+
+   Identidade visual (redesign): os três temas compartilham a mesma cor de
+   marca — uma família cobre/terracota — e só a superfície muda entre eles.
+   Antes a marca era azul no escuro/claro e virava um laranja sem relação
+   nenhuma no âmbar; isso quebrava a identidade entre temas.
    ============================== */
 
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap");
+
 :root {
-    --bg: #0b1120;
-    --bg-gradiente-topo: #0d1425;
-    --bg-gradiente-base: #0b1120;
-    --superficie: #111827;
-    --superficie-alt: #1a2436;
-    --borda: rgba(255, 255, 255, 0.08);
-    --texto: #e2e8f0;
-    --texto-muted: #94a3b8;
-    --texto-fraco: #64748b;
-    --marca: #60a5fa;
-    --acento: #3b82f6;
-    --acento-forte: #6366f1;
-    --acento-hover: #2563eb;
-    --acento-hover-forte: #4f46e5;
-    --sucesso-bg: rgba(34, 197, 94, 0.14);
-    --sucesso-texto: #86efac;
-    --sucesso-borda: rgba(34, 197, 94, 0.28);
-    --sucesso-solido: #22c55e;
-    --sucesso-solido-forte: #16a34a;
-    --sucesso-solido-hover: #16a34a;
-    --sucesso-solido-hover-forte: #15803d;
-    --erro-bg: rgba(239, 68, 68, 0.14);
-    --erro-texto: #fca5a5;
-    --erro-borda: rgba(239, 68, 68, 0.28);
-    --aviso-bg: rgba(245, 158, 11, 0.14);
-    --aviso-texto: #fcd34d;
-    --info-bg: rgba(56, 189, 248, 0.14);
-    --info-texto: #7dd3fc;
-    --sombra-caixa: rgba(0, 0, 0, 0.45);
-    --sombra-linha: rgba(0, 0, 0, 0.2);
-    --hover-linha: rgba(255, 255, 255, 0.03);
+    --bg: #0b100f;
+    --bg-gradiente-topo: #0e1615;
+    --bg-gradiente-base: #0b100f;
+    --superficie: #141c1a;
+    --superficie-alt: #1c2725;
+    --borda: rgba(230, 219, 206, 0.1);
+    --texto: #ece6da;
+    --texto-muted: #a2b0aa;
+    --texto-fraco: #6d7b76;
+    --marca: #e0904f;
+    --marca-rgb: 224, 144, 79;
+    --acento: #cf7f3f;
+    --acento-forte: #b06a30;
+    --acento-hover: #ec9d5c;
+    --acento-hover-forte: #c17838;
+    --acento-forte-rgb: 176, 106, 48;
+    --sucesso-bg: rgba(74, 194, 122, 0.14);
+    --sucesso-texto: #7fd9a0;
+    --sucesso-borda: rgba(74, 194, 122, 0.28);
+    --sucesso-solido: #3fae6c;
+    --sucesso-solido-forte: #2f8f56;
+    --sucesso-solido-hover: #4dbd7a;
+    --sucesso-solido-hover-forte: #379d60;
+    --erro-bg: rgba(224, 92, 92, 0.14);
+    --erro-texto: #f0a3a3;
+    --erro-borda: rgba(224, 92, 92, 0.28);
+    --perigo-solido: #c94d4d;
+    --perigo-solido-forte: #a83d3d;
+    --perigo-solido-hover: #d66161;
+    --perigo-solido-hover-forte: #b84747;
+    --aviso-bg: rgba(214, 158, 66, 0.16);
+    --aviso-texto: #e8bd7c;
+    --info-bg: rgba(94, 160, 189, 0.16);
+    --info-texto: #92c1da;
+    --prioridade-alta-bg: rgba(224, 138, 66, 0.16);
+    --prioridade-alta-texto: #eba873;
+    --prioridade-critica-bg: rgba(224, 92, 92, 0.2);
+    --prioridade-critica-texto: #f0a3a3;
+    --sombra-caixa: rgba(0, 0, 0, 0.5);
+    --sombra-linha: rgba(0, 0, 0, 0.25);
+    --hover-linha: rgba(255, 255, 255, 0.035);
     --hover-pagina: rgba(255, 255, 255, 0.06);
     /* Usada só em auth.css, no glow de fundo de login/cadastro. */
-    --auth-glow-centro: #1b2740;
+    --auth-glow-centro: #1f2b28;
 }
 
-/* TEMA CLARO — mesmas variáveis, valores diferentes. Os tons de status
-   (sucesso/erro/aviso/info) e as cores de prioridade/botão-perigo ficam
-   como estão: são cores de significado (vermelho é sempre alerta), não de
-   ambiente, então não precisam de uma versão clara própria. */
+/* TEMA CLARO — mesmas variáveis, valores diferentes. Diferente da versão
+   anterior, os tons de status/prioridade também ganham override aqui: os
+   valores do tema escuro (pensados para contraste sobre fundo escuro) não
+   se sustentam sobre uma superfície clara — verde-claro sobre branco, por
+   exemplo, praticamente some. */
 [data-theme="light"] {
-    --bg: #f1f5f9;
-    --bg-gradiente-topo: #ffffff;
-    --bg-gradiente-base: #f1f5f9;
+    --bg: #f5f1e9;
+    --bg-gradiente-topo: #fffdf9;
+    --bg-gradiente-base: #f5f1e9;
     --superficie: #ffffff;
-    --superficie-alt: #f8fafc;
-    --borda: rgba(15, 23, 42, 0.1);
-    --texto: #0f172a;
-    --texto-muted: #475569;
-    --texto-fraco: #64748b;
-    --marca: #2563eb;
-    --sombra-caixa: rgba(15, 23, 42, 0.1);
-    --sombra-linha: rgba(15, 23, 42, 0.08);
-    --hover-linha: rgba(15, 23, 42, 0.03);
-    --hover-pagina: rgba(15, 23, 42, 0.05);
-    --auth-glow-centro: #dbeafe;
+    --superficie-alt: #efe8db;
+    --borda: rgba(58, 46, 32, 0.13);
+    --texto: #2a2016;
+    --texto-muted: #5c4c3b;
+    --texto-fraco: #7d6b58;
+    --marca: #a8611f;
+    --marca-rgb: 168, 97, 31;
+    --acento: #a8611f;
+    --acento-forte: #8a4f19;
+    --acento-hover: #bf7530;
+    --acento-hover-forte: #9c5c22;
+    --acento-forte-rgb: 138, 79, 25;
+    --sucesso-bg: rgba(63, 174, 108, 0.12);
+    --sucesso-texto: #2f8f56;
+    --sucesso-borda: rgba(63, 174, 108, 0.28);
+    --sucesso-solido: #2f8f56;
+    --sucesso-solido-forte: #256f43;
+    --sucesso-solido-hover: #37a161;
+    --sucesso-solido-hover-forte: #2a7c4b;
+    --erro-bg: rgba(196, 58, 58, 0.1);
+    --erro-texto: #a83d3d;
+    --erro-borda: rgba(196, 58, 58, 0.26);
+    --perigo-solido: #a83d3d;
+    --perigo-solido-forte: #8a3131;
+    --perigo-solido-hover: #b84747;
+    --perigo-solido-hover-forte: #953838;
+    --aviso-bg: rgba(168, 120, 40, 0.12);
+    --aviso-texto: #8a611f;
+    --info-bg: rgba(52, 108, 140, 0.12);
+    --info-texto: #2f5d78;
+    --prioridade-alta-bg: rgba(168, 97, 31, 0.14);
+    --prioridade-alta-texto: #8a4f19;
+    --prioridade-critica-bg: rgba(196, 58, 58, 0.14);
+    --prioridade-critica-texto: #a83d3d;
+    --sombra-caixa: rgba(58, 46, 32, 0.12);
+    --sombra-linha: rgba(58, 46, 32, 0.08);
+    --hover-linha: rgba(58, 46, 32, 0.035);
+    --hover-pagina: rgba(58, 46, 32, 0.06);
+    --auth-glow-centro: #f0dfc4;
 }
 
-/* TEMA ÂMBAR (issue #79, paleta ajustada depois) — "fim de tarde": para
-   quem tem sensibilidade à luz branca do tema claro tradicional, mas não
-   quer o dark puro. A primeira versão saiu clara demais (bege quase
-   branco) e ainda incomodava a vista; o fundo foi escurecido e puxado
-   mais para o laranja — mais perto do céu de um pôr do sol de verdade —
-   mantendo o texto em marrom escuro (não preto puro, para não voltar ao
-   contraste duro que o dark evita). Acento em terracota — a mesma lógica
-   de status/perigo do tema claro se aplica aqui: cores de significado não
-   mudam entre temas.*/
+/* TEMA ÂMBAR (issue #79) — "fim de tarde": para quem tem sensibilidade à
+   luz branca do tema claro tradicional, mas não quer o dark puro. Fundo
+   puxado para o laranja, texto em marrom escuro (não preto puro, para não
+   voltar ao contraste duro que o dark evita). A marca continua na mesma
+   família de cobre/terracota do tema escuro e do claro — antes ela pulava
+   para um laranja sem relação nenhuma com o azul dos outros dois temas. */
 [data-theme="ambar"] {
-    --bg: #e8a86b;
-    --bg-gradiente-topo: #f0b87d;
-    --bg-gradiente-base: #de9a58;
-    --superficie: #f7e0c2;
-    --superficie-alt: #f2d1a4;
-    --borda: rgba(124, 45, 18, 0.2);
+    --bg: #e6a06a;
+    --bg-gradiente-topo: #eeb47e;
+    --bg-gradiente-base: #dd9257;
+    --superficie: #f7e2c7;
+    --superficie-alt: #f1d2a8;
+    --borda: rgba(110, 42, 14, 0.2);
     --texto: #3d1f0d;
     --texto-muted: #6e3c1a;
     --texto-fraco: #8f5527;
-    --marca: #c2410c;
+    --marca: #b23d0f;
+    --marca-rgb: 178, 61, 15;
+    --acento: #b23d0f;
+    --acento-forte: #8f3009;
+    --acento-hover: #c95022;
+    --acento-hover-forte: #a54014;
+    --acento-forte-rgb: 143, 48, 9;
+    --sucesso-bg: rgba(47, 111, 67, 0.16);
+    --sucesso-texto: #2c5a34;
+    --sucesso-borda: rgba(47, 111, 67, 0.3);
+    --sucesso-solido: #2f6f43;
+    --sucesso-solido-forte: #24552f;
+    --sucesso-solido-hover: #396f4a;
+    --sucesso-solido-hover-forte: #2c4f37;
+    --erro-bg: rgba(153, 45, 32, 0.16);
+    --erro-texto: #7a2415;
+    --erro-borda: rgba(153, 45, 32, 0.3);
+    --perigo-solido: #992d20;
+    --perigo-solido-forte: #7a2415;
+    --perigo-solido-hover: #a83d2d;
+    --perigo-solido-hover-forte: #8a3018;
+    --aviso-bg: rgba(140, 88, 15, 0.18);
+    --aviso-texto: #6e4108;
+    --info-bg: rgba(37, 89, 112, 0.16);
+    --info-texto: #1f4a5c;
+    --prioridade-alta-bg: rgba(178, 61, 15, 0.16);
+    --prioridade-alta-texto: #7a2b0a;
+    --prioridade-critica-bg: rgba(153, 45, 32, 0.2);
+    --prioridade-critica-texto: #7a2415;
     --sombra-caixa: rgba(90, 40, 10, 0.2);
     --sombra-linha: rgba(90, 40, 10, 0.14);
     --hover-linha: rgba(90, 40, 10, 0.08);
     --hover-pagina: rgba(90, 40, 10, 0.12);
-    --auth-glow-centro: #f0b87d;
+    --auth-glow-centro: #eeb47e;
 }
 
 * {
@@ -100,7 +172,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     background: linear-gradient(180deg, var(--bg-gradiente-topo) 0%, var(--bg-gradiente-base) 100%);
     color: var(--texto);
 }
@@ -113,8 +185,8 @@ body {
     background: var(--superficie);
     border: 1px solid var(--borda);
     padding: 40px;
-    border-radius: 18px;
-    box-shadow: 0 10px 30px var(--sombra-caixa);
+    border-radius: 14px;
+    box-shadow: 0 1px 2px var(--sombra-linha), 0 16px 40px var(--sombra-caixa);
     position: relative;
 }
 
@@ -132,7 +204,9 @@ body {
 h1 {
     text-align: center;
     color: var(--texto);
-    font-size: 32px;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
     margin-bottom: 10px;
 }
 
@@ -158,7 +232,7 @@ h1 {
 }
 
 .campo label {
-    font-weight: bold;
+    font-weight: 700;
     color: var(--marca);
 }
 
@@ -166,12 +240,14 @@ h1 {
 .campo textarea {
     width: 100%;
     padding: 14px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid var(--borda);
     background: var(--superficie-alt);
     color: var(--texto);
+    font-family: inherit;
     font-size: 15px;
     outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .campo input::placeholder,
@@ -181,8 +257,8 @@ h1 {
 
 .campo input:focus,
 .campo textarea:focus {
-    border-color: var(--acento);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    border-color: var(--marca);
+    box-shadow: 0 0 0 3px rgba(224, 144, 79, 0.22);
 }
 
 .dica-campo {
@@ -190,25 +266,31 @@ h1 {
     color: var(--texto-fraco);
 }
 
-/* BOTÕES */
+/* BOTÕES — antes eram gradiente azul + glow em toda parte; agora um
+   preenchimento sólido com borda própria, mais parecido com um sistema
+   desenhado do que com o botão-padrão de qualquer gerador de UI. */
 .botao {
-    background: linear-gradient(135deg, var(--acento), var(--acento-forte));
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
+    background: var(--acento);
+    color: var(--bg);
+    border: 1px solid var(--acento-forte);
+    padding: 14px 15px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
     cursor: pointer;
     display: inline-block;
     text-align: center;
     text-decoration: none;
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25);
+    transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .botao:hover {
-    background: linear-gradient(135deg, var(--acento-hover), var(--acento-hover-forte));
-    box-shadow: 0 10px 24px rgba(59, 130, 246, 0.35);
+    background: var(--acento-hover);
+    border-color: var(--acento-hover-forte);
+}
+
+.botao:active {
+    transform: translateY(1px);
 }
 
 /* Ação de mesmo peso visual do .botao, mas sem competir com ele por
@@ -218,13 +300,11 @@ h1 {
     background: transparent;
     color: var(--texto);
     border: 1px solid var(--borda);
-    box-shadow: none;
 }
 
 .botao-secundario:hover {
     background: var(--hover-pagina);
     border-color: var(--marca);
-    box-shadow: none;
 }
 
 /* GRUPO DE BOTÕES DE NAVEGAÇÃO (dashboard, telas iniciais) */
@@ -235,7 +315,8 @@ h1 {
     margin-top: 20px;
 }
 
-/* CARDS DE RESUMO (dashboard) */
+/* CARDS DE RESUMO (dashboard) — ganham uma barra de acento à esquerda em
+   vez de depender só da cor do número para diferenciar cada estado. */
 .cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -246,28 +327,45 @@ h1 {
 .card {
     background: var(--superficie-alt);
     border: 1px solid var(--borda);
-    border-radius: 14px;
+    border-left: 3px solid var(--borda);
+    border-radius: 10px;
     padding: 20px;
     text-align: center;
 }
 
 .card h2 {
     color: var(--texto);
-    font-size: 32px;
+    font-size: 30px;
+    font-weight: 800;
     margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
 }
 
 .card p {
     color: var(--texto-muted);
-    font-size: 14px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.card.aberto {
+    border-left-color: var(--erro-texto);
 }
 
 .card.aberto h2 {
     color: var(--erro-texto);
 }
 
+.card.andamento {
+    border-left-color: var(--aviso-texto);
+}
+
 .card.andamento h2 {
     color: var(--aviso-texto);
+}
+
+.card.resolvido {
+    border-left-color: var(--sucesso-texto);
 }
 
 .card.resolvido h2 {
@@ -275,8 +373,9 @@ h1 {
 }
 
 .titulo-tabela {
-    color: var(--marca);
-    font-size: 20px;
+    color: var(--texto);
+    font-size: 19px;
+    font-weight: 700;
     margin-bottom: 14px;
 }
 
@@ -298,9 +397,14 @@ h1 {
 
 .tabela-chamados th {
     background: var(--superficie-alt);
-    color: var(--texto);
-    padding: 15px;
+    color: var(--texto-muted);
+    font-size: 12.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 14px 15px;
     text-align: center;
+    border-bottom: 1px solid var(--borda);
 }
 
 .tabela-chamados td {
@@ -322,9 +426,10 @@ h1 {
 
 /* STATUS */
 .status {
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-weight: bold;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
     display: inline-block;
 }
 
@@ -346,15 +451,17 @@ h1 {
 /* BOTÃO AÇÃO */
 .acao {
     align-items: center;
-    background: linear-gradient(135deg, var(--acento), var(--acento-forte));
+    background: var(--acento);
+    border: 1px solid var(--acento-forte);
     border-radius: 50%;
-    color: white;
+    color: var(--bg);
     display: inline-flex;
     font-size: 16px;
     height: 36px;
     justify-content: center;
     text-decoration: none;
     width: 36px;
+    transition: background-color 0.15s ease;
 }
 
 /* O .acao é um círculo de 36px feito para um ícone só. Quando a ação precisa
@@ -363,7 +470,7 @@ h1 {
 .acao-texto {
     border-radius: 999px;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 700;
     height: auto;
     padding: 8px 16px;
     white-space: nowrap;
@@ -371,25 +478,28 @@ h1 {
 }
 
 .acao:hover {
-    background: linear-gradient(135deg, var(--acento-hover), var(--acento-hover-forte));
+    background: var(--acento-hover);
+    border-color: var(--acento-hover-forte);
 }
 
 /* Botão de "finalizado": mesma geometria circular do .acao, mas em verde
    sólido — sinaliza que a ação já foi concluída, sem convidar a um novo
    clique. Sem texto visível: a legenda vira title, só aparece no hover. */
 .acao-finalizado {
-    background: linear-gradient(135deg, var(--sucesso-solido), var(--sucesso-solido-forte));
+    background: var(--sucesso-solido);
+    border-color: var(--sucesso-solido-forte);
     cursor: default;
 }
 
 .acao-finalizado:hover {
-    background: linear-gradient(135deg, var(--sucesso-solido-hover), var(--sucesso-solido-hover-forte));
+    background: var(--sucesso-solido-hover);
+    border-color: var(--sucesso-solido-hover-forte);
 }
 
 /* FINALIZADO (sem ação disponível) */
 .finalizado {
     color: var(--texto-fraco);
-    font-weight: bold;
+    font-weight: 700;
 }
 
 /* MENSAGENS DE ERRO E SUCESSO (login/cadastro/chamado) */
@@ -401,7 +511,7 @@ h1 {
     border-radius: 8px;
     margin-bottom: 20px;
     text-align: center;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .sucesso {
@@ -412,7 +522,7 @@ h1 {
     border-radius: 8px;
     margin-bottom: 20px;
     text-align: center;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .token-gerado {
@@ -430,8 +540,8 @@ h1 {
 
 .token-gerado code {
     color: var(--texto);
-    font-family: "Courier New", monospace;
-    font-size: 0.95rem;
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 0.92rem;
     word-break: break-all;
 }
 
@@ -443,7 +553,7 @@ h1 {
     padding: 8px 14px;
     border-radius: 8px;
     font-size: 0.85rem;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -470,7 +580,7 @@ h1 {
 
 .link-secundario a {
     color: var(--marca);
-    font-weight: bold;
+    font-weight: 700;
     text-decoration: none;
 }
 
@@ -478,12 +588,15 @@ h1 {
     text-decoration: underline;
 }
 
-/* PRIORIDADE DO CHAMADO */
+/* PRIORIDADE DO CHAMADO — antes "alta" e "crítica" usavam rgba fixo em vez
+   de variável, então não se ajustavam ao trocar de tema (no tema claro, o
+   laranja-claro de "alta" quase sumia sobre fundo branco). Agora seguem o
+   mesmo padrão tokenizado dos outros três níveis. */
 .prioridade {
     padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 13px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 12.5px;
     display: inline-block;
 }
 
@@ -498,13 +611,13 @@ h1 {
 }
 
 .prioridade-alta {
-    background: rgba(249, 115, 22, 0.16);
-    color: #fdba74;
+    background: var(--prioridade-alta-bg);
+    color: var(--prioridade-alta-texto);
 }
 
 .prioridade-critica {
-    background: rgba(239, 68, 68, 0.2);
-    color: #fca5a5;
+    background: var(--prioridade-critica-bg);
+    color: var(--prioridade-critica-texto);
 }
 
 /* BARRA DE USUÁRIO LOGADO (dashboard/chamados) */
@@ -520,7 +633,7 @@ h1 {
 
 .usuario-logado .sair {
     color: var(--erro-texto);
-    font-weight: bold;
+    font-weight: 700;
     text-decoration: none;
 }
 
@@ -528,7 +641,7 @@ h1 {
     text-decoration: underline;
 }
 
-/* O logout virou POST (issue #114) — o link antigo virou um <form> com um
+/* O logout é POST (issue #114) — o link antigo virou um <form> com um
    <button>; este seletor faz o botão parecer com o link que ele substitui. */
 button.sair {
     background: none;
@@ -600,27 +713,29 @@ button.sair {
     border: 1px solid var(--borda);
     background: var(--superficie-alt);
     color: var(--texto);
+    font-family: inherit;
     font-size: 14px;
 }
 
 .botao-filtro {
     background: var(--acento);
-    color: white;
-    border: none;
+    color: var(--bg);
+    border: 1px solid var(--acento-forte);
     padding: 10px 18px;
     border-radius: 8px;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
 }
 
 .botao-filtro:hover {
     background: var(--acento-hover);
+    border-color: var(--acento-hover-forte);
 }
 
 .limpar-filtro {
     color: var(--texto-muted);
     text-decoration: none;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .limpar-filtro:hover {
@@ -631,16 +746,18 @@ button.sair {
 .novo-chamado {
     display: inline-block;
     margin-bottom: 20px;
-    background: linear-gradient(135deg, var(--acento), var(--acento-forte));
-    color: white;
+    background: var(--acento);
+    color: var(--bg);
+    border: 1px solid var(--acento-forte);
     padding: 12px 20px;
-    border-radius: 10px;
+    border-radius: 8px;
     text-decoration: none;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .novo-chamado:hover {
-    background: linear-gradient(135deg, var(--acento-hover), var(--acento-hover-forte));
+    background: var(--acento-hover);
+    border-color: var(--acento-hover-forte);
 }
 
 /* USUÁRIO LOGADO EM TELAS PEQUENAS */
@@ -661,7 +778,7 @@ button.sair {
 }
 
 h1{
-    font-size:24px;
+    font-size:23px;
 }
 
 .usuario-logado{
@@ -733,7 +850,7 @@ h1{
 .tabela-chamados tr{
     background: var(--superficie-alt);
     border: 1px solid var(--borda);
-    border-radius:12px;
+    border-radius:10px;
     box-shadow:0 2px 8px var(--sombra-linha);
     margin-bottom:14px;
     padding:6px 14px;
@@ -760,7 +877,7 @@ h1{
 .tabela-chamados td::before{
     color: var(--marca);
     content: attr(data-label);
-    font-weight:bold;
+    font-weight:700;
     text-align:left;
     margin-right:auto;
 }
@@ -786,7 +903,7 @@ h1{
 .voltar {
     color: var(--marca);
     display: inline-block;
-    font-weight: bold;
+    font-weight: 700;
     margin-bottom: 22px;
     text-decoration: none;
 }
@@ -810,9 +927,10 @@ h1{
 }
 
 .eyebrow {
-    font-weight: bold;
+    font-weight: 700;
     margin-bottom: 5px;
     text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .detalhes-grid {
@@ -824,7 +942,7 @@ h1{
 
 .bloco-detalhe, .secao {
     border: 1px solid var(--borda);
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 18px;
 }
 
@@ -839,8 +957,9 @@ h1{
 }
 
 .secao h2 {
-    color: var(--marca);
-    font-size: 20px;
+    color: var(--texto);
+    font-size: 19px;
+    font-weight: 700;
     margin-bottom: 14px;
 }
 
@@ -850,19 +969,21 @@ h1{
 }
 
 .acoes-chamado {
-    background: rgba(59, 130, 246, 0.06);
+    background: var(--superficie-alt);
 }
 
 .botao-sucesso {
-    background: linear-gradient(135deg, #16a34a, #22c55e);
+    background: var(--sucesso-solido);
+    border-color: var(--sucesso-solido-forte);
 }
 
 .botao-sucesso:hover {
-    background: linear-gradient(135deg, #15803d, #16a34a);
+    background: var(--sucesso-solido-hover);
+    border-color: var(--sucesso-solido-hover-forte);
 }
 
 .linha-do-tempo {
-    border-left: 3px solid rgba(59, 130, 246, 0.35);
+    border-left: 3px solid var(--borda);
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -917,14 +1038,14 @@ h1{
 
 .formulario-comentario label {
     color: var(--marca);
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .formulario-comentario textarea {
     border: 1px solid var(--borda);
     background: var(--superficie-alt);
     color: var(--texto);
-    border-radius: 10px;
+    border-radius: 8px;
     font: inherit;
     padding: 12px;
     resize: vertical;
@@ -943,17 +1064,18 @@ h1{
 
 /* PAINEL ADMINISTRATIVO */
 .botao-perigo {
-    background: linear-gradient(135deg, #dc2626, #ef4444);
-    border: none;
+    background: var(--perigo-solido);
+    border: 1px solid var(--perigo-solido-forte);
     border-radius: 8px;
-    color: white;
+    color: #fff;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 700;
     padding: 10px 15px;
 }
 
 .botao-perigo:hover {
-    background: linear-gradient(135deg, #b91c1c, #dc2626);
+    background: var(--perigo-solido-hover);
+    border-color: var(--perigo-solido-hover-forte);
 }
 
 .form-tipo-usuario {
@@ -969,6 +1091,7 @@ h1{
     border: 1px solid var(--borda);
     background: var(--superficie-alt);
     color: var(--texto);
+    font-family: inherit;
 }
 
 /* FILTRO DE PERÍODO */
@@ -1003,9 +1126,10 @@ h1{
 
 .pagina-atual {
     background: var(--acento);
+    border: 1px solid var(--acento-forte);
     border-radius: 8px;
-    color: white;
-    font-weight: bold;
+    color: var(--bg);
+    font-weight: 700;
     padding: 8px 12px;
 }
 
