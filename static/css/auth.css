@@ -7,6 +7,12 @@
    telas internas onde o seletor sempre existiu. Aqui ficam só os extras que
    fazem sentido nessas duas telas: fundo com glow, card mais estreito,
    animação de entrada e os ícones dentro dos campos.
+
+   O glow usava azul/índigo fixo, sobrando do antigo acento genérico; agora
+   segue a mesma família cobre/terracota do resto do redesign, lendo
+   --marca-rgb/--acento-forte-rgb (as mesmas cores de --marca/--acento-forte,
+   só que como tripla "r, g, b" em vez de hex) para dar transparência sem
+   depender de color-mix(), que navegadores mais antigos não suportam.
    ============================== */
 
 body.pagina-auth {
@@ -23,14 +29,14 @@ body.pagina-auth::before,
 body.pagina-auth::after {
     border-radius: 50%;
     content: "";
-    filter: blur(60px);
+    filter: blur(70px);
     pointer-events: none;
     position: fixed;
     z-index: 0;
 }
 
 body.pagina-auth::before {
-    background: rgba(59, 130, 246, 0.22);
+    background: rgba(var(--marca-rgb), 0.22);
     height: 320px;
     left: -80px;
     top: -100px;
@@ -38,7 +44,7 @@ body.pagina-auth::before {
 }
 
 body.pagina-auth::after {
-    background: rgba(99, 102, 241, 0.16);
+    background: rgba(var(--acento-forte-rgb), 0.18);
     bottom: -120px;
     height: 380px;
     right: -100px;
@@ -93,7 +99,7 @@ body.pagina-auth .icone-campo svg {
 }
 
 body.pagina-auth .campo-input:focus-within .icone-campo {
-    color: var(--acento);
+    color: var(--marca);
 }
 
 body.pagina-auth .campo input {
@@ -128,7 +134,7 @@ body.pagina-auth .acoes-auth .botao-secundario {
     width: auto;
     min-width: 200px;
     padding: 11px 20px;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
