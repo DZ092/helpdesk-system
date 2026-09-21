@@ -1,13 +1,16 @@
 /* ==============================
-   PÁGINA DE APRESENTAÇÃO (issue #85, redesenhada de novo depois) - TOQUES
+   PÁGINA DE APRESENTAÇÃO (issue #85, redesenhada de novo) - TOQUES
    EXCLUSIVOS. O tema em si já é global (style.css). Aqui ficam só as regras
-   específicas desta tela: ela não usa o .container de largura fixa das
-   telas internas porque precisa de mais respiro para o hero e as seções —
-   um redesign dentro do sistema de cores existente, não um estilo à parte.
+   específicas desta tela.
 
-   Os badges do mockup usavam rgba fixo em vez das variáveis de status já
-   tokenizadas em style.css; agora reaproveitam --erro-bg/--aviso-bg/
-   --sucesso-bg como o resto do sistema, então também respeitam os 3 temas.
+   Segunda passada do redesign: a primeira só trocou cor/tipografia mantendo
+   a composição antiga (hero dividido ao meio com um mockup de navegador do
+   lado, tira de números separada, grade de 4 cards) — o layout em si
+   continuava o mesmo de qualquer gerador de landing page. Esta versão muda
+   a composição: sem mockup decorativo, hero em coluna única com a régua de
+   números encostada nele, "como funciona" como uma sequência numerada de
+   verdade (3 passos reais, não 3 números decorativos) e os recursos como
+   lista de linhas com rótulo em vez de grade de cartões.
    ============================== */
 
 body.pagina-apresentacao {
@@ -15,7 +18,7 @@ body.pagina-apresentacao {
 }
 
 .topo-apresentacao {
-    max-width: 1200px;
+    max-width: 760px;
     margin: 0 auto;
     padding: 24px 32px 0;
     display: flex;
@@ -41,43 +44,36 @@ body.pagina-apresentacao {
     background: var(--marca);
 }
 
-/* HERO */
+/* HERO — coluna única, sem painel de mockup ao lado: o próprio texto e a
+   régua de números abaixo dele carregam a seção sozinhos. */
 .hero-apresentacao {
-    max-width: 1200px;
+    max-width: 760px;
     margin: 0 auto;
-    padding: 56px 32px 80px;
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 56px;
-    align-items: center;
+    padding: 64px 32px 0;
 }
 
 .eyebrow-apresentacao {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
     color: var(--marca);
-    border-bottom: 2px solid var(--borda);
-    padding-bottom: 6px;
-    margin-bottom: 26px;
+    margin-bottom: 22px;
 }
 
 .bolinha-viva {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: var(--sucesso-solido);
 }
 
 .hero-apresentacao h1 {
-    font-size: clamp(2rem, 4vw, 2.85rem);
-    line-height: 1.14;
+    font-size: clamp(2.1rem, 5.2vw, 3.4rem);
+    line-height: 1.1;
     font-weight: 800;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
     color: var(--texto);
     text-align: left;
 }
@@ -87,10 +83,10 @@ body.pagina-apresentacao {
 }
 
 .hero-apresentacao-sub {
-    margin-top: 20px;
-    font-size: 1.08rem;
+    margin-top: 22px;
+    font-size: 1.1rem;
     color: var(--texto-muted);
-    max-width: 46ch;
+    max-width: 52ch;
     line-height: 1.6;
 }
 
@@ -100,14 +96,14 @@ body.pagina-apresentacao {
 }
 
 .link-secundario-apresentacao {
-    margin-top: 14px;
+    margin-top: 16px;
     font-size: 0.85rem;
     color: var(--texto-muted);
 }
 
 .link-secundario-apresentacao a {
     color: var(--marca);
-    font-weight: 700;
+    font-weight: bold;
     text-decoration: none;
 }
 
@@ -115,168 +111,114 @@ body.pagina-apresentacao {
     text-decoration: underline;
 }
 
-.hero-mini-stats {
-    margin-top: 28px;
-    display: flex;
-    gap: 22px;
-    flex-wrap: wrap;
-    font-size: 0.82rem;
-    color: var(--texto-fraco);
-}
-
-.hero-mini-stats strong {
-    color: var(--texto);
-    font-variant-numeric: tabular-nums;
-}
-
-/* MOCKUP VISUAL DA TELA DE CHAMADOS */
-.mockup-apresentacao {
-    background: var(--superficie);
-    border: 1px solid var(--borda);
-    border-radius: 12px;
-    box-shadow: 0 1px 2px var(--sombra-linha), 0 30px 70px var(--sombra-caixa);
-    overflow: hidden;
-}
-
-.mockup-barra {
-    display: flex;
-    gap: 6px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--borda);
-    background: var(--superficie-alt);
-}
-
-.mockup-barra span {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--borda);
-}
-
-.mockup-corpo {
-    padding: 22px 22px 26px;
-}
-
-.mockup-linha-topo {
-    margin-bottom: 18px;
-    color: var(--texto);
-    font-size: 1.02rem;
-    font-weight: 700;
-}
-
-.mockup-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 18px;
-}
-
-.mockup-card {
-    background: var(--superficie-alt);
-    border: 1px solid var(--borda);
-    border-radius: 8px;
-    padding: 12px;
-    text-align: center;
-}
-
-.mockup-card b {
-    font-size: 1.25rem;
-    font-weight: 800;
-    display: block;
-    color: var(--texto);
-    font-variant-numeric: tabular-nums;
-}
-
-.mockup-card span {
-    font-size: 0.7rem;
-    color: var(--texto-fraco);
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-}
-
-.mockup-tabela-linha {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 4px;
-    border-bottom: 1px solid var(--borda);
-    font-size: 0.82rem;
-    color: var(--texto);
-}
-
-.mockup-tabela-linha:last-child {
-    border-bottom: none;
-}
-
-.mockup-badge {
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 999px;
-}
-
-.badge-aberto {
-    background: var(--erro-bg);
-    color: var(--erro-texto);
-}
-
-.badge-andamento {
-    background: var(--aviso-bg);
-    color: var(--aviso-texto);
-}
-
-.badge-resolvido {
-    background: var(--sucesso-bg);
-    color: var(--sucesso-texto);
-}
-
-/* SEÇÃO DE NÚMEROS */
-.secao-numeros-apresentacao {
+/* RÉGUA DE NÚMEROS — encostada no hero, não é mais uma seção à parte lá
+   embaixo da página. */
+.hero-regua {
+    margin-top: 52px;
+    padding-top: 26px;
     border-top: 1px solid var(--borda);
-    padding: 60px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
 }
 
-.numeros-grid {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
+.hero-regua-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.numero-item {
-    text-align: left;
-    border-left: 2px solid var(--borda);
-    padding-left: 16px;
-}
-
-.numero-item .n {
-    font-size: 2.5rem;
+.hero-regua-item .n {
+    font-size: 1.7rem;
     font-weight: 800;
     color: var(--marca);
     line-height: 1;
     font-variant-numeric: tabular-nums;
 }
 
-.numero-item .l {
-    margin-top: 10px;
-    font-size: 0.86rem;
-    color: var(--texto-muted);
+.hero-regua-item .l {
+    font-size: 0.78rem;
+    color: var(--texto-fraco);
 }
 
-/* SEÇÃO DE RECURSOS */
-.secao-recursos-apresentacao {
-    max-width: 1200px;
+/* COMO FUNCIONA — sequência numerada real (3 passos do fluxo), não um
+   marcador decorativo. */
+.secao-passos {
+    max-width: 760px;
     margin: 0 auto;
-    padding: 70px 32px;
+    padding: 84px 32px 70px;
+    border-top: 1px solid var(--borda);
+}
+
+.passos-cabecalho {
+    margin-bottom: 40px;
+}
+
+.passos-cabecalho h2 {
+    margin-top: 10px;
+    font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+    font-weight: 800;
+    color: var(--texto);
+    text-align: left;
+    max-width: 32ch;
+}
+
+.lista-passos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.passo {
+    display: flex;
+    gap: 22px;
+    padding: 22px 0;
+    border-top: 1px solid var(--borda);
+}
+
+.passo:last-child {
+    border-bottom: 1px solid var(--borda);
+}
+
+.passo-num {
+    flex: none;
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--marca);
+    padding-top: 3px;
+}
+
+.passo-corpo h3 {
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: var(--texto);
+    margin-bottom: 6px;
+}
+
+.passo-corpo p {
+    font-size: 0.94rem;
+    color: var(--texto-muted);
+    line-height: 1.55;
+    max-width: 56ch;
+}
+
+/* SEÇÃO DE RECURSOS — lista de linhas com rótulo, não grade de cartões. */
+.secao-recursos-apresentacao {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 32px 84px;
 }
 
 .secao-head-apresentacao {
     max-width: 60ch;
-    margin-bottom: 40px;
+    margin-bottom: 32px;
 }
 
 .eyebrow-secao-apresentacao {
+    display: block;
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -286,121 +228,106 @@ body.pagina-apresentacao {
 }
 
 .secao-head-apresentacao h2 {
-    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-size: clamp(1.4rem, 2.6vw, 1.9rem);
     font-weight: 800;
     color: var(--texto);
     text-align: left;
 }
 
-.secao-head-apresentacao p {
-    margin-top: 12px;
-    color: var(--texto-muted);
-    font-size: 1rem;
-}
-
-.recursos-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: var(--borda);
-    border: 1px solid var(--borda);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.recurso-apresentacao {
-    background: var(--superficie);
-    padding: 26px 22px;
+.lista-recursos {
     display: flex;
     flex-direction: column;
-    gap: 4px;
 }
 
-.recurso-numero {
+.linha-recurso {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 24px;
+    padding: 22px 0;
+    border-top: 1px solid var(--borda);
+    align-items: baseline;
+}
+
+.linha-recurso:last-child {
+    border-bottom: 1px solid var(--borda);
+}
+
+.recurso-rotulo {
     font-family: "JetBrains Mono", "Courier New", monospace;
     font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--marca);
-    margin-bottom: 10px;
+    color: var(--texto-fraco);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
-.recurso-apresentacao h3 {
+.linha-recurso h3 {
     font-size: 1.02rem;
     font-weight: 700;
     margin-bottom: 6px;
     color: var(--texto);
+    grid-column: 2;
 }
 
-.recurso-apresentacao p {
-    font-size: 0.9rem;
+.linha-recurso p {
+    font-size: 0.92rem;
     color: var(--texto-muted);
     line-height: 1.55;
+    grid-column: 2;
+    max-width: 58ch;
 }
 
-/* CTA FINAL */
+/* CTA FINAL — faixa cheia, sem caixa flutuante. */
 .secao-cta-apresentacao {
-    border-top: 1px solid var(--borda);
-    padding: 60px 32px 70px;
-}
-
-.cta-apresentacao-caixa {
-    max-width: 1200px;
+    max-width: 760px;
     margin: 0 auto;
-    background: var(--superficie-alt);
-    border: 1px solid var(--borda);
-    border-radius: 14px;
-    padding: 48px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 30px;
-    flex-wrap: wrap;
+    padding: 70px 32px 90px;
+    border-top: 1px solid var(--borda);
+    text-align: left;
 }
 
-.cta-apresentacao-caixa h2 {
-    font-size: 1.5rem;
+.secao-cta-apresentacao h2 {
+    font-size: clamp(1.5rem, 2.8vw, 2rem);
     font-weight: 800;
     color: var(--texto);
     text-align: left;
 }
 
-.cta-apresentacao-caixa p {
-    margin-top: 8px;
+.secao-cta-apresentacao p {
+    margin-top: 10px;
     color: var(--texto-muted);
+    font-size: 1rem;
 }
 
 .acoes-cta-apresentacao {
-    margin-top: 0;
+    margin-top: 28px;
 }
 
 .rodape-apresentacao {
-    padding-bottom: 40px;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 32px 40px;
 }
 
 /* RESPONSIVO */
-@media (max-width: 900px) {
-    .hero-apresentacao {
-        grid-template-columns: 1fr;
-    }
-    .numeros-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .recursos-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .cta-apresentacao-caixa {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
 @media (max-width: 560px) {
-    .numeros-grid {
-        grid-template-columns: 1fr 1fr;
+    .hero-regua {
+        gap: 22px 28px;
     }
-    .recursos-grid {
+
+    .linha-recurso {
         grid-template-columns: 1fr;
+        gap: 8px;
     }
+
+    .linha-recurso h3,
+    .linha-recurso p {
+        grid-column: 1;
+    }
+
+    .passo {
+        gap: 14px;
+    }
+
     .acoes-apresentacao {
         flex-direction: column;
         align-items: stretch;
