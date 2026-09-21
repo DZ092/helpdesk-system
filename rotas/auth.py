@@ -118,7 +118,7 @@ def login():
     return render_template("login.html", form=form, erro=_primeiro_erro(form))
 
 
-@auth.route("/logout")
+@auth.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return redirect("/login")

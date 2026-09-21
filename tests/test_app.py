@@ -993,3 +993,31 @@ def test_excel_neutraliza_titulo_com_formula_maliciosa(app):
     assert celula_setor.data_type == "s"
     assert celula_titulo.value.startswith("'=")
     assert celula_setor.value.startswith("'=")
+
+
+# ==============================================================================
+# LOGOUT VIA POST (issue #114)
+# ==============================================================================
+def test_logout_via_get_e_rejeitado(client, criar_usuario):
+    """Logout por GET permitia CSRF: um <img src="/logout"> em outro site
+    derrubava a sessão da vítima sem ela clicar em nada. Agora só aceita POST,
+    protegido pelo CSRF global do projeto (ver extensions.py)."""
+    criar_usuario()
+    fazer_login(client)
+
+    resposta = client.get("/logout")
+
+    assert resposta.status_code == 405
+
+
+def test_logout_via_post_encerra_sessao(client, criar_usuario):
+    criar_usuario()
+    fazer_login(client)
+
+    resposta = client.post("/logout", follow_redirects=True)
+
+    assert resposta.status_code == 200
+    assert b"Login" in resposta.data
+
+    resposta_dashboard = client.get("/dashboard", follow_redirects=True)
+    assert b"Login" in resposta_dashboard.data
