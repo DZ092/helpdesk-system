@@ -18,6 +18,12 @@
 
 body.pagina-apresentacao {
     background: linear-gradient(180deg, var(--bg-gradiente-topo) 0%, var(--bg-gradiente-base) 100%);
+    /* Cor fixa do cartão que flutua sobre a foto do hero — ver comentário
+       acima de .hero-cartao-flutuante sobre por que não usa os tokens de
+       tema. */
+    --cartao-hero-bg: #f6f1ea;
+    --cartao-hero-texto: #221d16;
+    --cartao-hero-texto-muted: #5c5346;
 }
 
 /* BARRA FIXA — antes era só uma linha solta no topo da página; agora fica
@@ -97,27 +103,57 @@ body.pagina-apresentacao {
     padding: 56px 32px 0;
 }
 
-.hero-apresentacao {
+/* FOTO DO HERO — no modelo da Wix a primeira coisa que aparece é uma foto
+   real (mesa de trabalho, vista de cidade), não um bloco de cor. Trocamos
+   o cartão sólido de antes por essa foto, com um degradê escuro por cima
+   pra garantir leitura do que vem depois e pra ela se integrar ao fundo
+   escuro do resto da página. */
+.hero-foto-area {
     position: relative;
-    background: var(--superficie);
-    border: 1px solid var(--borda);
-    border-radius: 20px;
-    padding: clamp(36px, 5vw, 64px);
+    border-radius: 24px;
     overflow: hidden;
-    isolation: isolate;
+    box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.55);
 }
 
-.hero-apresentacao::before {
+.hero-foto {
+    display: block;
+    width: 100%;
+    height: clamp(280px, 40vw, 480px);
+    object-fit: cover;
+    filter: saturate(0.9) brightness(0.85);
+}
+
+.hero-foto-area::after {
     content: "";
     position: absolute;
-    top: -140px;
-    right: -120px;
-    width: 380px;
-    height: 380px;
-    border-radius: 50%;
-    background: rgba(var(--marca-rgb), 0.16);
-    filter: blur(10px);
-    z-index: -1;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(8, 12, 11, 0) 40%, rgba(8, 12, 11, 0.6) 100%);
+}
+
+/* CARTÃO FLUTUANTE — mesma ideia do modelo: um cartão claro "pousado" por
+   cima da foto, puxado pra cima com margem negativa pra sobrepor a borda
+   inferior dela. A cor do cartão é fixa nos três temas do app de propósito
+   — ele existe pra contrastar com uma fotografia, que também não muda de
+   tema, então usa os tokens --cartao-hero-* definidos logo abaixo, não os
+   tokens de tema (--superficie/--texto). */
+.hero-cartao-flutuante {
+    position: relative;
+    z-index: 2;
+    margin: -64px clamp(16px, 6vw, 56px) 0;
+    max-width: 480px;
+    background: var(--cartao-hero-bg);
+    color: var(--cartao-hero-texto);
+    border-radius: 18px;
+    padding: clamp(26px, 4vw, 40px);
+    box-shadow: 0 30px 50px -24px rgba(0, 0, 0, 0.45);
+}
+
+.hero-cartao-linha {
+    width: 40px;
+    height: 3px;
+    background: var(--acento-forte);
+    border-radius: 2px;
+    margin: 18px 0 16px;
 }
 
 .eyebrow-apresentacao {
@@ -126,52 +162,57 @@ body.pagina-apresentacao {
     gap: 8px;
     font-size: 0.8rem;
     font-weight: 700;
-    color: var(--marca);
-    margin-bottom: 20px;
+    color: var(--acento-forte);
 }
 
 .bolinha-viva {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--sucesso-solido);
+    background: var(--sucesso-solido-forte);
 }
 
-.hero-apresentacao h1 {
-    font-size: clamp(2rem, 4.6vw, 3.1rem);
-    line-height: 1.12;
+.hero-cartao-flutuante h1 {
+    font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+    line-height: 1.18;
     font-weight: 800;
-    letter-spacing: -0.015em;
-    color: var(--texto);
-    text-align: left;
-    max-width: 18ch;
+    letter-spacing: -0.01em;
+    color: var(--cartao-hero-texto);
 }
 
 .destaque-apresentacao {
-    color: var(--marca);
+    color: var(--acento-forte);
 }
 
 .hero-apresentacao-sub {
-    margin-top: 20px;
-    font-size: 1.05rem;
-    color: var(--texto-muted);
-    max-width: 52ch;
+    margin-top: 0;
+    font-size: 0.98rem;
+    color: var(--cartao-hero-texto-muted);
     line-height: 1.6;
 }
 
 .acoes-apresentacao {
-    margin-top: 30px;
+    margin-top: 24px;
     justify-content: flex-start;
+}
+
+.hero-cartao-flutuante .botao-secundario {
+    color: var(--cartao-hero-texto);
+    border-color: rgba(15, 15, 12, 0.18);
+}
+
+.hero-cartao-flutuante .botao-secundario:hover {
+    border-color: var(--acento-forte);
 }
 
 .link-secundario-apresentacao {
     margin-top: 16px;
     font-size: 0.85rem;
-    color: var(--texto-muted);
+    color: var(--cartao-hero-texto-muted);
 }
 
 .link-secundario-apresentacao a {
-    color: var(--marca);
+    color: var(--acento-forte);
     font-weight: bold;
     text-decoration: none;
 }
@@ -181,7 +222,7 @@ body.pagina-apresentacao {
 }
 
 .hero-regua {
-    margin-top: 40px;
+    margin-top: 48px;
     padding-top: 26px;
     border-top: 1px solid var(--borda);
     display: flex;

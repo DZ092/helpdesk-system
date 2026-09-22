@@ -16,10 +16,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap");
 
 :root {
-    --bg: #0b100f;
-    --bg-gradiente-topo: #0e1615;
-    --bg-gradiente-base: #0b100f;
-    --superficie: #141c1a;
+    --bg: #0a0f0e;
+    --bg-gradiente-topo: #10201d;
+    --bg-gradiente-base: #080c0b;
+    --superficie: #17211f;
     --superficie-alt: #1c2725;
     --borda: rgba(230, 219, 206, 0.1);
     --texto: #ece6da;
