@@ -343,57 +343,54 @@ body.pagina-apresentacao {
     }
 }
 
-/* RECURSOS — grade com divisórias internas de 1px (o próprio fundo cinza
-   entre as células faz a linha), como uma ficha técnica, em vez da lista
-   de linhas ou da grade de cartões soltos das versões anteriores. */
-.grade-recursos {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: var(--borda);
-    border: 1px solid var(--borda);
-    border-radius: 18px;
-    overflow: hidden;
-}
-
-@media (max-width: 900px) {
-    .grade-recursos {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 560px) {
-    .grade-recursos {
-        grid-template-columns: 1fr;
-    }
+/* RECURSOS — lista horizontal (rótulo monoespaçado à esquerda, título e
+   texto à direita), separada por linhas finas. Formato deliberadamente
+   diferente do "como funciona": aquela seção é uma SEQUÊNCIA (3 passos,
+   em grid lado a lado, porque a ordem importa); esta é um INVENTÁRIO de
+   funcionalidades independentes — cada linha se lê sozinha, sem depender
+   da anterior nem sugerir uma ordem de leitura. */
+.lista-recursos {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--borda);
 }
 
 .recurso-apresentacao {
-    background: var(--superficie);
-    padding: 30px 26px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 24px;
+    padding: 22px 4px;
+    border-bottom: 1px solid var(--borda);
 }
 
 .recurso-rotulo {
     font-family: "JetBrains Mono", "Courier New", monospace;
     font-size: 0.75rem;
-    color: var(--texto-fraco);
+    color: var(--acento-forte);
     text-transform: uppercase;
     letter-spacing: 0.03em;
+    padding-top: 3px;
 }
 
 .recurso-apresentacao h3 {
     font-size: 1rem;
     font-weight: 700;
     color: var(--texto);
+    margin-bottom: 4px;
 }
 
 .recurso-apresentacao p {
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     color: var(--texto-muted);
     line-height: 1.55;
+    max-width: 56ch;
+}
+
+@media (max-width: 640px) {
+    .recurso-apresentacao {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
 }
 
 /* CITAÇÃO — nota de verdade do autor sobre por que o projeto existe, no

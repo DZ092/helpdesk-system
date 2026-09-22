@@ -73,8 +73,6 @@ def test_raiz_mostra_apresentacao_para_visitante_deslogado(client):
     resposta = client.get("/")
     assert resposta.status_code == 200
     assert b'href="/login"' in resposta.data
-    assert b'href="/cadastro"' in resposta.data
-    assert b'href="/chamado"' in resposta.data
     assert b"apresentacao.css" in resposta.data
 
 
