@@ -37,12 +37,22 @@
 <body class="pagina-apresentacao">
 
 
-<nav class="topo-apresentacao">
+<nav class="nav-apresentacao">
+<div class="nav-apresentacao-linha">
 <div class="marca-apresentacao"><span class="ponto-marca"></span> Help Desk</div>
+<div class="nav-links-apresentacao">
+<a href="#como-funciona">Como funciona</a>
+<a href="#recursos">Recursos</a>
+</div>
+<div class="nav-direita">
 <div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button><button type="button" data-tema="ambar"></button></div>
+<a class="botao" href="/login">Entrar →</a>
+</div>
+</div>
 </nav>
 
 
+<div class="hero-apresentacao-wrap">
 <header class="hero-apresentacao">
 
 <div class="eyebrow-apresentacao"><span class="bolinha-viva"></span> em produção — código aberto</div>
@@ -73,68 +83,63 @@ Já abriu um chamado? <a href="/chamado/acompanhar">Consulte pelo código</a>
 </div>
 
 </header>
+</div>
 
 
-<section class="secao-passos">
-<div class="passos-cabecalho">
+<section class="secao-apresentacao" id="como-funciona">
+<div class="secao-cabecalho-apresentacao">
 <span class="eyebrow-secao-apresentacao">como funciona</span>
 <h2>Do problema ao chamado resolvido, em três passos.</h2>
 </div>
 
-<ol class="lista-passos">
-<li class="passo">
+<div class="cartao-passos">
+<div class="passo-apresentacao">
 <span class="passo-num">01</span>
-<div class="passo-corpo">
 <h3>Abra o chamado</h3>
 <p>Com ou sem login — quem só precisa relatar um problema pontual não é obrigado a criar conta.</p>
 </div>
-</li>
-<li class="passo">
+<div class="passo-apresentacao">
 <span class="passo-num">02</span>
-<div class="passo-corpo">
 <h3>Acompanhe o andamento</h3>
 <p>Status, prioridade e responsável visíveis a qualquer momento, pelo código do chamado ou pelo painel.</p>
 </div>
-</li>
-<li class="passo">
+<div class="passo-apresentacao">
 <span class="passo-num">03</span>
-<div class="passo-corpo">
 <h3>Resolva com histórico</h3>
 <p>Comentários, anexos e auditoria ficam registrados — nada se perde entre um atendente e outro.</p>
 </div>
-</li>
-</ol>
+</div>
 </section>
 
 
-<section class="secao-recursos-apresentacao">
+<section class="secao-apresentacao" id="recursos">
 
-<div class="secao-head-apresentacao">
+<div class="secao-cabecalho-apresentacao">
 <span class="eyebrow-secao-apresentacao">o que o sistema resolve</span>
 <h2>Tudo que hoje se perde entre abas e conversas.</h2>
 </div>
 
-<div class="lista-recursos">
+<div class="grade-recursos">
 
-<div class="linha-recurso">
+<div class="recurso-apresentacao">
 <span class="recurso-rotulo">chamados</span>
 <h3>Chamados organizados</h3>
 <p>Abertura, status e histórico num só lugar, com prioridade e responsável por chamado.</p>
 </div>
 
-<div class="linha-recurso">
+<div class="recurso-apresentacao">
 <span class="recurso-rotulo">acesso</span>
 <h3>Acesso por perfil</h3>
 <p>Usuário comum, técnico e administrador — cada um vê só o que precisa.</p>
 </div>
 
-<div class="linha-recurso">
+<div class="recurso-apresentacao">
 <span class="recurso-rotulo">integração</span>
 <h3>API com token</h3>
 <p>Integre scripts e outros sistemas via token pessoal, sem depender do navegador.</p>
 </div>
 
-<div class="linha-recurso">
+<div class="recurso-apresentacao">
 <span class="recurso-rotulo">qualidade</span>
 <h3>159 testes automatizados</h3>
 <p>Toda regra de negócio é coberta antes de qualquer mudança ir ao ar.</p>
@@ -145,12 +150,22 @@ Já abriu um chamado? <a href="/chamado/acompanhar">Consulte pelo código</a>
 </section>
 
 
-<section class="secao-cta-apresentacao">
+<section class="secao-citacao">
+<div class="citacao-cartao">
+<span class="marca-aspas">"</span>
+<blockquote>Comecei esse projeto cansado de ver chamado de suporte se perder em grupo de WhatsApp. A ideia sempre foi simples: todo pedido tem dono, status e histórico — sem exceção.</blockquote>
+<p class="citacao-autor"><b>Eduardo Jr. Coelho</b> — autor do projeto</p>
+</div>
+</section>
+
+
+<section class="faixa-cta">
+<div class="faixa-cta-linha">
+<div>
 <h2>Pronto para organizar seus chamados?</h2>
 <p>Entre com sua conta ou abra um chamado sem precisar se cadastrar.</p>
-<div class="acoes acoes-apresentacao acoes-cta-apresentacao">
-<a class="botao" href="/login">Entrar →</a>
-<a class="botao botao-secundario" href="/chamado">Abrir chamado sem login</a>
+</div>
+<a class="botao" href="/chamado">Abrir chamado sem login</a>
 </div>
 </section>
 
