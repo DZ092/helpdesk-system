@@ -411,6 +411,59 @@ body.pagina-apresentacao {
     }
 }
 
+/* EXPLORE MAIS — na home, "Como funciona" e "Recursos" viraram só dois
+   cartões de chamada para as páginas próprias (/como-funciona, /recursos),
+   em vez de repetir o conteúdo inteiro das duas seções aqui dentro. Cada
+   cartão é um link inteiro (não só o texto "Ver mais →"), então o cursor
+   de ponteiro e o hover valem para o cartão todo. */
+.grade-links-apresentacao {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.cartao-link-apresentacao {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: 18px;
+    padding: 28px 26px;
+    text-decoration: none;
+    transition: border-color 0.15s ease;
+}
+
+.cartao-link-apresentacao:hover {
+    border-color: var(--marca);
+}
+
+.cartao-link-apresentacao h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--texto);
+}
+
+.cartao-link-apresentacao p {
+    font-size: 0.92rem;
+    color: var(--texto-muted);
+    line-height: 1.55;
+}
+
+.cartao-link-seta {
+    margin-top: auto;
+    padding-top: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--marca);
+}
+
+@media (max-width: 640px) {
+    .grade-links-apresentacao {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* CITAÇÃO — nota de verdade do autor sobre por que o projeto existe, no
    mesmo formato visual de destaque central que uma landing page usaria
    para um depoimento, mas sem inventar depoimento de cliente nenhum. */
