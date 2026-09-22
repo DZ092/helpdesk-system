@@ -81,6 +81,9 @@ nav.topo {
 .botao-secundario { background: transparent; color: var(--texto); border-color: var(--borda); }
 .botao-secundario:hover { border-color: var(--marca); }
 
+.botao-grande { padding: 18px 34px; font-size: 1.05rem; }
+.botao-pequeno { padding: 10px 20px; font-size: 0.85rem; }
+
 .hero-wrap { max-width: 1080px; margin: 0 auto; padding: 56px 32px 0; }
 
 .hero {
@@ -126,7 +129,7 @@ h1 {
 }
 
 .subtitulo { font-size: 1.05rem; color: var(--texto-muted); max-width: 52ch; margin: 0 0 30px; }
-.cta { display: flex; gap: 14px; flex-wrap: wrap; }
+.cta { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
 .aviso { margin-top: 18px; font-size: 0.85rem; color: var(--texto-fraco); }
 
 .regua {
@@ -208,7 +211,7 @@ Sistema web para gerenciamento de chamados técnicos, com controle de acesso
 por perfil, dashboard, API REST, anexos e testes automatizados.
 </p>
 <div class="cta">
-<a class="botao botao-primario" href="https://helpdesk-system-cci1.onrender.com/login">Avançar →</a>
+<a class="botao botao-primario botao-grande" href="https://helpdesk-system-cci1.onrender.com/login">Abrir Chamado</a>
 </div>
 <p class="aviso">
 Hospedada em plano gratuito: o primeiro carregamento pode levar cerca de um
@@ -251,6 +254,16 @@ minuto enquanto o serviço acorda.
 <section class="secao">
 <div class="tecnologias">
 <span>Python</span><span>Flask</span><span>Flask-SQLAlchemy</span><span>Flask-WTF</span><span>Flask-Mail</span><span>Flask-Migrate</span><span>PostgreSQL</span><span>SQLite</span><span>Cloudinary</span><span>Pytest</span><span>GitHub Actions</span><span>Waitress</span>
+</div>
+</section>
+
+<section class="faixa-cta">
+<div class="faixa-cta-linha">
+<div>
+<h2>Pronto para organizar seus chamados?</h2>
+<p>Entre com sua conta e comece a usar agora.</p>
+</div>
+<a class="botao botao-primario botao-pequeno" href="https://helpdesk-system-cci1.onrender.com/login">Abrir Chamado</a>
 </div>
 </section>
 
