@@ -361,17 +361,21 @@ body.pagina-apresentacao {
     }
 }
 
-/* RECURSOS — grade de cartões (3 colunas em tela larga), um por
-   funcionalidade. Formato deliberadamente diferente do "como funciona":
+/* RECURSOS — grade de cartões, 3 colunas × 2 linhas para os 6 recursos
+   "de prateleira". Formato deliberadamente diferente do "como funciona":
    aquela seção é uma SEQUÊNCIA (3 passos, em grid lado a lado, porque a
    ordem importa); esta é um INVENTÁRIO de funcionalidades independentes —
    cada cartão se lê sozinho, sem depender do anterior nem sugerir ordem
    de leitura. Antes era uma lista de linhas com uma coluna de 120px pro
    rótulo, o que espremia o texto numa faixa estreita e deixava o resto da
-   largura da página vazio — a grade usa o espaço de verdade. */
+   largura da página vazio — a grade usa o espaço de verdade. Fixo em 3
+   colunas (não auto-fit): com 6 itens dá 2 linhas cheias, sem sobra — o
+   7º item (qualidade/162 testes) saiu da grade e virou o .recurso-destaque
+   logo abaixo, porque numa grade de 6 ele ficava sozinho numa 3ª linha com
+   um buraco enorme ao lado. */
 .lista-recursos {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1px;
     background: var(--borda);
     border: 1px solid var(--borda);
@@ -407,10 +411,52 @@ body.pagina-apresentacao {
     line-height: 1.55;
 }
 
+@media (max-width: 900px) {
+    .lista-recursos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 600px) {
     .lista-recursos {
         grid-template-columns: 1fr;
     }
+}
+
+/* RECURSO EM DESTAQUE — "162 testes automatizados" solto, centralizado e
+   um pouco maior que os cartões da grade acima, porque é prova de
+   qualidade do projeto todo, não só mais um item do inventário. Mesma
+   linguagem visual (rótulo monoespaçado, superfície, borda), só que com
+   borda na cor de marca e texto maior — destaque discreto, não um bloco
+   gigante desproporcional ao resto da página. */
+.recurso-destaque {
+    max-width: 420px;
+    margin: 20px auto 0;
+    background: var(--superficie);
+    border: 1px solid var(--marca);
+    border-radius: 18px;
+    padding: 36px 34px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.recurso-destaque .recurso-rotulo {
+    color: var(--marca);
+}
+
+.recurso-destaque h3 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--texto);
+}
+
+.recurso-destaque p {
+    font-size: 0.95rem;
+    color: var(--texto-muted);
+    line-height: 1.55;
 }
 
 /* EXPLORE MAIS — na home, "Como funciona" e "Recursos" viraram só dois
