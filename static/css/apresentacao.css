@@ -3,29 +3,42 @@
    EXCLUSIVOS. O tema em si já é global (style.css). Aqui ficam só as regras
    específicas desta tela.
 
-   Segunda passada do redesign: a primeira só trocou cor/tipografia mantendo
-   a composição antiga (hero dividido ao meio com um mockup de navegador do
-   lado, tira de números separada, grade de 4 cards) — o layout em si
-   continuava o mesmo de qualquer gerador de landing page. Esta versão muda
-   a composição: sem mockup decorativo, hero em coluna única com a régua de
-   números encostada nele, "como funciona" como uma sequência numerada de
-   verdade (3 passos reais, não 3 números decorativos) e os recursos como
-   lista de linhas com rótulo em vez de grade de cartões.
+   Terceira passada do redesign: as duas primeiras só trocaram cor e depois
+   a composição do texto corrido, mas os componentes (botão, cartão) e a
+   estrutura geral continuavam parecidos com qualquer landing page genérica
+   — sem barra de navegação fixa, sem nenhum bloco em caixa, tudo "solto"
+   na página. Esta versão usa como referência o layout que o Edu passou
+   (montado no editor da Wix): barra fixa no topo, hero dentro de um cartão
+   com brilho de marca ao fundo, grade de recursos com divisórias internas
+   (como uma ficha técnica), uma citação em destaque e uma faixa de CTA com
+   fundo de cor sólida. A paleta e a tipografia continuam as mesmas do
+   resto do app — trocar só a estrutura da vitrine e manter outra cor
+   deixaria a página parecendo de outro site.
    ============================== */
 
 body.pagina-apresentacao {
     background: linear-gradient(180deg, var(--bg-gradiente-topo) 0%, var(--bg-gradiente-base) 100%);
 }
 
-.topo-apresentacao {
-    max-width: 760px;
+/* BARRA FIXA — antes era só uma linha solta no topo da página; agora fica
+   grudada no topo ao rolar, com os links das seções, igual ao modelo da Wix. */
+.nav-apresentacao {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--superficie);
+    border-bottom: 1px solid var(--borda);
+}
+
+.nav-apresentacao-linha {
+    max-width: 1080px;
     margin: 0 auto;
-    padding: 24px 32px 0;
+    padding: 16px 32px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    gap: 24px;
     flex-wrap: wrap;
-    gap: 12px;
 }
 
 .marca-apresentacao {
@@ -33,8 +46,9 @@ body.pagina-apresentacao {
     align-items: center;
     gap: 10px;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: var(--texto);
+    white-space: nowrap;
 }
 
 .ponto-marca {
@@ -44,12 +58,66 @@ body.pagina-apresentacao {
     background: var(--marca);
 }
 
-/* HERO — coluna única, sem painel de mockup ao lado: o próprio texto e a
-   régua de números abaixo dele carregam a seção sozinhos. */
-.hero-apresentacao {
-    max-width: 760px;
+.nav-links-apresentacao {
+    display: flex;
+    gap: 26px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--texto-muted);
+}
+
+.nav-links-apresentacao a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.nav-links-apresentacao a:hover {
+    color: var(--marca);
+}
+
+.nav-direita {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+@media (max-width: 780px) {
+    .nav-links-apresentacao {
+        display: none;
+    }
+}
+
+/* HERO — em vez de texto solto direto sobre o fundo da página, o conteúdo
+   fica dentro de um cartão com brilho da cor de marca atrás (mesma técnica
+   de rgba(--marca-rgb) já usada no glow das telas de login/cadastro, só
+   que mais discreta aqui). */
+.hero-apresentacao-wrap {
+    max-width: 1080px;
     margin: 0 auto;
-    padding: 64px 32px 0;
+    padding: 56px 32px 0;
+}
+
+.hero-apresentacao {
+    position: relative;
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: 20px;
+    padding: clamp(36px, 5vw, 64px);
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.hero-apresentacao::before {
+    content: "";
+    position: absolute;
+    top: -140px;
+    right: -120px;
+    width: 380px;
+    height: 380px;
+    border-radius: 50%;
+    background: rgba(var(--marca-rgb), 0.16);
+    filter: blur(10px);
+    z-index: -1;
 }
 
 .eyebrow-apresentacao {
@@ -59,7 +127,7 @@ body.pagina-apresentacao {
     font-size: 0.8rem;
     font-weight: 700;
     color: var(--marca);
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 }
 
 .bolinha-viva {
@@ -70,12 +138,13 @@ body.pagina-apresentacao {
 }
 
 .hero-apresentacao h1 {
-    font-size: clamp(2.1rem, 5.2vw, 3.4rem);
-    line-height: 1.1;
+    font-size: clamp(2rem, 4.6vw, 3.1rem);
+    line-height: 1.12;
     font-weight: 800;
     letter-spacing: -0.015em;
     color: var(--texto);
     text-align: left;
+    max-width: 18ch;
 }
 
 .destaque-apresentacao {
@@ -83,15 +152,15 @@ body.pagina-apresentacao {
 }
 
 .hero-apresentacao-sub {
-    margin-top: 22px;
-    font-size: 1.1rem;
+    margin-top: 20px;
+    font-size: 1.05rem;
     color: var(--texto-muted);
     max-width: 52ch;
     line-height: 1.6;
 }
 
 .acoes-apresentacao {
-    margin-top: 32px;
+    margin-top: 30px;
     justify-content: flex-start;
 }
 
@@ -111,10 +180,8 @@ body.pagina-apresentacao {
     text-decoration: underline;
 }
 
-/* RÉGUA DE NÚMEROS — encostada no hero, não é mais uma seção à parte lá
-   embaixo da página. */
 .hero-regua {
-    margin-top: 52px;
+    margin-top: 40px;
     padding-top: 26px;
     border-top: 1px solid var(--borda);
     display: flex;
@@ -129,7 +196,7 @@ body.pagina-apresentacao {
 }
 
 .hero-regua-item .n {
-    font-size: 1.7rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: var(--marca);
     line-height: 1;
@@ -141,80 +208,18 @@ body.pagina-apresentacao {
     color: var(--texto-fraco);
 }
 
-/* COMO FUNCIONA — sequência numerada real (3 passos do fluxo), não um
-   marcador decorativo. */
-.secao-passos {
-    max-width: 760px;
+/* SEÇÕES — largura de conteúdo padrão, reaproveitada nas seções abaixo do
+   hero. */
+.secao-apresentacao {
+    max-width: 1080px;
     margin: 0 auto;
-    padding: 84px 32px 70px;
-    border-top: 1px solid var(--borda);
+    padding: 84px 32px;
 }
 
-.passos-cabecalho {
-    margin-bottom: 40px;
-}
-
-.passos-cabecalho h2 {
-    margin-top: 10px;
-    font-size: clamp(1.4rem, 2.6vw, 1.9rem);
-    font-weight: 800;
-    color: var(--texto);
-    text-align: left;
-    max-width: 32ch;
-}
-
-.lista-passos {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.passo {
-    display: flex;
-    gap: 22px;
-    padding: 22px 0;
-    border-top: 1px solid var(--borda);
-}
-
-.passo:last-child {
-    border-bottom: 1px solid var(--borda);
-}
-
-.passo-num {
-    flex: none;
-    font-family: "JetBrains Mono", "Courier New", monospace;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--marca);
-    padding-top: 3px;
-}
-
-.passo-corpo h3 {
-    font-size: 1.08rem;
-    font-weight: 700;
-    color: var(--texto);
-    margin-bottom: 6px;
-}
-
-.passo-corpo p {
-    font-size: 0.94rem;
-    color: var(--texto-muted);
-    line-height: 1.55;
-    max-width: 56ch;
-}
-
-/* SEÇÃO DE RECURSOS — lista de linhas com rótulo, não grade de cartões. */
-.secao-recursos-apresentacao {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 0 32px 84px;
-}
-
-.secao-head-apresentacao {
-    max-width: 60ch;
-    margin-bottom: 32px;
+.secao-cabecalho-apresentacao {
+    max-width: 620px;
+    margin: 0 auto 44px;
+    text-align: center;
 }
 
 .eyebrow-secao-apresentacao {
@@ -227,109 +232,240 @@ body.pagina-apresentacao {
     margin-bottom: 12px;
 }
 
-.secao-head-apresentacao h2 {
-    font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+.secao-cabecalho-apresentacao h2 {
+    font-size: clamp(1.5rem, 2.8vw, 2rem);
     font-weight: 800;
     color: var(--texto);
-    text-align: left;
+    text-align: center;
 }
 
-.lista-recursos {
+.secao-cabecalho-apresentacao p {
+    margin-top: 12px;
+    color: var(--texto-muted);
+    font-size: 0.98rem;
+}
+
+/* COMO FUNCIONA — os três passos agora vivem dentro de um único cartão,
+   lado a lado no desktop e divididos por linhas internas, em vez de uma
+   lista solta empilhada. */
+.cartao-passos {
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: 18px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.passo-apresentacao {
+    padding: 32px 28px;
+    border-left: 1px solid var(--borda);
+}
+
+.passo-apresentacao:first-child {
+    border-left: none;
+}
+
+.passo-num {
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--marca);
+    display: block;
+    margin-bottom: 14px;
+}
+
+.passo-apresentacao h3 {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--texto);
+    margin-bottom: 8px;
+}
+
+.passo-apresentacao p {
+    font-size: 0.9rem;
+    color: var(--texto-muted);
+    line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+    .cartao-passos {
+        grid-template-columns: 1fr;
+    }
+
+    .passo-apresentacao {
+        border-left: none;
+        border-top: 1px solid var(--borda);
+    }
+
+    .passo-apresentacao:first-child {
+        border-top: none;
+    }
+}
+
+/* RECURSOS — grade com divisórias internas de 1px (o próprio fundo cinza
+   entre as células faz a linha), como uma ficha técnica, em vez da lista
+   de linhas ou da grade de cartões soltos das versões anteriores. */
+.grade-recursos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--borda);
+    border: 1px solid var(--borda);
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+@media (max-width: 900px) {
+    .grade-recursos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .grade-recursos {
+        grid-template-columns: 1fr;
+    }
+}
+
+.recurso-apresentacao {
+    background: var(--superficie);
+    padding: 30px 26px;
     display: flex;
     flex-direction: column;
-}
-
-.linha-recurso {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 24px;
-    padding: 22px 0;
-    border-top: 1px solid var(--borda);
-    align-items: baseline;
-}
-
-.linha-recurso:last-child {
-    border-bottom: 1px solid var(--borda);
+    gap: 10px;
 }
 
 .recurso-rotulo {
     font-family: "JetBrains Mono", "Courier New", monospace;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: var(--texto-fraco);
     text-transform: uppercase;
     letter-spacing: 0.03em;
 }
 
-.linha-recurso h3 {
-    font-size: 1.02rem;
+.recurso-apresentacao h3 {
+    font-size: 1rem;
     font-weight: 700;
-    margin-bottom: 6px;
     color: var(--texto);
-    grid-column: 2;
 }
 
-.linha-recurso p {
-    font-size: 0.92rem;
+.recurso-apresentacao p {
+    font-size: 0.88rem;
     color: var(--texto-muted);
     line-height: 1.55;
-    grid-column: 2;
-    max-width: 58ch;
 }
 
-/* CTA FINAL — faixa cheia, sem caixa flutuante. */
-.secao-cta-apresentacao {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 70px 32px 90px;
+/* CITAÇÃO — nota de verdade do autor sobre por que o projeto existe, no
+   mesmo formato visual de destaque central que uma landing page usaria
+   para um depoimento, mas sem inventar depoimento de cliente nenhum. */
+.secao-citacao {
+    background: var(--superficie-alt);
     border-top: 1px solid var(--borda);
-    text-align: left;
+    border-bottom: 1px solid var(--borda);
 }
 
-.secao-cta-apresentacao h2 {
-    font-size: clamp(1.5rem, 2.8vw, 2rem);
-    font-weight: 800;
+.citacao-cartao {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 84px 32px;
+    text-align: center;
+}
+
+.marca-aspas {
+    font-size: 3.2rem;
+    color: var(--marca);
+    opacity: 0.5;
+    line-height: 1;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.citacao-cartao blockquote {
+    margin: 0;
+    font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+    line-height: 1.5;
+    font-weight: 600;
     color: var(--texto);
-    text-align: left;
 }
 
-.secao-cta-apresentacao p {
-    margin-top: 10px;
-    color: var(--texto-muted);
-    font-size: 1rem;
+.citacao-autor {
+    margin-top: 24px;
+    font-size: 0.88rem;
+    color: var(--texto-fraco);
 }
 
-.acoes-cta-apresentacao {
-    margin-top: 28px;
+.citacao-autor b {
+    color: var(--marca);
+    font-weight: 700;
+}
+
+/* FAIXA DE CTA — banda de largura cheia com fundo de cor sólida, em vez de
+   uma seção sem contraste igual ao resto da página. */
+.faixa-cta {
+    background: var(--acento);
+}
+
+.faixa-cta-linha {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 56px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.faixa-cta-linha h2 {
+    font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+    font-weight: 800;
+    color: var(--bg);
+    max-width: 30ch;
+}
+
+.faixa-cta-linha p {
+    margin-top: 8px;
+    color: var(--bg);
+    opacity: 0.75;
+    font-size: 0.95rem;
+    max-width: 40ch;
+}
+
+.faixa-cta .botao {
+    background: var(--bg);
+    color: var(--acento);
+    border-color: var(--bg);
+    flex: none;
+}
+
+.faixa-cta .botao:hover {
+    background: var(--superficie);
 }
 
 .rodape-apresentacao {
-    max-width: 760px;
+    max-width: 1080px;
     margin: 0 auto;
-    padding: 0 32px 40px;
+    padding: 28px 32px 40px;
 }
 
 /* RESPONSIVO */
 @media (max-width: 560px) {
     .hero-regua {
-        gap: 22px 28px;
-    }
-
-    .linha-recurso {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-
-    .linha-recurso h3,
-    .linha-recurso p {
-        grid-column: 1;
-    }
-
-    .passo {
-        gap: 14px;
+        gap: 20px 24px;
     }
 
     .acoes-apresentacao {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .faixa-cta-linha {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .faixa-cta .botao {
+        width: 100%;
+        text-align: center;
     }
 }
