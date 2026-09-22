@@ -483,6 +483,13 @@ body.pagina-apresentacao {
     background: var(--superficie);
 }
 
+/* Botão menor da faixa de CTA — mesmo padrão do docs/index.html: destaque
+   forte no hero, um segundo botão discreto no fim da página. */
+.botao-pequeno {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+}
+
 .rodape-apresentacao {
     max-width: 1080px;
     margin: 0 auto;
