@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Help Desk — Sistema de chamados técnicos</title>
+<title>Recursos — Help Desk</title>
 
 <script>
 // Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
@@ -39,10 +39,10 @@
 
 <nav class="nav-apresentacao">
 <div class="nav-apresentacao-linha">
-<div class="marca-apresentacao"><span class="ponto-marca"></span> Help Desk</div>
+<a class="marca-apresentacao" href="/"><span class="ponto-marca"></span> Help Desk</a>
 <div class="nav-links-apresentacao">
 <a href="/como-funciona">Como funciona</a>
-<a href="/recursos">Recursos</a>
+<a href="/recursos" class="ativo">Recursos</a>
 </div>
 <div class="nav-direita">
 <div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button><button type="button" data-tema="ambar"></button></div>
@@ -52,69 +52,7 @@
 </nav>
 
 
-<header class="hero-apresentacao-wrap">
-
-<div class="hero-foto-area">
-<img class="hero-foto" src="{{ url_for('static', filename='img/hero-apresentacao.jpg') }}" alt="Mesa de trabalho com notebook em frente a uma janela com vista para a cidade">
-</div>
-
-<div class="hero-cartao-flutuante">
-
-<div class="eyebrow-apresentacao"><span class="bolinha-viva"></span> em produção — código aberto</div>
-
-<h1>Chamados de suporte, sem <span class="destaque-apresentacao">planilha</span> e sem <span class="destaque-apresentacao">grupo de WhatsApp</span>.</h1>
-
-<div class="hero-cartao-linha"></div>
-
-<p class="hero-apresentacao-sub">
-Sistema de gerenciamento de chamados técnicos com controle por perfil,
-histórico completo e API própria — pensado para equipes que hoje resolvem
-suporte no improviso.
-</p>
-
-<div class="acoes acoes-apresentacao">
-<a class="botao" href="/login">Acessar aplicação →</a>
-</div>
-
-</div>
-
-<div class="hero-regua">
-<div class="hero-regua-item"><span class="n">159</span><span class="l">testes automatizados</span></div>
-<div class="hero-regua-item"><span class="n">3</span><span class="l">níveis de usuário</span></div>
-<div class="hero-regua-item"><span class="n">3</span><span class="l">temas de interface</span></div>
-<div class="hero-regua-item"><span class="n">100%</span><span class="l">CI verde antes do deploy</span></div>
-</div>
-
-</header>
-
-
-<section class="secao-apresentacao" id="como-funciona">
-<div class="secao-cabecalho-apresentacao">
-<span class="eyebrow-secao-apresentacao">como funciona</span>
-<h2>Do problema ao chamado resolvido, em três passos.</h2>
-</div>
-
-<div class="cartao-passos">
-<div class="passo-apresentacao">
-<span class="passo-num">01</span>
-<h3>Abra o chamado</h3>
-<p>Com ou sem login — quem só precisa relatar um problema pontual não é obrigado a criar conta.</p>
-</div>
-<div class="passo-apresentacao">
-<span class="passo-num">02</span>
-<h3>Acompanhe o andamento</h3>
-<p>Status, prioridade e responsável visíveis a qualquer momento, pelo código do chamado ou pelo painel.</p>
-</div>
-<div class="passo-apresentacao">
-<span class="passo-num">03</span>
-<h3>Resolva com histórico</h3>
-<p>Comentários, anexos e auditoria ficam registrados — nada se perde entre um atendente e outro.</p>
-</div>
-</div>
-</section>
-
-
-<section class="secao-apresentacao" id="recursos">
+<section class="secao-apresentacao secao-apresentacao-topo" id="recursos">
 
 <div class="secao-cabecalho-apresentacao">
 <span class="eyebrow-secao-apresentacao">recursos</span>
@@ -167,26 +105,6 @@ suporte no improviso.
 
 </div>
 
-</section>
-
-
-<section class="secao-citacao">
-<div class="citacao-cartao">
-<span class="marca-aspas">"</span>
-<blockquote>Não basta abrir um chamado — tem que dar pra confiar que ele vai ser resolvido. Foi por isso que construí um sistema onde todo pedido tem dono, prazo e histórico, do primeiro ao último clique.</blockquote>
-<p class="citacao-autor"><b>Eduardo Jr. Coelho</b> — autor do projeto</p>
-</div>
-</section>
-
-
-<section class="faixa-cta">
-<div class="faixa-cta-linha">
-<div>
-<h2>Pronto para organizar seus chamados?</h2>
-<p>Entre com sua conta e comece a usar agora.</p>
-</div>
-<a class="botao botao-pequeno" href="/login">Acessar aplicação →</a>
-</div>
 </section>
 
 

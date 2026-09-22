@@ -14,7 +14,7 @@ from openpyxl import load_workbook
 SENHA = "senha-de-teste"
 
 # Rotas que qualquer visitante alcança.
-ROTAS_PUBLICAS = ["/login", "/cadastro", "/chamado", "/esqueci-senha"]
+ROTAS_PUBLICAS = ["/login", "/cadastro", "/chamado", "/esqueci-senha", "/como-funciona", "/recursos"]
 
 # Rotas que exigem sessão. O perfil mínimo de cada uma está anotado ao lado.
 ROTAS_INTERNAS = [
@@ -78,6 +78,24 @@ def test_raiz_mostra_apresentacao_para_visitante_deslogado(client):
 
 def test_css_da_apresentacao_responde(client):
     assert client.get("/static/css/apresentacao.css").status_code == 200
+
+
+def test_como_funciona_e_recursos_sao_paginas_proprias_com_conteudo_distinto(client):
+    # Regressão: "Como funciona" e "Recursos" já foram só duas âncoras dentro
+    # de "/" — agora cada uma tem rota e template próprios, então o HTML
+    # retornado por uma não pode ser igual ao da outra.
+    como_funciona = client.get("/como-funciona")
+    recursos = client.get("/recursos")
+
+    assert como_funciona.status_code == 200
+    assert recursos.status_code == 200
+    assert como_funciona.data != recursos.data
+
+    assert b"Do problema ao chamado resolvido" in como_funciona.data
+    assert b"lista-recursos" not in como_funciona.data
+
+    assert b"O que d\xc3\xa1 pra fazer dentro do Help Desk" in recursos.data
+    assert b"cartao-passos" not in recursos.data
 
 
 def test_raiz_redireciona_para_o_dashboard_quando_logado(client, criar_usuario):

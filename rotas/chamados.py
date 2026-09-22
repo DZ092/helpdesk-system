@@ -147,6 +147,21 @@ def home():
     return render_template("apresentacao.html")
 
 
+@chamados.route("/como-funciona")
+def como_funciona():
+    # Página própria da seção "Como funciona" da vitrine — antes só existia
+    # como âncora dentro de "/", o que impedia linkar ou compartilhar essa
+    # parte sozinha.
+    return render_template("como_funciona.html")
+
+
+@chamados.route("/recursos")
+def recursos():
+    # Página própria da seção "Recursos" da vitrine, pelo mesmo motivo da
+    # rota "/como-funciona" acima.
+    return render_template("recursos.html")
+
+
 @chamados.route("/dashboard")
 @login_required
 def dashboard():

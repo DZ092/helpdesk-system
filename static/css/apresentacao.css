@@ -81,6 +81,13 @@ body.pagina-apresentacao {
     color: var(--marca);
 }
 
+/* Marca no menu qual das duas páginas dedicadas (/como-funciona,
+   /recursos) está aberta no momento — sem isso as duas ficam com o mesmo
+   peso visual e não dá pra saber onde você está. */
+.nav-links-apresentacao a.ativo {
+    color: var(--marca);
+}
+
 .nav-direita {
     display: flex;
     align-items: center;
@@ -250,11 +257,22 @@ body.pagina-apresentacao {
 }
 
 /* SEÇÕES — largura de conteúdo padrão, reaproveitada nas seções abaixo do
-   hero. */
+   hero. scroll-margin-top é o que faz o clique em "Como funciona"/"Recursos"
+   da barra fixa parar no lugar certo: sem isso o navegador rola até o topo
+   exato da section, que fica escondido atrás da .nav-apresentacao (sticky),
+   e a página parece não ter saído do lugar — foi isso que o Edu viu. */
 .secao-apresentacao {
     max-width: 1080px;
     margin: 0 auto;
     padding: 84px 32px;
+    scroll-margin-top: 88px;
+}
+
+/* Nas páginas dedicadas (/como-funciona, /recursos), a seção é o primeiro
+   elemento depois da nav fixa — sem o hero acima, precisa de mais respiro
+   no topo pra não colar na barra. */
+.secao-apresentacao-topo {
+    padding-top: 64px;
 }
 
 .secao-cabecalho-apresentacao {
