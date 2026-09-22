@@ -361,24 +361,30 @@ body.pagina-apresentacao {
     }
 }
 
-/* RECURSOS — lista horizontal (rótulo monoespaçado à esquerda, título e
-   texto à direita), separada por linhas finas. Formato deliberadamente
-   diferente do "como funciona": aquela seção é uma SEQUÊNCIA (3 passos,
-   em grid lado a lado, porque a ordem importa); esta é um INVENTÁRIO de
-   funcionalidades independentes — cada linha se lê sozinha, sem depender
-   da anterior nem sugerir uma ordem de leitura. */
+/* RECURSOS — grade de cartões (3 colunas em tela larga), um por
+   funcionalidade. Formato deliberadamente diferente do "como funciona":
+   aquela seção é uma SEQUÊNCIA (3 passos, em grid lado a lado, porque a
+   ordem importa); esta é um INVENTÁRIO de funcionalidades independentes —
+   cada cartão se lê sozinho, sem depender do anterior nem sugerir ordem
+   de leitura. Antes era uma lista de linhas com uma coluna de 120px pro
+   rótulo, o que espremia o texto numa faixa estreita e deixava o resto da
+   largura da página vazio — a grade usa o espaço de verdade. */
 .lista-recursos {
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid var(--borda);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--borda);
+    border: 1px solid var(--borda);
+    border-radius: 18px;
+    overflow: hidden;
 }
 
 .recurso-apresentacao {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 24px;
-    padding: 22px 4px;
-    border-bottom: 1px solid var(--borda);
+    background: var(--superficie);
+    padding: 30px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .recurso-rotulo {
@@ -387,27 +393,23 @@ body.pagina-apresentacao {
     color: var(--acento-forte);
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    padding-top: 3px;
 }
 
 .recurso-apresentacao h3 {
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--texto);
-    margin-bottom: 4px;
 }
 
 .recurso-apresentacao p {
     font-size: 0.9rem;
     color: var(--texto-muted);
     line-height: 1.55;
-    max-width: 56ch;
 }
 
-@media (max-width: 640px) {
-    .recurso-apresentacao {
+@media (max-width: 600px) {
+    .lista-recursos {
         grid-template-columns: 1fr;
-        gap: 6px;
     }
 }
 

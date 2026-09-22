@@ -145,7 +145,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 159 testes em pytest cobrindo autenticação, controle de acesso por
+  Suíte com 162 testes em pytest cobrindo autenticação, controle de acesso por
   perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
   responsável do chamado. Boa parte deles são testes de regressão, escritos para
   que falhas já corrigidas não voltem despercebidas. Um segundo arquivo,
@@ -461,7 +461,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **159 passed**.
+Esperado: **162 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
