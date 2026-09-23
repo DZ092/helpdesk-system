@@ -8,7 +8,7 @@ from armazenamento import enviar_anexo, extensao_valida
 from auditoria import registrar_log
 from constantes import PERFIS_TECNICOS, PRIORIDADES, STATUS_CHAMADO
 from emails import notificar_tecnicos_novo_chamado
-from extensions import db, limiter
+from extensions import db, limiter, ip_do_visitante
 from formularios import (
     FormularioAcompanharChamado,
     FormularioChamado,
@@ -23,6 +23,7 @@ from seguranca import (
     login_required,
     tecnico_required,
     usuario_atual,
+    verificar_turnstile,
 )
 from validacao import inteiro_ou_none
 
@@ -193,6 +194,9 @@ def dashboard():
 def chamado():
     form = FormularioChamado()
     if form.validate_on_submit():
+        if not verificar_turnstile(request.form.get("cf-turnstile-response"), ip_do_visitante()):
+            return render_template("chamado.html", form=form, erro="Não foi possível confirmar que você não é um robô. Tente de novo.")
+
         usuario = form.usuario.data.strip()[:100]
         setor = form.setor.data.strip()[:100]
         titulo = form.titulo.data.strip()[:200]

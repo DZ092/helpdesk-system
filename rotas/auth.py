@@ -7,7 +7,7 @@ from flask import url_for
 
 from auditoria import registrar_log
 from emails import enviar_email_boas_vindas, enviar_email_redefinicao
-from extensions import db, limiter
+from extensions import db, limiter, ip_do_visitante
 from formularios import (
     FormularioAlterarSenha,
     FormularioCadastro,
@@ -27,6 +27,7 @@ from seguranca import (
     usuario_atual,
     usuario_do_token,
     validar_forca_senha,
+    verificar_turnstile,
 )
 
 auth = Blueprint("auth", __name__)
@@ -50,6 +51,11 @@ def _primeiro_erro(form):
 def cadastro():
     form = FormularioCadastro()
     if form.validate_on_submit():
+        if not verificar_turnstile(request.form.get("cf-turnstile-response"), ip_do_visitante()):
+            return render_template(
+                "cadastro.html", form=form, erro="Não foi possível confirmar que você não é um robô. Tente de novo."
+            )
+
         email = form.email.data.strip().lower()
 
         usuario_existente = db.session.execute(
@@ -211,6 +217,13 @@ def esqueci_senha():
     form = FormularioEsqueciSenha()
 
     if form.validate_on_submit():
+        if not verificar_turnstile(request.form.get("cf-turnstile-response"), ip_do_visitante()):
+            return render_template(
+                "esqueci_senha.html",
+                form=form,
+                erro="Não foi possível confirmar que você não é um robô. Tente de novo.",
+            )
+
         email = form.email.data.strip().lower()
 
         bloqueio = throttle_redefinicao.segundos_de_bloqueio(email)

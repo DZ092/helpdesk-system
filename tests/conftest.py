@@ -17,6 +17,8 @@ CONFIG_DE_TESTE = {
     "RATELIMIT_ENABLED": False,  # os testes chamam as rotas públicas em
     # sequência rápida de propósito; sem isso, o próprio rate limit derrubaria
     # os testes antes de chegar na lógica que eles querem checar
+    "TURNSTILE_ENABLED": False,  # sem isso, todo teste de cadastro/chamado/
+    # esqueci-senha precisaria simular o widget e bateria numa API externa
 }
 
 

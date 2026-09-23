@@ -29,6 +29,7 @@
 </script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 <script src="{{ url_for('static', filename='js/tema.js') }}"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 
 </head>
@@ -110,6 +111,9 @@ Toda conta nova é criada com o perfil <strong>Usuário</strong>. Perfis de Téc
 Administrador são concedidos por um administrador no painel do sistema.
 </p>
 
+
+
+<div class="cf-turnstile" data-sitekey="{{ config.TURNSTILE_SITE_KEY }}"></div>
 
 
 <button class="botao" type="submit">

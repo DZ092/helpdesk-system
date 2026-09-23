@@ -11,6 +11,7 @@ import secrets
 from datetime import timedelta
 from functools import wraps
 
+import requests
 from flask import current_app, flash, g, jsonify, redirect, request, session
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
@@ -226,6 +227,53 @@ throttle_login = Throttle("login", MAX_TENTATIVAS_LOGIN, JANELA_BLOQUEIO_LOGIN_S
 throttle_redefinicao = Throttle(
     "redefinicao", MAX_PEDIDOS_REDEFINICAO, JANELA_PEDIDOS_REDEFINICAO_SEGUNDOS
 )
+
+
+# ==============================================================================
+# CAPTCHA (CLOUDFLARE TURNSTILE)
+# ==============================================================================
+def verificar_turnstile(token, ip=None):
+    """True se o desafio do Turnstile foi resolvido, False caso contrário.
+
+    Fica desligado (sempre True, sem chamar a Cloudflare) quando
+    `TURNSTILE_ENABLED` é False — é o caso dos testes automatizados
+    (`tests/conftest.py`), que não podem depender de bater numa API externa
+    a cada execução, e do desenvolvimento local sem as chaves configuradas.
+    Em produção, sem a chave configurada a aplicação sobe normalmente, mas
+    os formulários públicos ficam sem essa proteção — por isso o valor
+    padrão de `TURNSTILE_ENABLED` (ver `_configurar` em app.py) já nasce
+    ligado a ter ou não uma `TURNSTILE_SECRET_KEY` no ambiente.
+
+    Um token vazio (JavaScript bloqueado, ou alguém automatizando o POST
+    direto, sem passar pelo widget) já falha aqui, sem gastar uma chamada à
+    Cloudflare.
+    """
+    if not current_app.config.get("TURNSTILE_ENABLED"):
+        return True
+
+    if not token:
+        return False
+
+    dados = {
+        "secret": current_app.config["TURNSTILE_SECRET_KEY"],
+        "response": token,
+    }
+    if ip:
+        dados["remoteip"] = ip
+
+    try:
+        resposta = requests.post(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            data=dados,
+            timeout=5,
+        )
+        return resposta.json().get("success", False)
+    except requests.RequestException:
+        # A Cloudflare está fora do ar ou a rede falhou: nesse instante é
+        # melhor deixar passar do que travar cadastro, abertura de chamado e
+        # redefinição de senha inteiros por causa de um serviço de terceiro.
+        current_app.logger.warning("Falha ao verificar o Turnstile — deixando passar.")
+        return True
 
 
 # ==============================================================================

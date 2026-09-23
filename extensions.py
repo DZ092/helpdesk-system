@@ -19,8 +19,12 @@ mail = Mail()
 csrf = CSRFProtect()
 
 
-def _chave_por_ip():
-    """IP do visitante, usado como chave do rate limit.
+def ip_do_visitante():
+    """IP real do visitante.
+
+    Usado como chave do rate limit e, em `seguranca.py`, para mandar junto
+    da verificação do captcha (a Cloudflare aceita opcionalmente o IP de
+    quem respondeu o desafio, pra cruzar com o que ela mesma observou).
 
     Atrás do proxy da Render, `request.remote_addr` é sempre o IP do próprio
     proxy — todo visitante cairia na mesma chave, e o limite por pessoa
@@ -43,7 +47,7 @@ def _chave_por_ip():
 # o bloqueio), este é só uma proteção contra flood básico por IP nas rotas
 # públicas — reiniciar zerada a cada deploy é uma perda aceitável, e gravar
 # uma linha por requisição pública no banco seria caro à toa.
-limiter = Limiter(key_func=_chave_por_ip)
+limiter = Limiter(key_func=ip_do_visitante)
 
 # O Migrate liga o Alembic ao `db`. É ele que passa a existir por trás dos
 # comandos `flask db migrate` e `flask db upgrade`, e é quem sabe comparar os

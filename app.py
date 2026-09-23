@@ -70,6 +70,15 @@ def _configurar(app, ajustes):
     # tests/conftest.py) em vez de usar esse armazenamento.
     app.config.setdefault("RATELIMIT_STORAGE_URI", "memory://")
 
+    # Captcha (Cloudflare Turnstile) nos formulários públicos. A Site Key é
+    # pública — vai para o HTML dos templates sem problema. Sem a Secret Key
+    # configurada, `TURNSTILE_ENABLED` nasce False e os formulários seguem
+    # funcionando normalmente, só sem essa camada extra — é o caso do
+    # desenvolvimento local de quem não tem chave própria configurada.
+    app.config["TURNSTILE_SITE_KEY"] = os.environ.get("TURNSTILE_SITE_KEY")
+    app.config["TURNSTILE_SECRET_KEY"] = os.environ.get("TURNSTILE_SECRET_KEY")
+    app.config.setdefault("TURNSTILE_ENABLED", bool(app.config.get("TURNSTILE_SECRET_KEY")))
+
     # Os ajustes vêm por último para poderem sobrescrever qualquer padrão —
     # é assim que os testes trocam o banco e a chave sem tocar no ambiente.
     app.config.update(ajustes)
@@ -179,11 +188,12 @@ def _registrar_ganchos(app):
         nonce = g.get("csp_nonce", "")
         resposta.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            f"script-src 'self' 'nonce-{nonce}'; "
+            f"script-src 'self' 'nonce-{nonce}' https://challenges.cloudflare.com; "
             "style-src 'self' https://fonts.googleapis.com; "
             "font-src https://fonts.gstatic.com; "
             "img-src 'self' data: https://res.cloudinary.com; "
             "connect-src 'self'; "
+            "frame-src https://challenges.cloudflare.com; "
             "base-uri 'self'; "
             "form-action 'self'; "
             "frame-ancestors 'none'"
