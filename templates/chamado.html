@@ -156,7 +156,9 @@ multiple>
 
 
 
-<div class="cf-turnstile" data-sitekey="{{ config.TURNSTILE_SITE_KEY }}"></div>
+<div class="campo-turnstile">
+<div class="cf-turnstile" data-sitekey="{{ config.TURNSTILE_SITE_KEY or '' }}"></div>
+</div>
 
 
 <button class="botao" type="submit" id="botao-enviar">

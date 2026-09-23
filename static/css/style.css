@@ -236,6 +236,11 @@ h1 {
     color: var(--marca);
 }
 
+.campo-turnstile {
+    display: flex;
+    justify-content: center;
+}
+
 .campo input,
 .campo textarea {
     width: 100%;

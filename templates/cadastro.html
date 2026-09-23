@@ -113,7 +113,9 @@ Administrador são concedidos por um administrador no painel do sistema.
 
 
 
-<div class="cf-turnstile" data-sitekey="{{ config.TURNSTILE_SITE_KEY }}"></div>
+<div class="campo-turnstile">
+<div class="cf-turnstile" data-sitekey="{{ config.TURNSTILE_SITE_KEY or '' }}"></div>
+</div>
 
 
 <button class="botao" type="submit">
