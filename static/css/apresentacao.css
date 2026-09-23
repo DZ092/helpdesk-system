@@ -81,6 +81,12 @@ body.pagina-apresentacao {
     color: var(--marca);
 }
 
+.nav-links-apresentacao a:focus-visible {
+    outline: 2px solid var(--marca);
+    outline-offset: 4px;
+    border-radius: 2px;
+}
+
 /* Marca no menu qual das duas páginas dedicadas (/como-funciona,
    /recursos) está aberta no momento — sem isso as duas ficam com o mesmo
    peso visual e não dá pra saber onde você está. */
@@ -143,6 +149,21 @@ body.pagina-apresentacao {
    — ele existe pra contrastar com uma fotografia, que também não muda de
    tema, então usa os tokens --cartao-hero-* definidos logo abaixo, não os
    tokens de tema (--superficie/--texto). */
+/* Entrada única do hero ao carregar a página — de propósito não é um
+   efeito de "revelar ao rolar" repetido em cada seção (isso vira ruído
+   visual e é o primeiro clichê de página gerada por IA). Um só momento
+   orquestrado aqui, mais nada disparado por scroll no resto da página. */
+@keyframes entrarApresentacao {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .hero-cartao-flutuante {
     position: relative;
     z-index: 2;
@@ -153,6 +174,7 @@ body.pagina-apresentacao {
     border-radius: 18px;
     padding: clamp(26px, 4vw, 40px);
     box-shadow: 0 30px 50px -24px rgba(0, 0, 0, 0.45);
+    animation: entrarApresentacao 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .hero-cartao-linha {
@@ -241,7 +263,13 @@ body.pagina-apresentacao {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    animation: entrarApresentacao 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+.hero-regua-item:nth-child(1) { animation-delay: 0.05s; }
+.hero-regua-item:nth-child(2) { animation-delay: 0.1s; }
+.hero-regua-item:nth-child(3) { animation-delay: 0.15s; }
+.hero-regua-item:nth-child(4) { animation-delay: 0.2s; }
 
 .hero-regua-item .n {
     font-size: 1.6rem;
@@ -316,12 +344,35 @@ body.pagina-apresentacao {
 }
 
 .passo-apresentacao {
+    position: relative;
     padding: 32px 28px;
     border-left: 1px solid var(--borda);
+    transition: background-color 0.2s ease;
 }
 
 .passo-apresentacao:first-child {
     border-left: none;
+}
+
+.passo-apresentacao:hover {
+    background-color: var(--superficie-alt);
+}
+
+/* Losango sobre a divisória entre os passos: reforça visualmente que é
+   uma sequência (1 leva ao 2, que leva ao 3) sem depender de uma seta no
+   texto. Alinhado com o padrão de "estrutura é informação": só faz
+   sentido aqui porque como-funciona é mesmo uma sequência ordenada. */
+.passo-apresentacao:not(:first-child)::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -6px;
+    width: 11px;
+    height: 11px;
+    background: var(--superficie);
+    border-top: 1px solid var(--borda);
+    border-right: 1px solid var(--borda);
+    transform: translateY(-50%) rotate(45deg);
 }
 
 .passo-num {
@@ -359,6 +410,10 @@ body.pagina-apresentacao {
     .passo-apresentacao:first-child {
         border-top: none;
     }
+
+    .passo-apresentacao:not(:first-child)::before {
+        display: none;
+    }
 }
 
 /* RECURSOS — grade de cartões, 3 colunas × 2 linhas para os 6 recursos
@@ -389,6 +444,11 @@ body.pagina-apresentacao {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    transition: background-color 0.2s ease;
+}
+
+.recurso-apresentacao:hover {
+    background-color: var(--superficie-alt);
 }
 
 .recurso-rotulo {
@@ -479,11 +539,18 @@ body.pagina-apresentacao {
     border-radius: 18px;
     padding: 28px 26px;
     text-decoration: none;
-    transition: border-color 0.15s ease;
+    transition: border-color 0.15s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cartao-link-apresentacao:hover {
     border-color: var(--marca);
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px -20px rgba(0, 0, 0, 0.45);
+}
+
+.cartao-link-apresentacao:focus-visible {
+    outline: 2px solid var(--marca);
+    outline-offset: 3px;
 }
 
 .cartao-link-apresentacao h3 {
@@ -610,6 +677,22 @@ body.pagina-apresentacao {
     max-width: 1080px;
     margin: 0 auto;
     padding: 28px 32px 40px;
+}
+
+/* Respeita quem pediu menos movimento no sistema operacional: desliga a
+   entrada animada do hero e os deslocamentos de hover, mantendo só as
+   trocas de cor (que não causam o mesmo desconforto). */
+@media (prefers-reduced-motion: reduce) {
+    .hero-cartao-flutuante,
+    .hero-regua-item {
+        animation: none;
+    }
+
+    .cartao-link-apresentacao,
+    .cartao-link-apresentacao:hover {
+        transition: border-color 0.15s ease;
+        transform: none;
+    }
 }
 
 /* RESPONSIVO */

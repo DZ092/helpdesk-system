@@ -8,3 +8,5 @@ chamados.db
 .vscode/
 .env
 *.7z
+.agents/
+skills-lock.json
