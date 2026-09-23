@@ -13,7 +13,7 @@ CONFIG_DE_TESTE = {
     "SQLALCHEMY_DATABASE_URI": "sqlite://",  # banco em memória
     "SECRET_KEY": "chave-de-teste",
     "WTF_CSRF_ENABLED": False,  # formulários de teste não têm token
-    "RESEND_API_KEY": None,  # sem chave -> emails.py não tenta enviar nada
+    "MAIL_SUPPRESS_SEND": True,
     "RATELIMIT_ENABLED": False,  # os testes chamam as rotas públicas em
     # sequência rápida de propósito; sem isso, o próprio rate limit derrubaria
     # os testes antes de chegar na lógica que eles querem checar
@@ -35,6 +35,7 @@ def app():
             "Abortando para não destruir um banco real."
         )
 
+        aplicacao.extensions["mail"].suppress = True
         db.create_all()
 
         yield aplicacao

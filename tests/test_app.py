@@ -62,28 +62,26 @@ def test_cadastro_e_login(client):
 def test_cadastro_envia_email_de_boas_vindas(client):
     """Não passa pela rota HTTP de propósito: o envio roda numa thread
     separada (ver emails.py), e testar via rota correria contra ela. Chamamos
-    a função direto, no mesmo espírito dos outros testes de e-mail do projeto.
-
-    O envio real vai pela API HTTP do Resend (requests.post), não por SMTP —
-    aqui só confere que a chamada sai com o destinatário certo, sem bater na
-    rede de verdade."""
-    from unittest.mock import patch
+    a função direto, no mesmo espírito dos outros testes de e-mail do projeto."""
     from emails import enviar_email_boas_vindas
+    from extensions import mail
     from models import Usuario
 
     with client.application.app_context():
-        client.application.config["RESEND_API_KEY"] = "re_teste"
-        client.application.config["MAIL_REMETENTE"] = "helpdesk@teste.com"
+        client.application.config["MAIL_USERNAME"] = "helpdesk@teste.com"
+        # O Flask-Mail guarda o remetente padrão num objeto interno montado na
+        # inicialização do app (mail.init_app), não relido do config depois —
+        # mesmo objeto que o conftest.py já mexe pra ligar o `suppress`.
+        client.application.extensions["mail"].default_sender = "helpdesk@teste.com"
         usuario = Usuario(nome="Fulano", email="fulano@teste.com", senha="hash", tipo_usuario="Usuário")
 
-        with patch("emails.requests.post") as post_mock:
-            post_mock.return_value.status_code = 200
+        with mail.record_messages() as caixa_de_saida:
             enviar_email_boas_vindas(usuario)
             import time
             time.sleep(0.1)  # dá tempo da thread de envio rodar
 
-        assert post_mock.call_count == 1
-        assert post_mock.call_args.kwargs["json"]["to"] == ["fulano@teste.com"]
+        assert len(caixa_de_saida) == 1
+        assert caixa_de_saida[0].recipients == ["fulano@teste.com"]
 
 
 def test_login_com_senha_errada(client):
@@ -621,6 +619,7 @@ def _app_no_banco(caminho):
             "SQLALCHEMY_DATABASE_URI": f"sqlite:///{caminho}",
             "SECRET_KEY": "chave-de-teste",
             "WTF_CSRF_ENABLED": False,
+            "MAIL_SUPPRESS_SEND": True,
         }
     )
 
