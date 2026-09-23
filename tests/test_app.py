@@ -1,4 +1,19 @@
+import re
+
 SENHA_PADRAO = "senha-de-teste"
+
+
+def _sem_nonce_csp(html):
+    """Remove o valor do nonce do CSP antes de comparar HTML byte a byte.
+
+    Desde que o CSP passou a exigir nonce nos scripts inline (app.py), cada
+    resposta carrega um valor aleatório novo — duas respostas com o mesmo
+    conteúdo deixam de ser byte-idênticas por causa só disso. Os testes que
+    comparam a página inteira (ex.: anti-enumeração de e-mail em
+    /esqueci-senha) precisam ignorar essa diferença, que não tem nada a ver
+    com o que eles estão verificando.
+    """
+    return re.sub(rb'nonce="[^"]*"', b'nonce=""', html)
 
 
 def cadastrar_usuario(client, nome="Fulano", email="fulano@teste.com", senha=SENHA_PADRAO, **extra):
@@ -438,7 +453,7 @@ def test_esqueci_senha_responde_igual_para_email_desconhecido(client, criar_usua
     desconhecido = client.post("/esqueci-senha", data={"email": "ninguem@teste.com"})
 
     assert conhecido.status_code == desconhecido.status_code == 200
-    assert conhecido.get_data() == desconhecido.get_data()
+    assert _sem_nonce_csp(conhecido.get_data()) == _sem_nonce_csp(desconhecido.get_data())
 
 
 def test_link_de_redefinicao_ignora_host_forjado_na_requisicao(client, criar_usuario, monkeypatch):

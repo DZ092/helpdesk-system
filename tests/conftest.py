@@ -14,6 +14,9 @@ CONFIG_DE_TESTE = {
     "SECRET_KEY": "chave-de-teste",
     "WTF_CSRF_ENABLED": False,  # formulários de teste não têm token
     "MAIL_SUPPRESS_SEND": True,
+    "RATELIMIT_ENABLED": False,  # os testes chamam as rotas públicas em
+    # sequência rápida de propósito; sem isso, o próprio rate limit derrubaria
+    # os testes antes de chegar na lógica que eles querem checar
 }
 
 

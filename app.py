@@ -7,13 +7,14 @@ depender de variáveis de ambiente definidas na ordem certa.
 """
 
 import os
+import secrets
 from datetime import timedelta, timezone
 
 from dotenv import load_dotenv
 from flask import Flask, g, redirect, render_template, request
 
 from constantes import FUSO_EXIBICAO
-from extensions import csrf, db, mail, migrate
+from extensions import csrf, db, limiter, mail, migrate
 from rotas.admin import admin
 from rotas.api import api
 from rotas.auth import auth
@@ -63,6 +64,12 @@ def _configurar(app, ajustes):
     app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
     app.config["MAIL_DEFAULT_SENDER"] = app.config["MAIL_USERNAME"]
 
+    # Guarda o rate limit em memória do próprio processo — suficiente para a
+    # única instância do plano gratuito do Render, e evita depender de um
+    # Redis só para isso. Testes desligam o rate limit inteiro (ver
+    # tests/conftest.py) em vez de usar esse armazenamento.
+    app.config.setdefault("RATELIMIT_STORAGE_URI", "memory://")
+
     # Os ajustes vêm por último para poderem sobrescrever qualquer padrão —
     # é assim que os testes trocam o banco e a chave sem tocar no ambiente.
     app.config.update(ajustes)
@@ -82,6 +89,21 @@ def _configurar(app, ajustes):
 
 def _registrar_ganchos(app):
     """Filtro de template e ganchos de requisição que valem para o app inteiro."""
+
+    @app.before_request
+    def _gerar_nonce_csp():
+        """Um valor aleatório novo por requisição, para liberar só os
+        scripts que a própria aplicação serviu.
+
+        Sem isso o Content-Security-Policy exigiria 'unsafe-inline' no
+        script-src, que anula a proteção contra injeção de script que o CSP
+        existe para dar — qualquer script injetado por um ataque de XSS
+        rodaria igual. Com o nonce, cada `<script>` da própria aplicação
+        carrega esse valor (função `csp_nonce()`, registrada mais abaixo) e
+        só ele é aceito; um script injetado não tem como adivinhar o valor
+        de uma requisição que ainda nem existia.
+        """
+        g.csp_nonce = secrets.token_urlsafe(16)
 
     @app.before_request
     def _forcar_https():
@@ -145,7 +167,30 @@ def _registrar_ganchos(app):
             # HTTPS na próxima visita quando a aplicação já está servindo por
             # HTTPS.
             resposta.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+
+        # Content-Security-Policy — cada diretiva libera só o que a aplicação
+        # de fato usa: 'self' para tudo que ela mesma serve, o nonce da
+        # requisição para os scripts inline (ver `_gerar_nonce_csp`), a fonte
+        # do Google Fonts que o CSS importa, e o domínio do Cloudinary para
+        # as imagens dos anexos (a URL do anexo aponta pra lá, não pro
+        # próprio servidor). frame-ancestors 'none' é a versão do CSP do
+        # X-Frame-Options acima — mantemos os dois porque nem todo navegador
+        # antigo entende frame-ancestors.
+        nonce = g.get("csp_nonce", "")
+        resposta.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            f"script-src 'self' 'nonce-{nonce}'; "
+            "style-src 'self' https://fonts.googleapis.com; "
+            "font-src https://fonts.gstatic.com; "
+            "img-src 'self' data: https://res.cloudinary.com; "
+            "connect-src 'self'; "
+            "base-uri 'self'; "
+            "form-action 'self'; "
+            "frame-ancestors 'none'"
+        )
         return resposta
+
+    app.jinja_env.globals["csp_nonce"] = lambda: g.get("csp_nonce", "")
 
     @app.template_filter("data_local")
     def formatar_data_local(valor, formato="%d/%m/%Y às %H:%M"):
@@ -184,6 +229,14 @@ def _registrar_ganchos(app):
             "erro.html", codigo=404, mensagem="Esta página não existe ou foi removida."
         ), 404
 
+    @app.errorhandler(429)
+    def erro_429(excecao):
+        return render_template(
+            "erro.html",
+            codigo=429,
+            mensagem="Muitas tentativas em pouco tempo. Aguarde um minuto e tente de novo.",
+        ), 429
+
     @app.errorhandler(500)
     def erro_500(excecao):
         # O SQLAlchemy deixa a sessão "suja" depois de uma exceção não tratada
@@ -211,6 +264,7 @@ def create_app(ajustes=None):
     # uma fração do comando), e `compare_type` faz o autogenerate enxergar
     # troca de tipo de coluna, não só coluna que entrou ou saiu.
     migrate.init_app(app, db)
+    limiter.init_app(app)
 
     app.register_blueprint(auth)
     app.register_blueprint(chamados)

@@ -8,7 +8,7 @@ from armazenamento import enviar_anexo, extensao_valida
 from auditoria import registrar_log
 from constantes import PERFIS_TECNICOS, PRIORIDADES, STATUS_CHAMADO
 from emails import notificar_tecnicos_novo_chamado
-from extensions import db
+from extensions import db, limiter
 from formularios import (
     FormularioAcompanharChamado,
     FormularioChamado,
@@ -189,6 +189,7 @@ def dashboard():
 
 
 @chamados.route("/chamado", methods=["GET", "POST"])
+@limiter.limit("10 per minute", methods=["POST"])
 def chamado():
     form = FormularioChamado()
     if form.validate_on_submit():
@@ -231,6 +232,7 @@ def chamado():
 
 
 @chamados.route("/chamado/acompanhar", methods=["GET", "POST"])
+@limiter.limit("10 per minute", methods=["POST"])
 def acompanhar_chamado():
     """Consulta pública de um chamado pelo código de acompanhamento, sem login.
 

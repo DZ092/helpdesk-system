@@ -7,7 +7,7 @@ from flask import url_for
 
 from auditoria import registrar_log
 from emails import enviar_email_boas_vindas, enviar_email_redefinicao
-from extensions import db
+from extensions import db, limiter
 from formularios import (
     FormularioAlterarSenha,
     FormularioCadastro,
@@ -46,6 +46,7 @@ def _primeiro_erro(form):
 
 
 @auth.route("/cadastro", methods=["GET", "POST"])
+@limiter.limit("5 per minute", methods=["POST"])
 def cadastro():
     form = FormularioCadastro()
     if form.validate_on_submit():

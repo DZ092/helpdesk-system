@@ -8,7 +8,7 @@
 
 <title>Chamado enviado</title>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 // Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
 // para não piscar no tema errado por uma fração de segundo. Lógica completa
 // e comentada em static/js/tema.js — este trecho precisa ser inline e vir
@@ -72,7 +72,7 @@ Guarde o código abaixo: é a única forma de consultar o andamento deste chamad
 </div>
 
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 (function () {
     var botao = document.getElementById("botao-copiar-codigo");
     if (!botao) {
