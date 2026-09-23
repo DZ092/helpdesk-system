@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from flask import Flask, g, redirect, render_template, request
 
 from constantes import FUSO_EXIBICAO
-from extensions import csrf, db, limiter, mail, migrate
+from extensions import csrf, db, limiter, migrate
 from rotas.admin import admin
 from rotas.api import api
 from rotas.auth import auth
@@ -57,12 +57,12 @@ def _configurar(app, ajustes):
         "HOST_CONFIAVEL", "helpdesk-system-cci1.onrender.com"
     )
 
-    app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
-    app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", 587))
-    app.config["MAIL_USE_TLS"] = True
-    app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
-    app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
-    app.config["MAIL_DEFAULT_SENDER"] = app.config["MAIL_USERNAME"]
+    # E-mail via API HTTP do Resend (não SMTP): o plano free do Render bloqueia
+    # as portas SMTP (25/465/587) desde set/2025, então smtplib nunca conectava.
+    # RESEND_API_KEY vem de resend.com; MAIL_REMETENTE precisa ser um remetente
+    # verificado lá (ex.: onboarding@resend.dev para testes, ou um domínio seu).
+    app.config["RESEND_API_KEY"] = os.environ.get("RESEND_API_KEY")
+    app.config["MAIL_REMETENTE"] = os.environ.get("MAIL_REMETENTE", "onboarding@resend.dev")
 
     # Guarda o rate limit em memória do próprio processo — suficiente para a
     # única instância do plano gratuito do Render, e evita depender de um
@@ -266,7 +266,6 @@ def create_app(ajustes=None):
     _configurar(app, ajustes or {})
 
     db.init_app(app)
-    mail.init_app(app)
     csrf.init_app(app)
 
     # Os padrões do Flask-Migrate já servem aqui: `render_as_batch` recria a
