@@ -1,13 +1,13 @@
 """Cadastro, login, logout e troca de senha."""
 
-from flask import Blueprint, current_app, flash, g, redirect, render_template, request, session
-from werkzeug.security import check_password_hash, generate_password_hash
+import secrets
 
-from flask import url_for
+from flask import Blueprint, current_app, flash, g, redirect, render_template, request, session, url_for
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from auditoria import registrar_log
 from emails import enviar_email_boas_vindas, enviar_email_redefinicao
-from extensions import db, limiter, ip_do_visitante
+from extensions import db, limiter, ip_do_visitante, oauth
 from formularios import (
     FormularioAlterarSenha,
     FormularioCadastro,
@@ -123,6 +123,95 @@ def login():
         return render_template("login.html", form=form, erro="E-mail ou senha inválidos.")
 
     return render_template("login.html", form=form, erro=_primeiro_erro(form))
+
+
+@auth.route("/login/google")
+def login_google():
+    """Manda o navegador para a tela de consentimento do Google.
+
+    Sem GOOGLE_OAUTH_ENABLED (chaves não configuradas), a rota nem aparece
+    como opção nos templates — mas alguém digitando a URL à mão cai aqui, daí
+    a checagem explícita em vez de confiar só em esconder o botão.
+    """
+    if not current_app.config["GOOGLE_OAUTH_ENABLED"]:
+        return redirect("/login")
+
+    redirect_uri = url_for("auth.callback_google", _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+
+@auth.route("/login/google/callback")
+def callback_google():
+    """Volta do Google com o resultado do consentimento e loga ou cadastra.
+
+    O e-mail que chega aqui já foi verificado pelo Google (campo `email` do
+    id_token, com `email_verified` — o Authlib expõe o token decodificado
+    pronto via `authorize_access_token`), então não repetimos a checagem de
+    posse do e-mail que o cadastro comum não faz.
+    """
+    if not current_app.config["GOOGLE_OAUTH_ENABLED"]:
+        return redirect("/login")
+
+    try:
+        token = oauth.google.authorize_access_token()
+    except Exception:
+        current_app.logger.exception("Falha ao concluir o login com Google.")
+        flash("Não foi possível concluir o login com o Google. Tente de novo.")
+        return redirect("/login")
+
+    dados_google = token.get("userinfo")
+    if not dados_google or not dados_google.get("email_verified"):
+        flash("Sua conta Google precisa ter o e-mail verificado para entrar aqui.")
+        return redirect("/login")
+
+    google_id = dados_google["sub"]
+    email = dados_google["email"].strip().lower()
+    nome = dados_google.get("name") or email.split("@")[0]
+
+    usuario = db.session.execute(
+        db.select(Usuario).where(Usuario.google_id == google_id)
+    ).scalar_one_or_none()
+
+    if usuario is None:
+        # Sem conta ainda linkada a este google_id: procura por e-mail. Se já
+        # existir uma conta local com este e-mail (cadastro por senha comum),
+        # linka a conta existente em vez de criar uma segunda — o Google já
+        # provou a posse do e-mail, então é razoável tratar como a mesma
+        # pessoa (issue #95, ponto de maior risco da issue: decisão tomada
+        # como "linkar automaticamente", nunca criar duas contas para o
+        # mesmo e-mail).
+        usuario = db.session.execute(
+            db.select(Usuario).where(Usuario.email == email)
+        ).scalar_one_or_none()
+
+        if usuario is None:
+            # Conta nova. A senha é aleatória, nunca exibida e nunca usada
+            # para login — só preenche a coluna NOT NULL e mantém
+            # `impressao_sessao` funcionando sem precisar de um caminho
+            # especial para contas sem senha escolhida pelo usuário.
+            usuario = Usuario(
+                nome=nome[:100],
+                email=email,
+                senha=generate_password_hash(secrets.token_urlsafe(32)),
+                tipo_usuario="Usuário",
+                google_id=google_id,
+            )
+            db.session.add(usuario)
+            db.session.commit()
+            registrar_log("Cadastro de usuário", f"Novo usuário via Google: {usuario.email}")
+            enviar_email_boas_vindas(usuario)
+        else:
+            usuario.google_id = google_id
+            db.session.commit()
+            registrar_log("Conta linkada ao Google", f"Conta existente linkada: {usuario.email}")
+
+    session.clear()
+    session["usuario_id"] = usuario.id
+    session["auth"] = impressao_sessao(usuario)
+    session.permanent = True
+    g.usuario = usuario
+    registrar_log("Login realizado", "Via Google")
+    return redirect("/dashboard")
 
 
 @auth.route("/logout", methods=["POST"])

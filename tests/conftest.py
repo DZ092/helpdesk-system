@@ -19,6 +19,9 @@ CONFIG_DE_TESTE = {
     # os testes antes de chegar na lógica que eles querem checar
     "TURNSTILE_ENABLED": False,  # sem isso, todo teste de cadastro/chamado/
     # esqueci-senha precisaria simular o widget e bateria numa API externa
+    "GOOGLE_OAUTH_ENABLED": False,  # os testes de login com Google (issue #95)
+    # ligam isso caso a caso e simulam a resposta do Authlib — nenhum outro
+    # teste deve bater na API real do Google
 }
 
 

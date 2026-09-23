@@ -1,4 +1,7 @@
 alembic==1.20.0
+# Login com Google via OAuth/OIDC (issue #95) — troca o client_id/secret pelo
+# id_token do usuário, sem a aplicação nunca ver a senha da conta Google dele.
+Authlib==1.8.0
 blinker==1.9.0
 click==8.5.0
 colorama==0.4.6

@@ -1036,3 +1036,159 @@ def test_logout_via_post_encerra_sessao(client, criar_usuario):
 
     resposta_dashboard = client.get("/dashboard", follow_redirects=True)
     assert b"Login" in resposta_dashboard.data
+
+
+# ==============================================================================
+# LOGIN COM GOOGLE (OAUTH, issue #95)
+# ==============================================================================
+def _userinfo_google(email="novo-via-google@teste.com", sub="10987654321", nome="Fulano Google"):
+    """Formato do dicionário que o Authlib expõe em `token['userinfo']` depois
+    de decodificar o id_token — só os campos que a rota de callback lê."""
+    return {"sub": sub, "email": email, "email_verified": True, "name": nome}
+
+
+def test_login_google_redireciona_para_login_se_desligado(client):
+    """Sem GOOGLE_CLIENT_SECRET configurado, GOOGLE_OAUTH_ENABLED nasce False
+    (ver app.py) — a rota precisa recusar mesmo que alguém acesse a URL direto,
+    já que o botão correspondente nem aparece nos templates."""
+    resposta = client.get("/login/google", follow_redirects=True)
+    assert b"Login" in resposta.data
+
+
+def test_callback_google_redireciona_para_login_se_desligado(client):
+    resposta = client.get("/login/google/callback", follow_redirects=True)
+    assert b"Login" in resposta.data
+
+
+def test_login_google_cria_conta_nova(client, monkeypatch):
+    """Caminho feliz: primeiro login com uma conta Google sem cadastro local
+    prévio cria o Usuario, já marcado com o google_id, e loga direto."""
+    from unittest.mock import MagicMock
+
+    from extensions import oauth
+
+    client.application.config["GOOGLE_OAUTH_ENABLED"] = True
+    token_falso = {"userinfo": _userinfo_google()}
+    monkeypatch.setattr(oauth, "google", MagicMock(authorize_access_token=lambda: token_falso), raising=False)
+
+    resposta = client.get("/login/google/callback", follow_redirects=True)
+
+    assert resposta.status_code == 200
+    assert b"Dashboard" in resposta.data
+
+    with client.application.app_context():
+        from models import Usuario
+        from extensions import db
+
+        usuario = db.session.execute(
+            db.select(Usuario).where(Usuario.email == "novo-via-google@teste.com")
+        ).scalar_one()
+        assert usuario.google_id == "10987654321"
+        # Senha aleatória gerada internamente, nunca usada para login — só
+        # confere que existe um hash válido, não que ela seja previsível.
+        assert usuario.senha and usuario.senha != ""
+
+
+def test_login_google_linka_conta_local_existente_por_email(client, criar_usuario, monkeypatch):
+    """Ponto de maior risco da issue #95: um e-mail que já tem cadastro local
+    (por senha) tentando entrar via Google. A decisão tomada foi linkar em vez
+    de criar uma segunda conta ou bloquear — o Google já provou a posse do
+    e-mail, então é tratado como a mesma pessoa."""
+    from unittest.mock import MagicMock
+
+    from extensions import oauth
+
+    usuario_local = criar_usuario(email="ja-existe@teste.com")
+    assert usuario_local.google_id is None
+
+    client.application.config["GOOGLE_OAUTH_ENABLED"] = True
+    token_falso = {"userinfo": _userinfo_google(email="ja-existe@teste.com", sub="55555")}
+    monkeypatch.setattr(oauth, "google", MagicMock(authorize_access_token=lambda: token_falso), raising=False)
+
+    resposta = client.get("/login/google/callback", follow_redirects=True)
+
+    assert resposta.status_code == 200
+    assert b"Dashboard" in resposta.data
+
+    with client.application.app_context():
+        from models import Usuario
+        from extensions import db
+
+        # Continua sendo a mesma linha (mesmo id), agora com o google_id
+        # preenchido — não uma segunda conta com o mesmo e-mail.
+        contagem = db.session.execute(
+            db.select(db.func.count()).select_from(Usuario).where(Usuario.email == "ja-existe@teste.com")
+        ).scalar_one()
+        assert contagem == 1
+
+        usuario_atualizado = db.session.execute(
+            db.select(Usuario).where(Usuario.email == "ja-existe@teste.com")
+        ).scalar_one()
+        assert usuario_atualizado.id == usuario_local.id
+        assert usuario_atualizado.google_id == "55555"
+
+
+def test_login_google_recusa_email_nao_verificado(client, monkeypatch):
+    """O Authlib expõe `email_verified` vindo do próprio Google — se vier
+    False (conta Google com e-mail ainda não confirmado), não dá para tratar
+    como prova de posse do endereço, então a rota recusa em vez de logar."""
+    from unittest.mock import MagicMock
+
+    from extensions import oauth
+
+    client.application.config["GOOGLE_OAUTH_ENABLED"] = True
+    token_falso = {
+        "userinfo": {
+            "sub": "999",
+            "email": "nao-verificado@teste.com",
+            "email_verified": False,
+            "name": "Ninguem",
+        }
+    }
+    monkeypatch.setattr(oauth, "google", MagicMock(authorize_access_token=lambda: token_falso), raising=False)
+
+    resposta = client.get("/login/google/callback", follow_redirects=True)
+
+    assert resposta.status_code == 200
+    assert b"Login" in resposta.data
+
+    with client.application.app_context():
+        from models import Usuario
+        from extensions import db
+
+        usuario = db.session.execute(
+            db.select(Usuario).where(Usuario.email == "nao-verificado@teste.com")
+        ).scalar_one_or_none()
+        assert usuario is None
+
+
+def test_login_google_falha_do_authlib_nao_quebra_a_pagina(client, monkeypatch):
+    """Se o Google recusar o código de troca (usuário cancelou o consentimento,
+    token expirado etc.), a rota mostra uma mensagem em vez de estourar 500."""
+    from extensions import oauth
+
+    def _levanta(*args, **kwargs):
+        raise RuntimeError("simulando falha do Authlib")
+
+    client.application.config["GOOGLE_OAUTH_ENABLED"] = True
+
+    class _GoogleFalso:
+        authorize_access_token = staticmethod(_levanta)
+
+    monkeypatch.setattr(oauth, "google", _GoogleFalso(), raising=False)
+
+    resposta = client.get("/login/google/callback", follow_redirects=True)
+
+    assert resposta.status_code == 200
+    assert b"Login" in resposta.data
+
+
+def test_botao_google_some_quando_oauth_desligado(client):
+    resposta = client.get("/login")
+    assert b"Entrar com Google" not in resposta.data
+
+
+def test_botao_google_aparece_quando_oauth_ligado(client):
+    client.application.config["GOOGLE_OAUTH_ENABLED"] = True
+    resposta = client.get("/login")
+    assert "Entrar com Google".encode() in resposta.data

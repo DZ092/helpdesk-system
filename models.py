@@ -58,6 +58,17 @@ class Usuario(db.Model):
     # É None enquanto o usuário nunca gerou um token.
     token_api_hash = db.Column(db.String(64), unique=True, nullable=True, index=True)
 
+    # ID numérico da conta Google (campo "sub" do token OIDC), presente só em
+    # contas que já fizeram login com Google pelo menos uma vez (issue #95).
+    # Uma conta criada por e-mail/senha comum e nunca linkada ao Google tem
+    # este campo None. `senha` continua NOT NULL mesmo para contas Google: em
+    # vez de tornar a coluna opcional (o que exigiria reescrever
+    # `impressao_sessao`, que assina a sessão a partir do hash da senha), a
+    # conta recebe uma senha aleatória gerada internamente, nunca exibida e
+    # nunca usada para login — só para preencher a coluna e manter a
+    # assinatura de sessão funcionando do jeito que já funciona hoje.
+    google_id = db.Column(db.String(50), unique=True, nullable=True, index=True)
+
     @property
     def eh_tecnico(self):
         return self.tipo_usuario in PERFIS_TECNICOS

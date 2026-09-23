@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from flask import Flask, g, redirect, render_template, request
 
 from constantes import FUSO_EXIBICAO
-from extensions import csrf, db, limiter, mail, migrate
+from extensions import csrf, db, limiter, mail, migrate, oauth
 from rotas.admin import admin
 from rotas.api import api
 from rotas.auth import auth
@@ -78,6 +78,14 @@ def _configurar(app, ajustes):
     app.config["TURNSTILE_SITE_KEY"] = os.environ.get("TURNSTILE_SITE_KEY")
     app.config["TURNSTILE_SECRET_KEY"] = os.environ.get("TURNSTILE_SECRET_KEY")
     app.config.setdefault("TURNSTILE_ENABLED", bool(app.config.get("TURNSTILE_SECRET_KEY")))
+
+    # Login com Google (issue #95). Sem as duas variáveis, GOOGLE_OAUTH_ENABLED
+    # nasce False e o botão "Entrar com Google" some das telas de login e
+    # cadastro — mesmo padrão de degradação do Turnstile, para quem roda o
+    # projeto localmente sem essas chaves.
+    app.config["GOOGLE_CLIENT_ID"] = os.environ.get("GOOGLE_CLIENT_ID")
+    app.config["GOOGLE_CLIENT_SECRET"] = os.environ.get("GOOGLE_CLIENT_SECRET")
+    app.config.setdefault("GOOGLE_OAUTH_ENABLED", bool(app.config.get("GOOGLE_CLIENT_SECRET")))
 
     # Os ajustes vêm por último para poderem sobrescrever qualquer padrão —
     # é assim que os testes trocam o banco e a chave sem tocar no ambiente.
@@ -275,6 +283,22 @@ def create_app(ajustes=None):
     # troca de tipo de coluna, não só coluna que entrou ou saiu.
     migrate.init_app(app, db)
     limiter.init_app(app)
+
+    # Registra o client do Google só quando as duas chaves existem — chamar
+    # oauth.register sem client_secret levantaria erro na primeira requisição
+    # que tentasse usar o client, mesmo em quem nunca clica em "Entrar com
+    # Google". server_metadata_url aponta para o documento de descoberta do
+    # Google (OpenID Connect), de onde o Authlib lê sozinho os endpoints de
+    # autorização, token e chaves de assinatura — não precisamos codificar
+    # nenhuma URL do Google à mão.
+    if app.config["GOOGLE_OAUTH_ENABLED"]:
+        oauth.register(
+            name="google",
+            client_id=app.config["GOOGLE_CLIENT_ID"],
+            client_secret=app.config["GOOGLE_CLIENT_SECRET"],
+            server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+            client_kwargs={"scope": "openid email profile"},
+        )
 
     app.register_blueprint(auth)
     app.register_blueprint(chamados)

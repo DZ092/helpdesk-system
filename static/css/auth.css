@@ -141,6 +141,41 @@ body.pagina-auth .acoes-auth .botao-secundario {
     text-align: center;
 }
 
+/* Divisor "ou" entre o formulário e o login com Google (issue #95) — reaproveita
+   as mesmas variáveis de borda/texto muted do resto do tema, sem introduzir cor
+   nova. */
+body.pagina-auth .divisor-auth {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0;
+    color: var(--texto-muted);
+    font-size: 13px;
+}
+
+body.pagina-auth .divisor-auth::before,
+body.pagina-auth .divisor-auth::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--borda);
+}
+
+/* Botão do Google: mesmo .botao-secundario das outras ações, só com o ícone
+   colorido oficial ao lado do texto em vez do ícone monocromático usado nos
+   campos do formulário. */
+body.pagina-auth .botao-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+body.pagina-auth .botao-google svg {
+    flex-shrink: 0;
+}
+
 @media (max-width: 480px) {
     body.pagina-auth .container {
         padding: 34px 26px;

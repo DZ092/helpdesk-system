@@ -7,6 +7,7 @@ chamando `init_app()` depois, o ciclo desaparece — e mais de uma aplicação (
 produção e a dos testes) pode usar as mesmas extensões.
 """
 
+from authlib.integrations.flask_client import OAuth
 from flask import request
 from flask_limiter import Limiter
 from flask_mail import Mail
@@ -17,6 +18,11 @@ from flask_wtf.csrf import CSRFProtect
 db = SQLAlchemy()
 mail = Mail()
 csrf = CSRFProtect()
+
+# Login com Google (issue #95). O client de verdade (client_id/secret) só é
+# registrado dentro de create_app, quando as variáveis de ambiente já foram
+# lidas — aqui fica só o objeto vazio, no mesmo padrão das outras extensões.
+oauth = OAuth()
 
 
 def ip_do_visitante():
