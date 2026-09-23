@@ -30,6 +30,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 <script src="{{ url_for('static', filename='js/tema.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/apresentacao.css') }}">
+<script src="{{ url_for('static', filename='js/apresentacao.js') }}" defer></script>
 
 </head>
 
@@ -101,7 +102,7 @@
 
 <div class="recurso-destaque">
 <span class="recurso-rotulo">qualidade</span>
-<h3>162 testes automatizados</h3>
+<h3><span class="numero-inline">162</span> testes automatizados</h3>
 <p>Cada regra de negócio nova entra acompanhada de teste. A suíte inteira roda no CI antes de qualquer deploy.</p>
 </div>
 

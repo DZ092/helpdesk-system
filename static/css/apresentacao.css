@@ -111,9 +111,37 @@ body.pagina-apresentacao {
    de rgba(--marca-rgb) já usada no glow das telas de login/cadastro, só
    que mais discreta aqui). */
 .hero-apresentacao-wrap {
+    position: relative;
     max-width: 1080px;
     margin: 0 auto;
     padding: 56px 32px 0;
+}
+
+/* Glow ambiente atrás da foto/cartão do hero: um único círculo desfocado
+   que deriva e pulsa bem devagar (16s por ciclo), só visível nas bordas
+   onde a foto/cartão não cobrem. É o único elemento decorativo com
+   movimento contínuo da página inteira — de propósito não replicamos
+   esse tipo de animação em outro lugar, pra não virar ruído. */
+@keyframes derivaAmbienteHero {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+    50% { transform: translate(-46%, -54%) scale(1.15); opacity: 0.5; }
+}
+
+.hero-apresentacao-wrap::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    top: 28%;
+    left: 50%;
+    width: 640px;
+    height: 640px;
+    max-width: 90vw;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--marca-rgb), 0.25), transparent 70%);
+    filter: blur(50px);
+    transform: translate(-50%, -50%);
+    animation: derivaAmbienteHero 16s ease-in-out infinite;
+    pointer-events: none;
 }
 
 /* FOTO DO HERO — no modelo da Wix a primeira coisa que aparece é uma foto
@@ -123,9 +151,18 @@ body.pagina-apresentacao {
    escuro do resto da página. */
 .hero-foto-area {
     position: relative;
+    z-index: 1;
     border-radius: 24px;
     overflow: hidden;
     box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.55);
+}
+
+/* Zoom lento e contínuo na foto (22s, vai e volta) — técnica de
+   fotografia de movimento, não efeito de "revelar seção", por isso fica
+   ligado o tempo todo em vez de disparar uma vez só ao rolar a página. */
+@keyframes zoomLentoHero {
+    from { transform: scale(1); }
+    to { transform: scale(1.06); }
 }
 
 .hero-foto {
@@ -134,6 +171,7 @@ body.pagina-apresentacao {
     height: clamp(280px, 40vw, 480px);
     object-fit: cover;
     filter: saturate(0.9) brightness(0.85);
+    animation: zoomLentoHero 22s ease-in-out infinite alternate;
 }
 
 .hero-foto-area::after {
@@ -345,9 +383,46 @@ body.pagina-apresentacao {
 
 .passo-apresentacao {
     position: relative;
+    overflow: hidden;
     padding: 32px 28px;
     border-left: 1px solid var(--borda);
     transition: background-color 0.2s ease;
+}
+
+/* Brilho que acompanha o cursor (posição vem de --brilho-x/--brilho-y,
+   atualizada por JS no pointermove). Fica em ::after porque o ::before
+   já é o losango conector entre os passos, logo abaixo. */
+.passo-apresentacao::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(220px circle at var(--brilho-x, 50%) var(--brilho-y, 50%), rgba(var(--marca-rgb), 0.14), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.passo-apresentacao:hover::after {
+    opacity: 1;
+}
+
+.cartao-passos.pronto-para-entrar .passo-apresentacao {
+    opacity: 0;
+    transform: translateY(14px);
+}
+
+.cartao-passos.em-cena .passo-apresentacao {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.cartao-passos.em-cena .passo-apresentacao:nth-child(2) {
+    transition-delay: 0.08s;
+}
+
+.cartao-passos.em-cena .passo-apresentacao:nth-child(3) {
+    transition-delay: 0.16s;
 }
 
 .passo-apresentacao:first-child {
@@ -439,6 +514,8 @@ body.pagina-apresentacao {
 }
 
 .recurso-apresentacao {
+    position: relative;
+    overflow: hidden;
     background: var(--superficie);
     padding: 30px 26px;
     display: flex;
@@ -449,6 +526,20 @@ body.pagina-apresentacao {
 
 .recurso-apresentacao:hover {
     background-color: var(--superficie-alt);
+}
+
+.recurso-apresentacao::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(220px circle at var(--brilho-x, 50%) var(--brilho-y, 50%), rgba(var(--marca-rgb), 0.14), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.recurso-apresentacao:hover::after {
+    opacity: 1;
 }
 
 .recurso-rotulo {
@@ -501,6 +592,26 @@ body.pagina-apresentacao {
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.numero-inline {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Estado inicial só existe se o JS rodar (ele quem adiciona esta classe);
+   sem JavaScript, ou com "reduzir movimento" ligado no sistema, o cartão
+   já nasce visível — nunca fica esperando um observador pra aparecer. */
+.recurso-destaque.pronto-para-entrar {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+}
+
+.recurso-destaque.em-cena {
+    opacity: 1;
+    transform: none;
 }
 
 .recurso-destaque .recurso-rotulo {
@@ -531,6 +642,8 @@ body.pagina-apresentacao {
 }
 
 .cartao-link-apresentacao {
+    position: relative;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -540,6 +653,20 @@ body.pagina-apresentacao {
     padding: 28px 26px;
     text-decoration: none;
     transition: border-color 0.15s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cartao-link-apresentacao::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(220px circle at var(--brilho-x, 50%) var(--brilho-y, 50%), rgba(var(--marca-rgb), 0.16), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.cartao-link-apresentacao:hover::after {
+    opacity: 1;
 }
 
 .cartao-link-apresentacao:hover {
@@ -602,6 +729,33 @@ body.pagina-apresentacao {
     line-height: 1;
     display: block;
     margin-bottom: 4px;
+    transition: opacity 0.5s ease 0.05s, transform 0.5s ease 0.05s;
+}
+
+.citacao-cartao blockquote {
+    transition: opacity 0.5s ease 0.15s, transform 0.5s ease 0.15s;
+}
+
+.citacao-autor {
+    transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s;
+}
+
+.citacao-cartao.pronto-para-entrar .marca-aspas,
+.citacao-cartao.pronto-para-entrar blockquote,
+.citacao-cartao.pronto-para-entrar .citacao-autor {
+    opacity: 0;
+    transform: translateY(14px);
+}
+
+.citacao-cartao.em-cena blockquote,
+.citacao-cartao.em-cena .citacao-autor {
+    opacity: 1;
+    transform: none;
+}
+
+.citacao-cartao.em-cena .marca-aspas {
+    opacity: 0.5;
+    transform: none;
 }
 
 .citacao-cartao blockquote {
@@ -684,7 +838,9 @@ body.pagina-apresentacao {
    trocas de cor (que não causam o mesmo desconforto). */
 @media (prefers-reduced-motion: reduce) {
     .hero-cartao-flutuante,
-    .hero-regua-item {
+    .hero-regua-item,
+    .hero-apresentacao-wrap::before,
+    .hero-foto {
         animation: none;
     }
 

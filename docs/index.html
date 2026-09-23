@@ -96,6 +96,11 @@ nav.topo {
     isolation: isolate;
 }
 
+@keyframes derivaAmbienteHero {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 1; }
+    50% { transform: translate(-4%, 3%) scale(1.12); opacity: 0.7; }
+}
+
 .hero::before {
     content: "";
     position: absolute;
@@ -105,7 +110,10 @@ nav.topo {
     height: 380px;
     border-radius: 50%;
     background: rgba(var(--marca-rgb), 0.16);
+    animation: derivaAmbienteHero 16s ease-in-out infinite;
 }
+
+.numero-inline { font-variant-numeric: tabular-nums; }
 
 .eyebrow {
     display: inline-flex;
@@ -164,7 +172,10 @@ h2 { font-size: clamp(1.5rem, 2.8vw, 2rem); font-weight: 800; margin: 0; text-al
 @media (max-width: 900px) { .grade-recursos { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .grade-recursos { grid-template-columns: 1fr; } }
 
-.recurso { background: var(--superficie); padding: 30px 26px; display: flex; flex-direction: column; gap: 10px; }
+.recurso { position: relative; overflow: hidden; background: var(--superficie); padding: 30px 26px; display: flex; flex-direction: column; gap: 10px; transition: background-color 0.2s ease; }
+.recurso:hover { background-color: var(--superficie-alt); }
+.recurso::after { content: ""; position: absolute; inset: 0; background: radial-gradient(220px circle at var(--brilho-x, 50%) var(--brilho-y, 50%), rgba(var(--marca-rgb), 0.14), transparent 70%); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+.recurso:hover::after { opacity: 1; }
 .recurso-rotulo { font-family: "JetBrains Mono", "Courier New", monospace; font-size: 0.75rem; color: var(--texto-fraco); text-transform: uppercase; letter-spacing: 0.03em; }
 .recurso h3 { font-size: 1rem; font-weight: 700; margin: 0; }
 .recurso p { font-size: 0.88rem; color: var(--texto-muted); margin: 0; line-height: 1.55; }
@@ -172,9 +183,16 @@ h2 { font-size: clamp(1.5rem, 2.8vw, 2rem); font-weight: 800; margin: 0; text-al
 .secao-citacao { background: var(--superficie-alt); border-top: 1px solid var(--borda); border-bottom: 1px solid var(--borda); }
 .citacao-cartao { max-width: 720px; margin: 0 auto; padding: 84px 32px; text-align: center; }
 .marca-aspas { font-size: 3.2rem; color: var(--marca); opacity: 0.5; line-height: 1; display: block; margin-bottom: 4px; }
-.citacao-cartao blockquote { margin: 0; font-size: clamp(1.15rem, 2.4vw, 1.5rem); line-height: 1.5; font-weight: 600; }
-.citacao-autor { margin-top: 24px; font-size: 0.88rem; color: var(--texto-fraco); }
+.citacao-cartao blockquote { margin: 0; font-size: clamp(1.15rem, 2.4vw, 1.5rem); line-height: 1.5; font-weight: 600; transition: opacity 0.5s ease 0.15s, transform 0.5s ease 0.15s; }
+.citacao-autor { margin-top: 24px; font-size: 0.88rem; color: var(--texto-fraco); transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s; }
 .citacao-autor b { color: var(--marca); }
+.marca-aspas { transition: opacity 0.5s ease 0.05s, transform 0.5s ease 0.05s; }
+.citacao-cartao.pronto-para-entrar .marca-aspas,
+.citacao-cartao.pronto-para-entrar blockquote,
+.citacao-cartao.pronto-para-entrar .citacao-autor { opacity: 0; transform: translateY(14px); }
+.citacao-cartao.em-cena blockquote,
+.citacao-cartao.em-cena .citacao-autor { opacity: 1; transform: none; }
+.citacao-cartao.em-cena .marca-aspas { opacity: 0.5; transform: none; }
 
 .faixa-cta { background: var(--acento); }
 .faixa-cta-linha { max-width: 1080px; margin: 0 auto; padding: 56px 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
@@ -192,6 +210,10 @@ footer .stack { margin-top: 8px; font-size: 0.8rem; opacity: 0.85; }
 
 @media (max-width: 780px) { .nav-links { display: none; } }
 @media (max-width: 560px) { .regua { gap: 20px 24px; } .faixa-cta-linha { flex-direction: column; align-items: flex-start; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .hero::before { animation: none; }
+}
 </style>
 </head>
 <body>
@@ -239,7 +261,7 @@ minuto enquanto o serviço acorda.
 <div class="recurso"><span class="recurso-rotulo">api</span><h3>API REST</h3><p>Listagem e detalhe de chamados via token pessoal, com os mesmos filtros e regras da interface.</p></div>
 <div class="recurso"><span class="recurso-rotulo">anexos</span><h3>Anexos e relatórios</h3><p>Upload de imagens via Cloudinary e exportação da listagem em Excel ou PDF.</p></div>
 <div class="recurso"><span class="recurso-rotulo">auditoria</span><h3>Registro de ações</h3><p>Data, hora e autor de cada ação importante, consultável pelo painel administrativo.</p></div>
-<div class="recurso"><span class="recurso-rotulo">qualidade</span><h3>162 testes automatizados</h3><p>Suíte em pytest, rodando no GitHub Actions a cada push e pull request.</p></div>
+<div class="recurso"><span class="recurso-rotulo">qualidade</span><h3><span class="numero-inline">162</span> testes automatizados</h3><p>Suíte em pytest, rodando no GitHub Actions a cada push e pull request.</p></div>
 </div>
 </section>
 
@@ -274,5 +296,89 @@ minuto enquanto o serviço acorda.
 </div>
 </footer>
 
+<script>
+/**
+ * Mesmos três toques de movimento das páginas do app (static/js/apresentacao.js):
+ * números contando, brilho seguindo o cursor nos cartões de recurso, e uma
+ * entrada mais elaborada só na citação. Fica inline aqui porque esta página
+ * é o espelho estático (GitHub Pages), sem servidor Flask por trás pra
+ * servir um arquivo .js separado.
+ */
+(function () {
+    "use strict";
+
+    var reduzMovimento = window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function contarAte(elemento) {
+        var textoOriginal = elemento.textContent.trim();
+        var valorFinal = parseInt(textoOriginal.replace(/[^\d]/g, ""), 10);
+        if (isNaN(valorFinal)) {
+            return;
+        }
+        var sufixo = textoOriginal.replace(/^[\d.,]+/, "");
+        var duracaoMs = 900;
+        var inicio = null;
+
+        function passo(agora) {
+            if (inicio === null) {
+                inicio = agora;
+            }
+            var progresso = Math.min((agora - inicio) / duracaoMs, 1);
+            var facilitado = 1 - Math.pow(1 - progresso, 3);
+            elemento.textContent = Math.round(valorFinal * facilitado) + sufixo;
+            if (progresso < 1) {
+                window.requestAnimationFrame(passo);
+            } else {
+                elemento.textContent = textoOriginal;
+            }
+        }
+        window.requestAnimationFrame(passo);
+    }
+
+    var numeros = document.querySelectorAll(".regua-item .n, .numero-inline");
+    if (numeros.length && "IntersectionObserver" in window && !reduzMovimento) {
+        var observadorNumeros = new IntersectionObserver(function (entradas) {
+            entradas.forEach(function (entrada) {
+                if (entrada.isIntersecting) {
+                    contarAte(entrada.target);
+                    observadorNumeros.unobserve(entrada.target);
+                }
+            });
+        }, { threshold: 0.6 });
+        numeros.forEach(function (numero) {
+            observadorNumeros.observe(numero);
+        });
+    }
+
+    var grupoRecursos = document.querySelector(".grade-recursos");
+    if (grupoRecursos && !reduzMovimento) {
+        grupoRecursos.addEventListener("pointermove", function (evento) {
+            var cartao = evento.target.closest(".recurso");
+            if (!cartao) {
+                return;
+            }
+            var retangulo = cartao.getBoundingClientRect();
+            cartao.style.setProperty("--brilho-x", (evento.clientX - retangulo.left) + "px");
+            cartao.style.setProperty("--brilho-y", (evento.clientY - retangulo.top) + "px");
+        });
+    }
+
+    var citacao = document.querySelector(".citacao-cartao");
+    if (citacao && "IntersectionObserver" in window && !reduzMovimento) {
+        citacao.classList.add("pronto-para-entrar");
+        var observadorCitacao = new IntersectionObserver(function (entradas) {
+            entradas.forEach(function (entrada) {
+                if (entrada.isIntersecting) {
+                    entrada.target.classList.remove("pronto-para-entrar");
+                    entrada.target.classList.add("em-cena");
+                    observadorCitacao.unobserve(entrada.target);
+                }
+            });
+        }, { threshold: 0.35 });
+        observadorCitacao.observe(citacao);
+    }
+})();
+</script>
 </body>
 </html>
