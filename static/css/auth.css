@@ -10,9 +10,12 @@
 
    O glow usava azul/índigo fixo, sobrando do antigo acento genérico; agora
    segue a mesma família cobre/terracota do resto do redesign, lendo
-   --marca-rgb/--acento-forte-rgb (as mesmas cores de --marca/--acento-forte,
-   só que como tripla "r, g, b" em vez de hex) para dar transparência sem
-   depender de color-mix(), que navegadores mais antigos não suportam.
+   --marca-rgb/--acento-legivel-rgb (tripla "r, g, b" em vez de hex) para dar
+   transparência sem depender de color-mix(), que navegadores mais antigos
+   não suportam. O segundo glow usa --acento-legivel-rgb, não
+   --acento-forte-rgb: no tema escuro --acento-forte virou cinza quase do
+   tom do fundo e apagaria esse glow (ver comentário do token em style.css);
+   nos temas claro/âmbar os dois tokens são iguais, sem diferença visual.
    ============================== */
 
 body.pagina-auth {
@@ -44,7 +47,7 @@ body.pagina-auth::before {
 }
 
 body.pagina-auth::after {
-    background: rgba(var(--acento-forte-rgb), 0.18);
+    background: rgba(var(--acento-legivel-rgb), 0.18);
     bottom: -120px;
     height: 380px;
     right: -100px;

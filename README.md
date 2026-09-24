@@ -29,7 +29,12 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   guardado como hash no banco, no mesmo padrão do token de API.
 
 - **Autenticação de usuários**  
-  Sistema de cadastro, login e logout com armazenamento seguro das senhas utilizando hash.
+  Sistema de cadastro, login e logout com armazenamento seguro das senhas
+  utilizando hash. Também dá para entrar ou se cadastrar com uma conta Google
+  (OAuth/OIDC): no primeiro login a conta é criada automaticamente, e um
+  e-mail já cadastrado por senha é linkado à conta Google em vez de duplicado,
+  já que o Google prova a posse do endereço. Opcional — sem as credenciais do
+  Google configuradas, o botão some das telas e o login por senha segue igual.
 
 - **Perfis de acesso**  
   Controle de permissões para Usuário, Técnico e Administrador.
@@ -85,6 +90,12 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   a mesma coisa para e-mail cadastrado ou não, para não revelar quem tem conta,
   e aceita no máximo 3 pedidos por endereço a cada 15 minutos.
 
+- **Captcha nos formulários públicos**  
+  Cadastro, abertura pública de chamado e recuperação de senha passam pelo
+  Cloudflare Turnstile antes de serem aceitos, dificultando envio automatizado
+  em massa. Opcional — sem a chave secreta configurada, os formulários
+  funcionam normalmente, só sem essa proteção.
+
 - **Redefinição de senha por linha de comando**  
   Script `redefinir_senha.py` para o caso clássico de suporte: o usuário esqueceu
   a senha e não consegue entrar para trocá-la sozinho.
@@ -129,13 +140,16 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   maior. As tabelas ficam dentro de um container que rola sozinho quando o
   conteúdo não cabe, então nenhuma tela empurra a página inteira para o lado.
 
-- **Tema dark**  
-  Interface escura em todas as telas. As cores ficam em variáveis CSS
-  (`--bg`, `--superficie`, `--acento`, `--texto`, além das faixas de status)
-  declaradas uma única vez no topo do `style.css`, que é o mesmo arquivo
-  carregado por todas as páginas — então mudar uma cor ali repinta dashboard,
-  histórico, painel administrativo e logs de uma vez, sem cor solta espalhada
-  pelos templates.
+- **Três temas de interface**  
+  Escuro (padrão — preto predominante, detalhes em branco e botões cinza
+  escuro), claro e âmbar, trocáveis a qualquer momento pelo seletor presente
+  em toda tela. As cores ficam em variáveis CSS (`--bg`, `--superficie`,
+  `--acento`, `--texto`, além das faixas de status) declaradas uma única vez
+  no topo do `style.css`, que é o mesmo arquivo carregado por todas as
+  páginas — então mudar uma cor ali repinta dashboard, histórico, painel
+  administrativo e logs de uma vez, sem cor solta espalhada pelos templates.
+  Botões têm uma leve animação de elevação no hover, desligada automaticamente
+  para quem ativou "menos movimento" no sistema operacional.
 
 - **Tratamento próprio para login e cadastro**  
   Essas duas telas carregam também o `auth.css`, com os extras que só fazem
@@ -145,15 +159,16 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 162 testes em pytest cobrindo autenticação, controle de acesso por
-  perfil, validação de formulários, proteção CSRF, troca de senha e a lógica de
-  responsável do chamado. Boa parte deles são testes de regressão, escritos para
-  que falhas já corrigidas não voltem despercebidas. Um segundo arquivo,
-  `test_rotas.py`, cobre o outro lado: visita todas as telas e o ciclo completo
-  de um chamado, pegando o tipo de quebra que uma refatoração causa sem violar
-  nenhuma regra de negócio. A suíte roda sozinha no
-  GitHub Actions a cada push e a cada pull request para o `main` — o selo no
-  topo deste README mostra o resultado da última execução.
+  Suíte com 170 testes em pytest, dividida em cinco arquivos: `test_app.py`
+  (autenticação, controle de acesso por perfil, validação de formulários,
+  proteção CSRF, troca de senha, captcha e login com Google), `test_rotas.py`
+  (visita todas as telas e o ciclo completo de um chamado, pegando o tipo de
+  quebra que uma refatoração causa sem violar nenhuma regra de negócio),
+  `test_api.py`, `test_armazenamento.py` e `test_relatorios.py`. Boa parte são
+  testes de regressão, escritos para que falhas já corrigidas não voltem
+  despercebidas. A suíte roda sozinha no GitHub Actions a cada push e a cada
+  pull request para o `main` — o selo no topo deste README mostra o resultado
+  da última execução.
 
 ---
 
@@ -165,9 +180,12 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
 - Flask-Mail
 - Flask-Migrate
 - Flask-WTF
+- Flask-Limiter
+- Authlib (login com Google via OAuth/OIDC)
 - Python-dotenv
 - Cloudinary
-- SQLite
+- Cloudflare Turnstile (captcha)
+- SQLite / PostgreSQL
 - SQLAlchemy
 - Werkzeug
 - Jinja2
@@ -221,7 +239,8 @@ helpdesk-system/
 │   │   ├── 5995b4db02ca_adiciona_a_tabela_de_tentativas_de_.py
 │   │   ├── d141e98118e1_adiciona_o_token_de_api_do_usuario.py
 │   │   ├── b3ea6a92ffd9_adiciona_a_tabela_de_anexos.py
-│   │   └── b15cea77954b_adiciona_o_codigo_de_acompanhamento_do_.py
+│   │   ├── b15cea77954b_adiciona_o_codigo_de_acompanhamento_do_.py
+│   │   └── d835773a6a22_adiciona_o_google_id_do_usuario_login_.py
 │   ├── alembic.ini
 │   ├── env.py
 │   ├── README
@@ -237,12 +256,17 @@ helpdesk-system/
 ├── static/
 │   ├── css/
 │   │   ├── style.css
-│   │   └── auth.css
+│   │   ├── auth.css
+│   │   └── apresentacao.css
 │   └── js/
-│       └── tema.js
+│       ├── tema.js
+│       └── apresentacao.js
 │
 ├── templates/
 │   ├── index.html
+│   ├── apresentacao.html
+│   ├── como_funciona.html
+│   ├── recursos.html
 │   ├── login.html
 │   ├── cadastro.html
 │   ├── dashboard.html
@@ -341,11 +365,18 @@ MAIL_PASSWORD=sua-senha-de-aplicativo-do-gmail
 CLOUDINARY_CLOUD_NAME=o-cloud-name-da-sua-conta
 CLOUDINARY_API_KEY=a-api-key-da-sua-conta
 CLOUDINARY_API_SECRET=o-api-secret-da-sua-conta
+HOST_CONFIAVEL=localhost:5000
+TURNSTILE_SITE_KEY=a-site-key-do-seu-widget
+TURNSTILE_SECRET_KEY=a-secret-key-do-seu-widget
+GOOGLE_CLIENT_ID=o-client-id-do-seu-projeto-google
+GOOGLE_CLIENT_SECRET=o-client-secret-do-seu-projeto-google
 ```
 
-> As três variáveis do Cloudinary são opcionais: sem elas, o sistema funciona
-> normalmente e só o upload de anexos fica desativado (ver
-> [Configuração de anexos](#️-configuração-de-anexos-cloudinary)).
+> Cloudinary, Turnstile e Google são opcionais: sem eles, o sistema funciona
+> normalmente e só a funcionalidade correspondente fica desativada — upload de
+> anexos (ver [Configuração de anexos](#️-configuração-de-anexos-cloudinary)),
+> captcha nos formulários públicos e botão "Entrar com Google", nessa ordem.
+> Veja o `.env.example` para o passo a passo de cada um.
 
 Para gerar uma chave secreta segura, execute:
 
@@ -461,7 +492,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **162 passed**.
+Esperado: **170 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
@@ -490,6 +521,9 @@ e são preenchidas no painel, nunca no repositório:
 | `DATABASE_URL` | conexão do PostgreSQL |
 | `MAIL_USERNAME` e `MAIL_PASSWORD` | envio das notificações |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` e `CLOUDINARY_API_SECRET` | upload de anexos (opcionais — sem elas, só o upload fica desativado) |
+| `HOST_CONFIAVEL` | domínio usado no redirect HTTPS e nos links por e-mail |
+| `TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY` | captcha nos formulários públicos (opcionais — sem elas, só o captcha fica desativado) |
+| `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` | login com Google (opcionais — sem elas, só o botão "Entrar com Google" some) |
 | `SESSION_COOKIE_SECURE=1` | cookie de sessão só trafega por HTTPS |
 
 > Toda variável nova que entrar no `.env` local precisa ser adicionada também
@@ -651,6 +685,14 @@ por envio.
   navegador a qualquer origem — que torna um endpoint vulnerável a CSRF. Sem
   esse mecanismo ambiente, o token de API troca de papel com o cookie e a
   proteção de CSRF é dispensada só nessas rotas.
+- **Login com Google exige e-mail verificado pelo próprio Google.** O token
+  OIDC carrega `email_verified`; se vier falso, a aplicação recusa o login em
+  vez de confiar num e-mail que o próprio Google ainda não confirmou. Um
+  e-mail Google que já tem conta local por senha é linkado à conta existente
+  em vez de criar uma segunda — o Google já provou a posse do endereço. A
+  conta criada por esse caminho recebe uma senha interna aleatória, nunca
+  exibida e nunca aceita no login por senha, só para manter a mesma lógica de
+  assinatura de sessão usada pelas contas comuns.
 
 ---
 

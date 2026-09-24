@@ -500,7 +500,7 @@ body.pagina-apresentacao {
    rótulo, o que espremia o texto numa faixa estreita e deixava o resto da
    largura da página vazio — a grade usa o espaço de verdade. Fixo em 3
    colunas (não auto-fit): com 6 itens dá 2 linhas cheias, sem sobra — o
-   7º item (qualidade/162 testes) saiu da grade e virou o .recurso-destaque
+   7º item (qualidade/170 testes) saiu da grade e virou o .recurso-destaque
    logo abaixo, porque numa grade de 6 ele ficava sozinho numa 3ª linha com
    um buraco enorme ao lado. */
 .lista-recursos {
@@ -545,7 +545,7 @@ body.pagina-apresentacao {
 .recurso-rotulo {
     font-family: "JetBrains Mono", "Courier New", monospace;
     font-size: 0.75rem;
-    color: var(--acento-forte);
+    color: var(--acento-legivel);
     text-transform: uppercase;
     letter-spacing: 0.03em;
 }
@@ -574,7 +574,7 @@ body.pagina-apresentacao {
     }
 }
 
-/* RECURSO EM DESTAQUE — "162 testes automatizados" solto, centralizado e
+/* RECURSO EM DESTAQUE — "170 testes automatizados" solto, centralizado e
    um pouco maior que os cartões da grade acima, porque é prova de
    qualidade do projeto todo, não só mais um item do inventário. Mesma
    linguagem visual (rótulo monoespaçado, superfície, borda), só que com

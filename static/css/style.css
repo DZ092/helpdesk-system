@@ -45,6 +45,15 @@
     --cta-superficie: #ffffff;
     --cta-superficie-hover: #e2e2e2;
     --cta-texto: #101010;
+    /* Versão de --acento/--acento-forte pensada para TEXTO (ou glow) sobre
+       --superficie, não para fundo de botão. Nos temas claro/âmbar o cobre já
+       tinha contraste de sobra e por isso reaproveita --acento-forte direto.
+       No escuro --acento-forte virou cinza quase do tom do fundo (#3f3f3f
+       sobre #151515), o que apagava rótulos como .recurso-rotulo e o glow
+       de auth.css — aqui ele ganha um cinza bem mais claro só para esses usos
+       de texto/glow, sem mexer no cinza do próprio botão. */
+    --acento-legivel: #9a9a9a;
+    --acento-legivel-rgb: 154, 154, 154;
     --sucesso-bg: rgba(74, 194, 122, 0.14);
     --sucesso-texto: #7fd9a0;
     --sucesso-borda: rgba(74, 194, 122, 0.28);
@@ -103,6 +112,10 @@
     --cta-superficie: var(--bg);
     --cta-superficie-hover: var(--superficie);
     --cta-texto: var(--acento);
+    /* Ver comentário deste token no :root — aqui reaproveita o mesmo cobre de
+       --acento-forte, sem mudar nada visualmente. */
+    --acento-legivel: var(--acento-forte);
+    --acento-legivel-rgb: var(--acento-forte-rgb);
     --sucesso-bg: rgba(63, 174, 108, 0.12);
     --sucesso-texto: #2f8f56;
     --sucesso-borda: rgba(63, 174, 108, 0.28);
@@ -161,6 +174,10 @@
     --cta-superficie: var(--bg);
     --cta-superficie-hover: var(--superficie);
     --cta-texto: var(--acento);
+    /* Ver comentário deste token no :root — aqui reaproveita o mesmo cobre de
+       --acento-forte, sem mudar nada visualmente. */
+    --acento-legivel: var(--acento-forte);
+    --acento-legivel-rgb: var(--acento-forte-rgb);
     --sucesso-bg: rgba(47, 111, 67, 0.16);
     --sucesso-texto: #2c5a34;
     --sucesso-borda: rgba(47, 111, 67, 0.3);
