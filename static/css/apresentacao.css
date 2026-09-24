@@ -797,27 +797,32 @@ body.pagina-apresentacao {
 .faixa-cta-linha h2 {
     font-size: clamp(1.4rem, 2.6vw, 1.9rem);
     font-weight: 800;
-    color: var(--bg);
+    color: var(--texto-botao);
     max-width: 30ch;
 }
 
 .faixa-cta-linha p {
     margin-top: 8px;
-    color: var(--bg);
+    color: var(--texto-botao);
     opacity: 0.75;
     font-size: 0.95rem;
     max-width: 40ch;
 }
 
+/* Nos temas claro/âmbar --cta-superficie/--cta-texto só repetem --bg/--acento
+   de sempre. No escuro, --acento virou cinza escuro (redesign da paleta) e
+   o botão ficaria invisível sobre a própria faixa, por isso estes tokens
+   existem — ver comentário completo junto ao :root em style.css. */
 .faixa-cta .botao {
-    background: var(--bg);
-    color: var(--acento);
-    border-color: var(--bg);
+    background: var(--cta-superficie);
+    color: var(--cta-texto);
+    border-color: var(--cta-superficie);
     flex: none;
 }
 
 .faixa-cta .botao:hover {
-    background: var(--superficie);
+    background: var(--cta-superficie-hover);
+    border-color: var(--cta-superficie-hover);
 }
 
 /* Botão menor da faixa de CTA — mesmo padrão do docs/index.html: destaque
