@@ -7,10 +7,14 @@
    qual atributo aplicar no <html> (escolha salva > preferência do sistema >
    escuro).
 
-   Identidade visual (redesign): os três temas compartilham a mesma cor de
-   marca — uma família cobre/terracota — e só a superfície muda entre eles.
-   Antes a marca era azul no escuro/claro e virava um laranja sem relação
-   nenhuma no âmbar; isso quebrava a identidade entre temas.
+   Os três temas compartilham a mesma cor de marca (família cobre/terracota
+   no claro/âmbar, monocromática no escuro) e só a superfície muda entre eles.
+
+   Sistema visual (redesign "profissional", 2026): interação sóbria — hover/
+   active só trocam cor, sem translateY/scale/box-shadow — e uma escala única
+   de raio de borda (--raio-controle para botão/input/badge, --raio-superficie
+   para container/card), em vez da mistura de pílula e valores soltos que
+   existia antes.
    ============================== */
 
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap");
@@ -37,23 +41,23 @@
        fundo (--bg). No escuro é o oposto (botão cinza sobre página quase
        preta), por isso este token existe: aqui ele é branco, não --bg. */
     --texto-botao: #ffffff;
-    /* Botão de dentro da faixa de CTA (issue de redesign da paleta escura):
-       nos temas claro/âmbar ele reaproveita --bg/--acento/--superficie como
-       sempre fez. No escuro, --acento virou cinza escuro e deixaria o botão
-       invisível sobre a própria faixa, então aqui ele vira um "pop" branco
-       brilhante com texto escuro, combinando com os detalhes do tema. */
+    /* Botão de dentro da faixa de CTA: nos temas claro/âmbar ele reaproveita
+       --bg/--acento/--superficie como sempre. No escuro, --acento é cinza
+       escuro e deixaria o botão invisível sobre a própria faixa, então aqui
+       ele vira um "pop" branco com texto escuro. */
     --cta-superficie: #ffffff;
     --cta-superficie-hover: #e2e2e2;
     --cta-texto: #101010;
     /* Versão de --acento/--acento-forte pensada para TEXTO (ou glow) sobre
        --superficie, não para fundo de botão. Nos temas claro/âmbar o cobre já
        tinha contraste de sobra e por isso reaproveita --acento-forte direto.
-       No escuro --acento-forte virou cinza quase do tom do fundo (#3f3f3f
-       sobre #151515), o que apagava rótulos como .recurso-rotulo e o glow
-       de auth.css — aqui ele ganha um cinza bem mais claro só para esses usos
-       de texto/glow, sem mexer no cinza do próprio botão. */
+       No escuro --acento-forte é cinza quase do tom do fundo (#3f3f3f sobre
+       #151515) — este token existe só pra esses usos de texto/glow. */
     --acento-legivel: #9a9a9a;
     --acento-legivel-rgb: 154, 154, 154;
+    /* Escala única de raio de borda — ver comentário do topo do arquivo. */
+    --raio-controle: 6px;
+    --raio-superficie: 10px;
     --sucesso-bg: rgba(74, 194, 122, 0.14);
     --sucesso-texto: #7fd9a0;
     --sucesso-borda: rgba(74, 194, 122, 0.28);
@@ -76,19 +80,15 @@
     --prioridade-alta-texto: #eba873;
     --prioridade-critica-bg: rgba(224, 92, 92, 0.2);
     --prioridade-critica-texto: #f0a3a3;
-    --sombra-caixa: rgba(0, 0, 0, 0.6);
     --sombra-linha: rgba(0, 0, 0, 0.35);
     --hover-linha: rgba(255, 255, 255, 0.05);
     --hover-pagina: rgba(255, 255, 255, 0.08);
-    /* Usada só em auth.css, no glow de fundo de login/cadastro. */
-    --auth-glow-centro: #1a1a1a;
 }
 
-/* TEMA CLARO — mesmas variáveis, valores diferentes. Diferente da versão
-   anterior, os tons de status/prioridade também ganham override aqui: os
-   valores do tema escuro (pensados para contraste sobre fundo escuro) não
-   se sustentam sobre uma superfície clara — verde-claro sobre branco, por
-   exemplo, praticamente some. */
+/* TEMA CLARO — mesmas variáveis, valores diferentes. Os tons de status/
+   prioridade também ganham override aqui: os valores do tema escuro (pensados
+   para contraste sobre fundo escuro) não se sustentam sobre uma superfície
+   clara — verde-claro sobre branco, por exemplo, praticamente some. */
 [data-theme="light"] {
     --bg: #f5f1e9;
     --bg-gradiente-topo: #fffdf9;
@@ -138,19 +138,16 @@
     --prioridade-alta-texto: #8a4f19;
     --prioridade-critica-bg: rgba(196, 58, 58, 0.14);
     --prioridade-critica-texto: #a83d3d;
-    --sombra-caixa: rgba(58, 46, 32, 0.12);
     --sombra-linha: rgba(58, 46, 32, 0.08);
     --hover-linha: rgba(58, 46, 32, 0.035);
     --hover-pagina: rgba(58, 46, 32, 0.06);
-    --auth-glow-centro: #f0dfc4;
 }
 
 /* TEMA ÂMBAR (issue #79) — "fim de tarde": para quem tem sensibilidade à
    luz branca do tema claro tradicional, mas não quer o dark puro. Fundo
    puxado para o laranja, texto em marrom escuro (não preto puro, para não
    voltar ao contraste duro que o dark evita). A marca continua na mesma
-   família de cobre/terracota do tema escuro e do claro — antes ela pulava
-   para um laranja sem relação nenhuma com o azul dos outros dois temas. */
+   família de cobre/terracota do tema escuro e do claro. */
 [data-theme="ambar"] {
     --bg: #e6a06a;
     --bg-gradiente-topo: #eeb47e;
@@ -200,11 +197,9 @@
     --prioridade-alta-texto: #7a2b0a;
     --prioridade-critica-bg: rgba(153, 45, 32, 0.2);
     --prioridade-critica-texto: #7a2415;
-    --sombra-caixa: rgba(90, 40, 10, 0.2);
     --sombra-linha: rgba(90, 40, 10, 0.14);
     --hover-linha: rgba(90, 40, 10, 0.08);
     --hover-pagina: rgba(90, 40, 10, 0.12);
-    --auth-glow-centro: #eeb47e;
 }
 
 * {
@@ -219,7 +214,8 @@ body {
     color: var(--texto);
 }
 
-/* CONTAINER PRINCIPAL */
+/* CONTAINER PRINCIPAL — elevação discreta (borda + sombra baixa), não o
+   cartão flutuante de sombra pesada que qualquer gerador de UI usa. */
 .container {
     width: 90%;
     max-width: 1100px;
@@ -227,8 +223,8 @@ body {
     background: var(--superficie);
     border: 1px solid var(--borda);
     padding: 40px;
-    border-radius: 14px;
-    box-shadow: 0 1px 2px var(--sombra-linha), 0 16px 40px var(--sombra-caixa);
+    border-radius: var(--raio-superficie);
+    box-shadow: 0 1px 2px var(--sombra-linha);
     position: relative;
 }
 
@@ -287,7 +283,7 @@ h1 {
 .campo textarea {
     width: 100%;
     padding: 14px;
-    border-radius: 8px;
+    border-radius: var(--raio-controle);
     border: 1px solid var(--borda);
     background: var(--superficie-alt);
     color: var(--texto);
@@ -305,7 +301,10 @@ h1 {
 .campo input:focus,
 .campo textarea:focus {
     border-color: var(--marca);
-    box-shadow: 0 0 0 3px rgba(224, 144, 79, 0.22);
+    /* rgba(var(--marca-rgb)) acompanha a cor de marca do tema ativo — antes
+       este anel de foco estava com um laranja fixo (herdado da paleta antiga
+       do redesign anterior), então não reagia à troca de tema. */
+    box-shadow: 0 0 0 3px rgba(var(--marca-rgb), 0.22);
 }
 
 .dica-campo {
@@ -313,56 +312,42 @@ h1 {
     color: var(--texto-fraco);
 }
 
-/* BOTÕES — antes eram gradiente azul + glow em toda parte; agora um
-   preenchimento sólido com borda própria, mais parecido com um sistema
-   desenhado do que com o botão-padrão de qualquer gerador de UI. */
+/* BOTÕES — preenchimento sólido com borda própria. Hover/active só trocam
+   cor: sem translateY, scale ou sombra pop, que é o tipo de movimento que
+   qualquer landing page gerada por IA usa em todo botão. */
 .botao {
     background: var(--acento);
     color: var(--texto-botao);
     border: 1px solid var(--acento-forte);
     padding: 14px 26px;
-    border-radius: 999px;
+    border-radius: var(--raio-controle);
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
     display: inline-block;
     text-align: center;
     text-decoration: none;
-    transition: background-color 0.2s ease, border-color 0.2s ease,
-        transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .botao:hover {
     background: var(--acento-hover);
     border-color: var(--acento-hover-forte);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 22px -8px var(--sombra-caixa);
-}
-
-.botao:active {
-    transform: translateY(0);
-    box-shadow: 0 3px 8px -4px var(--sombra-caixa);
 }
 
 /* Ação de mesmo peso visual do .botao, mas sem competir com ele por
    atenção — usada quando mais de um caminho de entrada aparece lado a lado
-   (tela de apresentação, issue #85) e só um deles deveria puxar o olho. */
+   (tela de apresentação) e só um deles deveria puxar o olho. */
 .botao-secundario {
     background: transparent;
     color: var(--texto);
     border: 1px solid var(--borda);
-    transition: background-color 0.2s ease, border-color 0.2s ease,
-        transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .botao-secundario:hover {
     background: var(--hover-pagina);
     border-color: var(--marca);
-    transform: translateY(-2px);
-}
-
-.botao-secundario:active {
-    transform: translateY(0);
 }
 
 /* GRUPO DE BOTÕES DE NAVEGAÇÃO (dashboard, telas iniciais) */
@@ -386,7 +371,7 @@ h1 {
     background: var(--superficie-alt);
     border: 1px solid var(--borda);
     border-left: 3px solid var(--borda);
-    border-radius: 10px;
+    border-radius: var(--raio-superficie);
     padding: 20px;
     text-align: center;
 }
@@ -485,7 +470,7 @@ h1 {
 /* STATUS */
 .status {
     padding: 7px 14px;
-    border-radius: 999px;
+    border-radius: var(--raio-controle);
     font-weight: 700;
     font-size: 13px;
     display: inline-block;
@@ -506,7 +491,8 @@ h1 {
     color: var(--sucesso-texto);
 }
 
-/* BOTÃO AÇÃO */
+/* BOTÃO AÇÃO — círculo de 36px, único elemento com raio total (é um botão
+   de ícone, não decoração). Hover só troca cor, sem escala/sombra. */
 .acao {
     align-items: center;
     background: var(--acento);
@@ -519,15 +505,13 @@ h1 {
     justify-content: center;
     text-decoration: none;
     width: 36px;
-    transition: background-color 0.2s ease, border-color 0.2s ease,
-        transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 /* O .acao é um círculo de 36px feito para um ícone só. Quando a ação precisa
-   de texto — como "Ver detalhes" —, esta variante solta a largura e vira
-   pílula, senão a palavra vaza para fora do círculo. */
+   de texto — como "Ver detalhes" —, esta variante solta a largura. */
 .acao-texto {
-    border-radius: 999px;
+    border-radius: var(--raio-controle);
     font-size: 0.85rem;
     font-weight: 700;
     height: auto;
@@ -539,15 +523,11 @@ h1 {
 .acao:hover {
     background: var(--acento-hover);
     border-color: var(--acento-hover-forte);
-    transform: scale(1.08);
-    box-shadow: 0 6px 14px -6px var(--sombra-caixa);
 }
 
 /* Botão de "finalizado": mesma geometria circular do .acao, mas em verde
    sólido — sinaliza que a ação já foi concluída, sem convidar a um novo
-   clique. Sem texto visível: a legenda vira title, só aparece no hover.
-   De propósito não herda a animação de hover do .acao — nada aqui convida
-   a clicar de novo. */
+   clique. Sem texto visível: a legenda vira title, só aparece no hover. */
 .acao-finalizado {
     background: var(--sucesso-solido);
     border-color: var(--sucesso-solido-forte);
@@ -557,8 +537,6 @@ h1 {
 .acao-finalizado:hover {
     background: var(--sucesso-solido-hover);
     border-color: var(--sucesso-solido-hover-forte);
-    transform: none;
-    box-shadow: none;
 }
 
 /* FINALIZADO (sem ação disponível) */
@@ -573,7 +551,7 @@ h1 {
     border: 1px solid var(--erro-borda);
     color: var(--erro-texto);
     padding: 12px;
-    border-radius: 8px;
+    border-radius: var(--raio-controle);
     margin-bottom: 20px;
     text-align: center;
     font-weight: 700;
@@ -584,7 +562,7 @@ h1 {
     border: 1px solid var(--sucesso-borda);
     color: var(--sucesso-texto);
     padding: 12px;
-    border-radius: 8px;
+    border-radius: var(--raio-controle);
     margin-bottom: 20px;
     text-align: center;
     font-weight: 700;
@@ -593,7 +571,7 @@ h1 {
 .token-gerado {
     background: var(--superficie-alt);
     border: 1px solid var(--borda);
-    border-radius: 8px;
+    border-radius: var(--raio-controle);
     padding: 14px;
     margin-bottom: 20px;
     display: flex;
@@ -616,25 +594,19 @@ h1 {
     border: 1px solid var(--borda);
     color: var(--texto-muted);
     padding: 8px 14px;
-    border-radius: 999px;
+    border-radius: var(--raio-controle);
     font-size: 0.85rem;
     font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition: border-color 0.2s ease, color 0.2s ease,
-        transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .botao-copiar:hover {
     border-color: var(--marca);
     color: var(--marca);
-    transform: translateY(-2px);
-}
-
-.botao-copiar:active {
-    transform: translateY(0);
 }
 
 .botao-copiar.copiado {
@@ -659,13 +631,11 @@ h1 {
     text-decoration: underline;
 }
 
-/* PRIORIDADE DO CHAMADO — antes "alta" e "crítica" usavam rgba fixo em vez
-   de variável, então não se ajustavam ao trocar de tema (no tema claro, o
-   laranja-claro de "alta" quase sumia sobre fundo branco). Agora seguem o
-   mesmo padrão tokenizado dos outros três níveis. */
+/* PRIORIDADE DO CHAMADO — os quatro níveis seguem o mesmo padrão tokenizado
+   (nenhuma cor literal), pra se ajustar corretamente em qualquer tema. */
 .prioridade {
     padding: 6px 12px;
-    border-radius: 999px;
+    border-radius: var(--raio-controle);
     font-weight: 700;
     font-size: 12.5px;
     display: inline-block;
@@ -730,17 +700,16 @@ button.sair {
 /* SELETOR DE TEMA (issue #44, ampliado para 3 temas na #79) — grupo com
    as três opções sempre visíveis (escuro, claro, âmbar), em vez de um botão
    único que cicla entre estados; ver static/js/tema.js para a lógica de
-   aplicação e persistência. Desde a #79 aparece também no cabeçalho de
-   login/cadastro, não só nas telas com usuário logado. Cada botão nasce
-   sem ícone (o texto é preenchido por JS depois que a página carrega) —
-   largura e altura fixas evitam que o grupo "salte" de tamanho nesse
-   instante e empurre o conteúdo ao lado. */
+   aplicação e persistência. Aparece também no cabeçalho de login/cadastro.
+   Cada botão nasce sem ícone (o texto é preenchido por JS depois que a
+   página carrega) — largura e altura fixas evitam que o grupo "salte" de
+   tamanho nesse instante. */
 .seletor-tema {
     display: inline-flex;
     gap: 4px;
     background: var(--superficie-alt);
     border: 1px solid var(--borda);
-    border-radius: 999px;
+    border-radius: var(--raio-controle);
     padding: 3px;
 }
 
@@ -748,7 +717,7 @@ button.sair {
     align-items: center;
     background: transparent;
     border: none;
-    border-radius: 999px;
+    border-radius: calc(var(--raio-controle) - 2px);
     color: var(--texto);
     cursor: pointer;
     display: inline-flex;
@@ -757,12 +726,11 @@ button.sair {
     justify-content: center;
     line-height: 1;
     width: 28px;
-    transition: background-color 0.2s ease, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: background-color 0.15s ease;
 }
 
 .seletor-tema button:hover {
     background: var(--hover-pagina);
-    transform: scale(1.12);
 }
 
 .seletor-tema button.ativo {
@@ -782,7 +750,7 @@ button.sair {
 .filtro-form input,
 .filtro-form select {
     padding: 10px;
-    border-radius: 8px;
+    border-radius: var(--raio-controle);
     border: 1px solid var(--borda);
     background: var(--superficie-alt);
     color: var(--texto);
@@ -795,22 +763,15 @@ button.sair {
     color: var(--texto-botao);
     border: 1px solid var(--acento-forte);
     padding: 10px 20px;
-    border-radius: 999px;
+    border-radius: var(--raio-controle);
     font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease,
-        transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .botao-filtro:hover {
     background: var(--acento-hover);
     border-color: var(--acento-hover-forte);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px -8px var(--sombra-caixa);
-}
-
-.botao-filtro:active {
-    transform: translateY(0);
 }
 
 .limpar-filtro {
@@ -831,22 +792,15 @@ button.sair {
     color: var(--texto-botao);
     border: 1px solid var(--acento-forte);
     padding: 12px 22px;
-    border-radius: 999px;
+    border-radius: var(--raio-controle);
     text-decoration: none;
     font-weight: 700;
-    transition: background-color 0.2s ease, border-color 0.2s ease,
-        transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .novo-chamado:hover {
     background: var(--acento-hover);
     border-color: var(--acento-hover-forte);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px -8px var(--sombra-caixa);
-}
-
-.novo-chamado:active {
-    transform: translateY(0);
 }
 
 /* USUÁRIO LOGADO EM TELAS PEQUENAS */
@@ -939,8 +893,7 @@ h1{
 .tabela-chamados tr{
     background: var(--superficie-alt);
     border: 1px solid var(--borda);
-    border-radius:10px;
-    box-shadow:0 2px 8px var(--sombra-linha);
+    border-radius: var(--raio-superficie);
     margin-bottom:14px;
     padding:6px 14px;
 }
@@ -1031,7 +984,7 @@ h1{
 
 .bloco-detalhe, .secao {
     border: 1px solid var(--borda);
-    border-radius: 10px;
+    border-radius: var(--raio-superficie);
     padding: 18px;
 }
 
@@ -1082,7 +1035,7 @@ h1{
 
 .comentario {
     background: var(--superficie-alt);
-    border-radius: 10px;
+    border-radius: var(--raio-superficie);
     padding: 15px;
 }
 
@@ -1114,7 +1067,7 @@ h1{
     display: block;
     width: 90px;
     height: 90px;
-    border-radius: 8px;
+    border-radius: var(--raio-controle);
     overflow: hidden;
     border: 1px solid var(--borda);
 }
@@ -1134,7 +1087,7 @@ h1{
     border: 1px solid var(--borda);
     background: var(--superficie-alt);
     color: var(--texto);
-    border-radius: 8px;
+    border-radius: var(--raio-controle);
     font: inherit;
     padding: 12px;
     resize: vertical;
@@ -1155,24 +1108,17 @@ h1{
 .botao-perigo {
     background: var(--perigo-solido);
     border: 1px solid var(--perigo-solido-forte);
-    border-radius: 999px;
+    border-radius: var(--raio-controle);
     color: #fff;
     cursor: pointer;
     font-weight: 700;
     padding: 10px 15px;
-    transition: background-color 0.2s ease, border-color 0.2s ease,
-        transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .botao-perigo:hover {
     background: var(--perigo-solido-hover);
     border-color: var(--perigo-solido-hover-forte);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px -8px var(--sombra-caixa);
-}
-
-.botao-perigo:active {
-    transform: translateY(0);
 }
 
 .form-tipo-usuario {
@@ -1184,7 +1130,7 @@ h1{
 
 .form-tipo-usuario select {
     padding: 8px;
-    border-radius: 8px;
+    border-radius: var(--raio-controle);
     border: 1px solid var(--borda);
     background: var(--superficie-alt);
     color: var(--texto);
@@ -1211,7 +1157,7 @@ h1{
 .pagina-link {
     background: var(--superficie-alt);
     border: 1px solid var(--borda);
-    border-radius: 999px;
+    border-radius: var(--raio-controle);
     color: var(--marca);
     padding: 8px 12px;
     text-decoration: none;
@@ -1224,7 +1170,7 @@ h1{
 .pagina-atual {
     background: var(--acento);
     border: 1px solid var(--acento-forte);
-    border-radius: 999px;
+    border-radius: var(--raio-controle);
     color: var(--texto-botao);
     font-weight: 700;
     padding: 8px 12px;
@@ -1253,40 +1199,4 @@ h1{
 .rodape-app a:hover {
     color: var(--marca);
     text-decoration: underline;
-}
-
-/* Quem pede menos movimento no sistema operacional (issue de redesign da
-   paleta escura, mesmo cuidado já tomado em apresentacao.css/apresentacao.js):
-   os botões continuam trocando de cor no hover, só perdem o deslocamento e a
-   sombra, que são o tipo de movimento que causa desconforto para quem ligou
-   essa preferência. */
-@media (prefers-reduced-motion: reduce) {
-    .botao,
-    .botao-secundario,
-    .botao-copiar,
-    .botao-filtro,
-    .novo-chamado,
-    .botao-perigo,
-    .acao,
-    .seletor-tema button {
-        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    }
-
-    .botao:hover,
-    .botao:active,
-    .botao-secundario:hover,
-    .botao-secundario:active,
-    .botao-copiar:hover,
-    .botao-copiar:active,
-    .botao-filtro:hover,
-    .botao-filtro:active,
-    .novo-chamado:hover,
-    .novo-chamado:active,
-    .botao-perigo:hover,
-    .botao-perigo:active,
-    .acao:hover,
-    .seletor-tema button:hover {
-        transform: none;
-        box-shadow: none;
-    }
 }

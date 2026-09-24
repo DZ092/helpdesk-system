@@ -1,84 +1,28 @@
 /* ==============================
    TELAS DE AUTENTICAÇÃO (LOGIN E CADASTRO) - TOQUES EXCLUSIVOS
    O tema em si já é global (style.css, ver [data-theme="light"]/[data-theme="ambar"]
-   lá). Desde a issue #79 estas telas também têm o seletor de tema
-   (.seletor-tema, estilo e posicionamento globais em .container > .seletor-tema)
-   — pensado para quem abre um chamado sem fazer login e nunca chega às
-   telas internas onde o seletor sempre existiu. Aqui ficam só os extras que
-   fazem sentido nessas duas telas: fundo com glow, card mais estreito,
-   animação de entrada e os ícones dentro dos campos.
-
-   O glow usava azul/índigo fixo, sobrando do antigo acento genérico; agora
-   segue a mesma família cobre/terracota do resto do redesign, lendo
-   --marca-rgb/--acento-legivel-rgb (tripla "r, g, b" em vez de hex) para dar
-   transparência sem depender de color-mix(), que navegadores mais antigos
-   não suportam. O segundo glow usa --acento-legivel-rgb, não
-   --acento-forte-rgb: no tema escuro --acento-forte virou cinza quase do
-   tom do fundo e apagaria esse glow (ver comentário do token em style.css);
-   nos temas claro/âmbar os dois tokens são iguais, sem diferença visual.
+   lá). Estas telas também têm o seletor de tema (.seletor-tema, estilo e
+   posicionamento globais em .container > .seletor-tema) — pensado para quem
+   abre um chamado sem fazer login e nunca chega às telas internas onde o
+   seletor sempre existiu. Aqui ficam só os extras que fazem sentido nessas
+   duas telas: card mais estreito e os ícones dentro dos campos. Sem glow de
+   fundo nem animação de entrada — ver comentário do topo de style.css sobre
+   o redesign "profissional".
    ============================== */
 
 body.pagina-auth {
     align-items: center;
-    background: radial-gradient(circle at 50% 0%, var(--auth-glow-centro) 0%, var(--bg) 60%);
+    background: var(--bg);
     display: flex;
     justify-content: center;
     min-height: 100vh;
-    position: relative;
-}
-
-/* Glows decorativos ao fundo, atrás do card */
-body.pagina-auth::before,
-body.pagina-auth::after {
-    border-radius: 50%;
-    content: "";
-    filter: blur(70px);
-    pointer-events: none;
-    position: fixed;
-    z-index: 0;
-}
-
-body.pagina-auth::before {
-    background: rgba(var(--marca-rgb), 0.22);
-    height: 320px;
-    left: -80px;
-    top: -100px;
-    width: 320px;
-}
-
-body.pagina-auth::after {
-    background: rgba(var(--acento-legivel-rgb), 0.18);
-    bottom: -120px;
-    height: 380px;
-    right: -100px;
-    width: 380px;
 }
 
 body.pagina-auth .container {
-    animation: entrada-auth 0.5s ease-out;
     margin: 20px;
     max-width: 560px;
     padding: 52px 48px;
-    position: relative;
     width: 100%;
-    z-index: 1;
-}
-
-@keyframes entrada-auth {
-    from {
-        opacity: 0;
-        transform: translateY(14px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    body.pagina-auth .container {
-        animation: none;
-    }
 }
 
 body.pagina-auth .campo-input {
@@ -120,10 +64,9 @@ body.pagina-auth .campo input:-webkit-autofill:focus {
 
 /* Acoes secundarias (esqueci senha, cadastro, chamado sem login...), issue
    #93: viram botoes no lugar de link + pergunta, no mesmo .botao-secundario
-   ja usado noutras telas (issue #85) para nao competir com o botao
-   principal (.botao) por atencao. Empilhados e mais compactos que o
-   .acoes do dashboard, porque aqui sao 4 acoes de apoio, nao navegacao
-   primaria. */
+   ja usado noutras telas para nao competir com o botao principal (.botao)
+   por atencao. Empilhados e mais compactos que o .acoes do dashboard,
+   porque aqui sao 4 acoes de apoio, nao navegacao primaria. */
 body.pagina-auth .acoes-auth {
     display: flex;
     flex-direction: column;
@@ -137,7 +80,7 @@ body.pagina-auth .acoes-auth .botao-secundario {
     width: auto;
     min-width: 200px;
     padding: 11px 20px;
-    border-radius: 8px;
+    border-radius: var(--raio-controle);
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
