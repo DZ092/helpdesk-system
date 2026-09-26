@@ -28,7 +28,7 @@
 </head>
 <body>
 <main class="container detalhe-container">
-    <div class="usuario-logado">Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }}) <div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button><button type="button" data-tema="ambar"></button></div> <form method="POST" action="/logout" class="form-sair"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="sair">Sair</button></form></div>
+    <div class="usuario-logado">Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }}) <div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button></div> <form method="POST" action="/logout" class="form-sair"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="sair">Sair</button></form></div>
     <a class="voltar" href="/chamados">← Voltar para chamados</a>
     <div class="cabecalho-chamado">
         <div><p class="eyebrow">Chamado #{{ chamado.id }}</p><h1>{{ chamado.titulo }}</h1></div>

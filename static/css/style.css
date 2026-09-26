@@ -1,63 +1,65 @@
 /* ==============================
    SISTEMA HELP DESK - ESTILO GERAL
-   Tema escuro é o padrão (:root). O tema claro e o âmbar (issues #44 e #79)
-   sobrescrevem as mesmas variáveis em [data-theme="light"]/[data-theme="ambar"]
-   — nenhuma regra abaixo deste bloco deveria usar cor literal fora dessas
-   variáveis, senão ela não reage à troca de tema. `static/js/tema.js` decide
-   qual atributo aplicar no <html> (escolha salva > preferência do sistema >
-   escuro).
+   Tema escuro é o padrão (:root); o claro sobrescreve as mesmas variáveis em
+   [data-theme="light"]. Nenhuma regra abaixo destes blocos deveria usar cor
+   literal fora das variáveis, senão ela não reage à troca de tema.
+   `static/js/tema.js` decide qual atributo aplicar no <html> (escolha salva >
+   preferência do sistema > escuro).
 
-   Os três temas compartilham a mesma cor de marca (família cobre/terracota
-   no claro/âmbar, monocromática no escuro) e só a superfície muda entre eles.
-
-   Sistema visual (redesign "profissional", 2026): interação sóbria — hover/
-   active só trocam cor, sem translateY/scale/box-shadow — e uma escala única
-   de raio de borda (--raio-controle para botão/input/badge, --raio-superficie
-   para container/card), em vez da mistura de pílula e valores soltos que
-   existia antes.
+   Visual novo (2026, Fase 1): acento azul no lugar da paleta monocromática,
+   cartões com elevação sutil (sombra, sem deslocamento nem escala) e uma
+   escala única de raio (--raio-controle para botão/input/badge,
+   --raio-superficie para container/cartão, --raio-pilula só nas abas).
+   --acento é para texto, indicador e gráfico; fundo de botão com texto branco
+   usa --acento-solido (branco sobre #2D8CF0 dá só 3.43:1).
+   O tema âmbar saiu nesta fase. Os nomes antigos de token (--marca,
+   --acento-forte, --acento-legivel...) ficam como alias até as Fases 2 e 3.
    ============================== */
 
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap");
 
 :root {
-    --bg: #060606;
-    --bg-gradiente-topo: #121212;
-    --bg-gradiente-base: #000000;
-    --superficie: #151515;
-    --superficie-alt: #202020;
-    --borda: rgba(255, 255, 255, 0.12);
-    --texto: #f5f5f5;
-    --texto-muted: #b3b3b3;
-    --texto-fraco: #7a7a7a;
-    --marca: #ffffff;
-    --marca-rgb: 255, 255, 255;
-    --acento: #2b2b2b;
-    --acento-forte: #3f3f3f;
-    --acento-hover: #383838;
-    --acento-hover-forte: #525252;
-    --acento-forte-rgb: 63, 63, 63;
-    /* Texto/ícone sobre um botão de acento — nos temas claro/âmbar o botão é
-       mais escuro que o fundo da página, então o texto reaproveita a cor do
-       fundo (--bg). No escuro é o oposto (botão cinza sobre página quase
-       preta), por isso este token existe: aqui ele é branco, não --bg. */
-    --texto-botao: #ffffff;
-    /* Botão de dentro da faixa de CTA: nos temas claro/âmbar ele reaproveita
-       --bg/--acento/--superficie como sempre. No escuro, --acento é cinza
-       escuro e deixaria o botão invisível sobre a própria faixa, então aqui
-       ele vira um "pop" branco com texto escuro. */
-    --cta-superficie: #ffffff;
-    --cta-superficie-hover: #e2e2e2;
-    --cta-texto: #101010;
-    /* Versão de --acento/--acento-forte pensada para TEXTO (ou glow) sobre
-       --superficie, não para fundo de botão. Nos temas claro/âmbar o cobre já
-       tinha contraste de sobra e por isso reaproveita --acento-forte direto.
-       No escuro --acento-forte é cinza quase do tom do fundo (#3f3f3f sobre
-       #151515) — este token existe só pra esses usos de texto/glow. */
-    --acento-legivel: #9a9a9a;
-    --acento-legivel-rgb: 154, 154, 154;
-    /* Escala única de raio de borda — ver comentário do topo do arquivo. */
+    color-scheme: dark;
+    --bg: #0B0D12;
+    --bg-gradiente-topo: #0F121A;
+    --bg-gradiente-base: #0B0D12;
+    --superficie: #12151C;
+    --superficie-alt: #1A1E27;
+    --borda: rgba(255, 255, 255, 0.08);
+    --borda-forte: rgba(255, 255, 255, 0.16);
+    --texto: #F2F4F8;
+    --texto-muted: #A3AAB8;
+    --texto-fraco: #8B93A3;
+    --acento: #2D8CF0;
+    --acento-rgb: 45, 140, 240;
+    --acento-solido: #1F6FD1;
+    --acento-solido-hover: #1A62BD;
+    --acento-suave: rgba(45, 140, 240, 0.14);
+    --texto-botao: #FFFFFF;
+    --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.25);
+    --sombra-2: 0 8px 24px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
     --raio-controle: 6px;
     --raio-superficie: 10px;
+    --raio-pilula: 999px;
+    --grafico-grade: rgba(255, 255, 255, 0.06);
+    /* Aliases dos nomes antigos, usados por páginas que só migram nas Fases 2
+       e 3. Resolvem no mesmo elemento (<html>), então seguem o tema ativo. */
+    --marca: var(--acento);
+    --marca-rgb: var(--acento-rgb);
+    --acento-forte: var(--acento);
+    --acento-forte-rgb: var(--acento-rgb);
+    --acento-hover: var(--acento-solido-hover);
+    --acento-hover-forte: var(--acento-solido-hover);
+    --acento-legivel: var(--acento);
+    --acento-legivel-rgb: var(--acento-rgb);
+    /* Cartão flutuante do hero da apresentação (ver apresentacao.css) tem
+       fundo fixo claro nos dois temas; este token garante contraste do
+       acento sobre esse fundo mesmo quando o tema ativo é o escuro. */
+    --cartao-hero-acento: #1A66C7;
+    /* Faixa de CTA da apresentação: botão claro sobre a faixa escura. */
+    --cta-superficie: #FFFFFF;
+    --cta-superficie-hover: #E2E6EC;
+    --cta-texto: #0B0D12;
     --sucesso-bg: rgba(74, 194, 122, 0.14);
     --sucesso-texto: #7fd9a0;
     --sucesso-borda: rgba(74, 194, 122, 0.28);
@@ -76,53 +78,50 @@
     --aviso-texto: #e8bd7c;
     --info-bg: rgba(94, 160, 189, 0.16);
     --info-texto: #92c1da;
-    --prioridade-alta-bg: rgba(224, 138, 66, 0.16);
-    --prioridade-alta-texto: #eba873;
+    --prioridade-alta-bg: rgba(224, 113, 66, 0.16);
+    --prioridade-alta-texto: #EB9773;
     --prioridade-critica-bg: rgba(224, 92, 92, 0.2);
     --prioridade-critica-texto: #f0a3a3;
     --sombra-linha: rgba(0, 0, 0, 0.35);
-    --hover-linha: rgba(255, 255, 255, 0.05);
+    --hover-linha: rgba(255, 255, 255, 0.04);
     --hover-pagina: rgba(255, 255, 255, 0.08);
 }
 
 /* TEMA CLARO — mesmas variáveis, valores diferentes. Os tons de status/
-   prioridade também ganham override aqui: os valores do tema escuro (pensados
-   para contraste sobre fundo escuro) não se sustentam sobre uma superfície
-   clara — verde-claro sobre branco, por exemplo, praticamente some. */
+   prioridade também ganham override aqui: os do tema escuro (pensados para
+   fundo escuro) somem sobre superfície clara. Os aliases (--marca etc.) não
+   precisam ser repetidos: resolvem a partir dos valores abaixo. */
 [data-theme="light"] {
-    --bg: #f5f1e9;
-    --bg-gradiente-topo: #fffdf9;
-    --bg-gradiente-base: #f5f1e9;
-    --superficie: #ffffff;
-    --superficie-alt: #efe8db;
-    --borda: rgba(58, 46, 32, 0.13);
-    --texto: #2a2016;
-    --texto-muted: #5c4c3b;
-    --texto-fraco: #7d6b58;
-    --marca: #a8611f;
-    --marca-rgb: 168, 97, 31;
-    --acento: #a8611f;
-    --acento-forte: #8a4f19;
-    --acento-hover: #bf7530;
-    --acento-hover-forte: #9c5c22;
-    --acento-forte-rgb: 138, 79, 25;
-    /* Ver comentário destes três tokens no :root — aqui só reaproveitam o
-       que este tema já usava, sem mudar nada visualmente. */
-    --texto-botao: var(--bg);
-    --cta-superficie: var(--bg);
-    --cta-superficie-hover: var(--superficie);
-    --cta-texto: var(--acento);
-    /* Ver comentário deste token no :root — aqui reaproveita o mesmo cobre de
-       --acento-forte, sem mudar nada visualmente. */
-    --acento-legivel: var(--acento-forte);
-    --acento-legivel-rgb: var(--acento-forte-rgb);
-    --sucesso-bg: rgba(63, 174, 108, 0.12);
-    --sucesso-texto: #2f8f56;
-    --sucesso-borda: rgba(63, 174, 108, 0.28);
-    --sucesso-solido: #2f8f56;
-    --sucesso-solido-forte: #256f43;
-    --sucesso-solido-hover: #37a161;
-    --sucesso-solido-hover-forte: #2a7c4b;
+    color-scheme: light;
+    --bg: #F6F7F9;
+    --bg-gradiente-topo: #FFFFFF;
+    --bg-gradiente-base: #F6F7F9;
+    --superficie: #FFFFFF;
+    --superficie-alt: #EEF1F5;
+    --borda: rgba(31, 36, 48, 0.10);
+    --borda-forte: rgba(31, 36, 48, 0.20);
+    --texto: #1F2430;
+    --texto-muted: #5B6475;
+    --texto-fraco: #646C7C;
+    --acento: #1A66C7;
+    --acento-rgb: 26, 102, 199;
+    --acento-solido: #1A66C7;
+    --acento-solido-hover: #15559F;
+    --acento-suave: rgba(26, 102, 199, 0.10);
+    --texto-botao: #FFFFFF;
+    --sombra-1: 0 1px 2px rgba(31, 36, 48, 0.08), 0 1px 1px rgba(31, 36, 48, 0.04);
+    --sombra-2: 0 8px 24px rgba(31, 36, 48, 0.12), 0 2px 6px rgba(31, 36, 48, 0.06);
+    --grafico-grade: rgba(31, 36, 48, 0.08);
+    --cta-superficie: #FFFFFF;
+    --cta-superficie-hover: #E8EEF7;
+    --cta-texto: #1A66C7;
+    --sucesso-bg: rgba(37, 122, 72, 0.10);
+    --sucesso-texto: #257A48;
+    --sucesso-borda: rgba(37, 122, 72, 0.26);
+    --sucesso-solido: #257A48;
+    --sucesso-solido-forte: #1E643B;
+    --sucesso-solido-hover: #2B8A52;
+    --sucesso-solido-hover-forte: #22703F;
     --erro-bg: rgba(196, 58, 58, 0.1);
     --erro-texto: #a83d3d;
     --erro-borda: rgba(196, 58, 58, 0.26);
@@ -134,72 +133,13 @@
     --aviso-texto: #8a611f;
     --info-bg: rgba(52, 108, 140, 0.12);
     --info-texto: #2f5d78;
-    --prioridade-alta-bg: rgba(168, 97, 31, 0.14);
-    --prioridade-alta-texto: #8a4f19;
+    --prioridade-alta-bg: rgba(168, 72, 31, 0.14);
+    --prioridade-alta-texto: #8A3B19;
     --prioridade-critica-bg: rgba(196, 58, 58, 0.14);
     --prioridade-critica-texto: #a83d3d;
-    --sombra-linha: rgba(58, 46, 32, 0.08);
-    --hover-linha: rgba(58, 46, 32, 0.035);
-    --hover-pagina: rgba(58, 46, 32, 0.06);
-}
-
-/* TEMA ÂMBAR (issue #79) — "fim de tarde": para quem tem sensibilidade à
-   luz branca do tema claro tradicional, mas não quer o dark puro. Fundo
-   puxado para o laranja, texto em marrom escuro (não preto puro, para não
-   voltar ao contraste duro que o dark evita). A marca continua na mesma
-   família de cobre/terracota do tema escuro e do claro. */
-[data-theme="ambar"] {
-    --bg: #e6a06a;
-    --bg-gradiente-topo: #eeb47e;
-    --bg-gradiente-base: #dd9257;
-    --superficie: #f7e2c7;
-    --superficie-alt: #f1d2a8;
-    --borda: rgba(110, 42, 14, 0.2);
-    --texto: #3d1f0d;
-    --texto-muted: #6e3c1a;
-    --texto-fraco: #8f5527;
-    --marca: #b23d0f;
-    --marca-rgb: 178, 61, 15;
-    --acento: #b23d0f;
-    --acento-forte: #8f3009;
-    --acento-hover: #c95022;
-    --acento-hover-forte: #a54014;
-    --acento-forte-rgb: 143, 48, 9;
-    /* Ver comentário destes três tokens no :root — aqui só reaproveitam o
-       que este tema já usava, sem mudar nada visualmente. */
-    --texto-botao: var(--bg);
-    --cta-superficie: var(--bg);
-    --cta-superficie-hover: var(--superficie);
-    --cta-texto: var(--acento);
-    /* Ver comentário deste token no :root — aqui reaproveita o mesmo cobre de
-       --acento-forte, sem mudar nada visualmente. */
-    --acento-legivel: var(--acento-forte);
-    --acento-legivel-rgb: var(--acento-forte-rgb);
-    --sucesso-bg: rgba(47, 111, 67, 0.16);
-    --sucesso-texto: #2c5a34;
-    --sucesso-borda: rgba(47, 111, 67, 0.3);
-    --sucesso-solido: #2f6f43;
-    --sucesso-solido-forte: #24552f;
-    --sucesso-solido-hover: #396f4a;
-    --sucesso-solido-hover-forte: #2c4f37;
-    --erro-bg: rgba(153, 45, 32, 0.16);
-    --erro-texto: #7a2415;
-    --erro-borda: rgba(153, 45, 32, 0.3);
-    --perigo-solido: #992d20;
-    --perigo-solido-forte: #7a2415;
-    --perigo-solido-hover: #a83d2d;
-    --perigo-solido-hover-forte: #8a3018;
-    --aviso-bg: rgba(140, 88, 15, 0.18);
-    --aviso-texto: #6e4108;
-    --info-bg: rgba(37, 89, 112, 0.16);
-    --info-texto: #1f4a5c;
-    --prioridade-alta-bg: rgba(178, 61, 15, 0.16);
-    --prioridade-alta-texto: #7a2b0a;
-    --prioridade-critica-bg: rgba(153, 45, 32, 0.2);
-    --prioridade-critica-texto: #7a2415;
-    --sombra-linha: rgba(90, 40, 10, 0.14);
-    --hover-linha: rgba(90, 40, 10, 0.08);
-    --hover-pagina: rgba(90, 40, 10, 0.12);
+    --sombra-linha: rgba(31, 36, 48, 0.08);
+    --hover-linha: rgba(31, 36, 48, 0.035);
+    --hover-pagina: rgba(31, 36, 48, 0.06);
 }
 
 * {
@@ -316,7 +256,7 @@ h1 {
    cor: sem translateY, scale ou sombra pop, que é o tipo de movimento que
    qualquer landing page gerada por IA usa em todo botão. */
 .botao {
-    background: var(--acento);
+    background: var(--acento-solido);
     color: var(--texto-botao);
     border: 1px solid var(--acento-forte);
     padding: 14px 26px;
@@ -495,7 +435,7 @@ h1 {
    de ícone, não decoração). Hover só troca cor, sem escala/sombra. */
 .acao {
     align-items: center;
-    background: var(--acento);
+    background: var(--acento-solido);
     border: 1px solid var(--acento-forte);
     border-radius: 50%;
     color: var(--texto-botao);
@@ -697,8 +637,8 @@ button.sair {
     margin: 0;
 }
 
-/* SELETOR DE TEMA (issue #44, ampliado para 3 temas na #79) — grupo com
-   as três opções sempre visíveis (escuro, claro, âmbar), em vez de um botão
+/* SELETOR DE TEMA (issue #44) — grupo com as duas opções sempre visíveis
+   (escuro, claro; o âmbar da #79 saiu no visual novo), em vez de um botão
    único que cicla entre estados; ver static/js/tema.js para a lógica de
    aplicação e persistência. Aparece também no cabeçalho de login/cadastro.
    Cada botão nasce sem ícone (o texto é preenchido por JS depois que a
@@ -759,7 +699,7 @@ button.sair {
 }
 
 .botao-filtro {
-    background: var(--acento);
+    background: var(--acento-solido);
     color: var(--texto-botao);
     border: 1px solid var(--acento-forte);
     padding: 10px 20px;
@@ -788,7 +728,7 @@ button.sair {
 .novo-chamado {
     display: inline-block;
     margin-bottom: 20px;
-    background: var(--acento);
+    background: var(--acento-solido);
     color: var(--texto-botao);
     border: 1px solid var(--acento-forte);
     padding: 12px 22px;
@@ -1168,7 +1108,7 @@ h1{
 }
 
 .pagina-atual {
-    background: var(--acento);
+    background: var(--acento-solido);
     border: 1px solid var(--acento-forte);
     border-radius: var(--raio-controle);
     color: var(--texto-botao);
@@ -1199,4 +1139,663 @@ h1{
 .rodape-app a:hover {
     color: var(--marca);
     text-decoration: underline;
+}
+
+/* ==============================
+   LAYOUT DO APP (visual novo, Fase 1) — topbar + conteúdo
+   Páginas que estendem base_app.html. Hover troca cor e sombra; nada se
+   desloca nem muda de escala.
+   ============================== */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+body.app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+}
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--superficie);
+    border-bottom: 1px solid var(--borda);
+    box-shadow: var(--sombra-1);
+}
+
+.topbar-interna {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.topbar-marca {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--texto);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.topbar-marca-icone {
+    width: 22px;
+    height: 22px;
+    color: var(--acento);
+}
+
+.topbar-abas {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.topbar-abas .aba {
+    padding: 7px 14px;
+    border-radius: var(--raio-pilula);
+    color: var(--texto-muted);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.topbar-abas .aba:hover {
+    color: var(--texto);
+    background: var(--superficie-alt);
+}
+
+.topbar-abas .aba[aria-current="page"] {
+    color: var(--texto);
+    background: var(--acento-suave);
+    box-shadow: inset 0 0 0 1px rgba(var(--acento-rgb), 0.35);
+}
+
+.topbar-acoes {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.botao-primario {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--raio-controle);
+    background: var(--acento-solido);
+    color: var(--texto-botao);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: var(--sombra-1);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.botao-primario:hover {
+    background: var(--acento-solido-hover);
+    box-shadow: var(--sombra-2);
+}
+
+.topbar-abas .aba:focus-visible,
+.botao-primario:focus-visible,
+.topbar-marca:focus-visible,
+.menu-usuario summary:focus-visible,
+.menu-usuario-painel a:focus-visible,
+.menu-usuario-painel button:focus-visible {
+    outline: 2px solid var(--acento);
+    outline-offset: 2px;
+}
+
+.menu-usuario {
+    position: relative;
+}
+
+.menu-usuario summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 4px 4px;
+    border-radius: var(--raio-pilula);
+    color: var(--texto);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.menu-usuario summary::-webkit-details-marker {
+    display: none;
+}
+
+.menu-usuario summary:hover {
+    background: var(--superficie-alt);
+}
+
+.menu-usuario-inicial {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--acento-solido);
+    color: var(--texto-botao);
+    font-weight: 800;
+}
+
+.menu-usuario-nome {
+    max-width: 16ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.menu-usuario-painel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    min-width: 210px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-superficie);
+    box-shadow: var(--sombra-2);
+}
+
+.menu-usuario-perfil {
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--texto-fraco);
+}
+
+.menu-usuario-painel a,
+.menu-usuario-painel button {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: var(--raio-controle);
+    background: none;
+    color: var(--texto);
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.menu-usuario-painel a:hover,
+.menu-usuario-painel button:hover {
+    background: var(--superficie-alt);
+}
+
+.app-conteudo {
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 24px 40px;
+}
+
+.pagina-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.pagina-rotulo {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--acento);
+}
+
+.pagina-titulo {
+    text-align: left;
+    font-size: 28px;
+    margin: 2px 0 0;
+}
+
+@media (max-width: 768px) {
+    .topbar-interna {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px 16px;
+    }
+
+    .topbar-abas {
+        order: 3;
+        flex-basis: 100%;
+    }
+
+    .menu-usuario-nome {
+        display: none;
+    }
+
+    .menu-usuario summary {
+        padding-right: 4px;
+    }
+
+    .app-conteudo {
+        padding: 20px 16px 32px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .topbar-abas .aba,
+    .botao-primario {
+        transition: none;
+    }
+}
+
+/* ==============================
+   DASHBOARD (visual novo, Fase 1) — KPIs, painéis e gráficos SVG
+   Cor dos gráficos sempre por classe + token: .fatia-* define --cor-fatia,
+   usado como fill (barra empilhada), stroke (donut) e background (legenda).
+   ============================== */
+.seletor-periodo {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-pilula);
+}
+
+.seletor-periodo a {
+    padding: 6px 12px;
+    border-radius: var(--raio-pilula);
+    color: var(--texto-muted);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.seletor-periodo a:hover {
+    color: var(--texto);
+    background: var(--superficie-alt);
+}
+
+.seletor-periodo a[aria-current="true"] {
+    color: var(--texto-botao);
+    background: var(--acento-solido);
+}
+
+.seletor-periodo a:focus-visible,
+.painel-link:focus-visible {
+    outline: 2px solid var(--acento);
+    outline-offset: 2px;
+}
+
+.cartao {
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-superficie);
+    box-shadow: var(--sombra-1);
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.cartao:hover {
+    box-shadow: var(--sombra-2);
+    border-color: var(--borda-forte);
+}
+
+.kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.kpi {
+    display: grid;
+    gap: 4px;
+    padding: 18px 20px;
+}
+
+.kpi-icone {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--raio-controle);
+    background: var(--acento-suave);
+    color: var(--acento);
+}
+
+.kpi-icone svg {
+    width: 20px;
+    height: 20px;
+}
+
+.kpi-rotulo {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--texto-muted);
+}
+
+.kpi-valor {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--texto);
+    font-variant-numeric: tabular-nums;
+}
+
+.kpi-detalhe {
+    font-size: 12px;
+    color: var(--texto-fraco);
+}
+
+.dashboard-grade {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.painel {
+    grid-column: span 3;
+    min-width: 0;
+    padding: 20px;
+}
+
+.painel-largo {
+    grid-column: span 4;
+}
+
+.painel-estreito {
+    grid-column: span 2;
+}
+
+.painel-inteiro {
+    grid-column: 1 / -1;
+}
+
+.painel-cabecalho {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.painel-titulo {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: left;
+    color: var(--texto);
+}
+
+.painel-subtitulo {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--texto-fraco);
+}
+
+.painel-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--acento);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.painel-link:hover {
+    text-decoration: underline;
+}
+
+.estado-vazio {
+    padding: 28px 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--texto-fraco);
+}
+
+.grafico {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.grafico-grade {
+    stroke: var(--grafico-grade);
+    stroke-width: 1;
+}
+
+.grafico-eixo {
+    fill: var(--texto-fraco);
+    font-family: inherit;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+
+.serie {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.serie.serie-criados {
+    stroke: var(--acento);
+}
+
+.serie.serie-resolvidos {
+    stroke: var(--sucesso-solido);
+}
+
+.grafico .marca {
+    stroke: var(--superficie);
+    stroke-width: 2;
+}
+
+.marca.serie-criados,
+.legenda-cor.serie-criados {
+    --cor-fatia: var(--acento);
+    fill: var(--acento);
+}
+
+.marca.serie-resolvidos,
+.legenda-cor.serie-resolvidos {
+    --cor-fatia: var(--sucesso-solido);
+    fill: var(--sucesso-solido);
+}
+
+.fatia-aberto { --cor-fatia: var(--erro-texto); }
+.fatia-andamento { --cor-fatia: var(--aviso-texto); }
+.fatia-resolvido { --cor-fatia: var(--sucesso-texto); }
+.fatia-baixa { --cor-fatia: var(--info-texto); }
+.fatia-media { --cor-fatia: var(--aviso-texto); }
+.fatia-alta { --cor-fatia: var(--prioridade-alta-texto); }
+.fatia-critica { --cor-fatia: var(--prioridade-critica-texto); }
+
+.legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+    color: var(--texto-muted);
+}
+
+.legenda li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legenda strong {
+    color: var(--texto);
+    font-variant-numeric: tabular-nums;
+}
+
+.legenda-cor {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background: var(--cor-fatia, var(--texto-fraco));
+}
+
+.legenda-vertical {
+    flex-direction: column;
+    margin: 0;
+}
+
+.grafico.grafico-empilhado {
+    height: 14px;
+    border-radius: var(--raio-pilula);
+    overflow: hidden;
+    background: var(--superficie-alt);
+}
+
+.grafico-empilhado rect {
+    fill: var(--cor-fatia);
+}
+
+.grafico-barras {
+    display: grid;
+    gap: 10px;
+}
+
+.barra-linha {
+    display: grid;
+    grid-template-columns: minmax(0, 9rem) minmax(0, 1fr) 2.5rem;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.barra-rotulo {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--texto-muted);
+}
+
+.barra-trilho {
+    width: 100%;
+    height: 8px;
+    border-radius: var(--raio-pilula);
+    overflow: hidden;
+}
+
+.barra-fundo {
+    fill: var(--superficie-alt);
+}
+
+.barra-valor {
+    fill: var(--acento);
+}
+
+.barra-numero {
+    text-align: right;
+    font-weight: 700;
+    color: var(--texto);
+    font-variant-numeric: tabular-nums;
+}
+
+.donut-bloco {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px;
+}
+
+.grafico.grafico-donut {
+    flex: none;
+    width: 160px;
+    max-width: 100%;
+}
+
+.donut-trilho {
+    fill: none;
+    stroke: var(--superficie-alt);
+    stroke-width: 12;
+}
+
+.donut-fatia {
+    fill: none;
+    stroke: var(--cor-fatia);
+    stroke-width: 12;
+}
+
+.donut-total {
+    fill: var(--texto);
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.donut-legenda-total {
+    fill: var(--texto-fraco);
+    font-family: inherit;
+    font-size: 8px;
+}
+
+@media (max-width: 900px) {
+    .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-grade {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .painel,
+    .painel-largo,
+    .painel-estreito {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpis {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .grafico-eixo {
+        font-size: 18px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cartao {
+        transition: none;
+    }
 }

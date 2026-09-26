@@ -4,6 +4,8 @@ from datetime import datetime
 
 from flask import Blueprint, Response, flash, redirect, render_template, request
 
+import graficos
+import metricas
 from armazenamento import enviar_anexo, extensao_valida
 from auditoria import registrar_log
 from constantes import PERFIS_TECNICOS, PRIORIDADES, STATUS_CHAMADO
@@ -15,7 +17,7 @@ from formularios import (
     FormularioComentarioChamado,
     FormularioStatusChamado,
 )
-from models import Anexo, Chamado, Comentario, Usuario
+from models import Anexo, Chamado, Comentario, Usuario, obter_data_utc
 from relatorios import gerar_excel, gerar_pdf
 from seguranca import (
     chamado_do_codigo_acompanhamento,
@@ -166,14 +168,16 @@ def recursos():
 @chamados.route("/dashboard")
 @login_required
 def dashboard():
-    # Uma única consulta agrupada no lugar de quatro COUNT separados.
-    contagens = dict(
-        db.session.execute(
-            db.select(Chamado.status, db.func.count(Chamado.id)).group_by(Chamado.status)
-        ).all()
-    )
+    agora = obter_data_utc()
+    periodo = metricas.chave_de_periodo_valida(request.args.get("periodo"))
+    desde = metricas.inicio_do_periodo(periodo, agora)
 
-    chamados = (
+    indicadores = metricas.kpis(desde)
+    semanas = metricas.evolucao_semanal(agora)
+    # As duas séries dividem a mesma escala, senão as linhas não se comparam.
+    teto_semanas = max([s["criados"] for s in semanas] + [s["resolvidos"] for s in semanas])
+
+    chamados_recentes = (
         db.session.execute(db.select(Chamado).order_by(Chamado.id.desc()).limit(5))
         .scalars()
         .all()
@@ -181,11 +185,18 @@ def dashboard():
 
     return render_template(
         "dashboard.html",
-        total=sum(contagens.values()),
-        abertos=contagens.get("Aberto", 0),
-        andamento=contagens.get("Em andamento", 0),
-        resolvidos=contagens.get("Resolvido", 0),
-        chamados=chamados,
+        periodo=periodo,
+        periodos=[("7", "7 dias"), ("30", "30 dias"), ("90", "90 dias"), ("tudo", "Tudo")],
+        kpis=indicadores,
+        tempo_medio=metricas.formatar_duracao(indicadores["tempo_medio"]),
+        semanas=semanas,
+        teto_semanas=teto_semanas,
+        linha_criados=graficos.linha([s["criados"] for s in semanas], teto=teto_semanas),
+        linha_resolvidos=graficos.linha([s["resolvidos"] for s in semanas], teto=teto_semanas),
+        partes_status=graficos.empilhada(metricas.por_status(desde)),
+        barras_setor=graficos.barras(metricas.por_setor(desde)),
+        fatias_prioridade=graficos.donut(metricas.por_prioridade(desde)),
+        chamados=chamados_recentes,
     )
 
 
@@ -418,7 +429,7 @@ def atualizar_status_chamado(id):
         flash(_primeiro_erro(form) or "Status inválido.")
         return redirect(f"/chamados/{id}")
 
-    chamado.status = form.status.data
+    chamado.definir_status(form.status.data)
 
     if chamado.responsavel_id is None:
         chamado.responsavel_id = usuario_atual().id

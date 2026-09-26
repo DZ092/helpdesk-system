@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Help Desk</title>
-
+    <title>{% block titulo %}Help Desk{% endblock %}</title>
     <script nonce="{{ csp_nonce() }}">
     // Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
-    // para não piscar no tema errado por uma fração de segundo. Lógica completa
-    // e comentada em static/js/tema.js — este trecho precisa ser inline e vir
-    // antes do <link> do CSS, senão o navegador já pintou a tela no tema padrão.
+    // para não piscar no tema errado. Lógica completa e comentada em
+    // static/js/tema.js — este trecho precisa ser inline e vir antes do <link>
+    // do CSS. Só "dark" e "light" existem; qualquer outro valor salvo (como o
+    // antigo "ambar") conta como sem escolha.
     (function () {
         var tema;
         try {
@@ -18,7 +17,7 @@
         } catch (erro) {
             tema = null;
         }
-        if (!tema) {
+        if (tema !== "dark" && tema !== "light") {
             var prefereClaro = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
             tema = prefereClaro ? "light" : "dark";
         }
@@ -27,39 +26,9 @@
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/tema.js') }}"></script>
-
+    {% block head_extra %}{% endblock %}
 </head>
-
-
-<body>
-
-<div class="container">
-
-
-<div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button></div>
-
-
-<h1>🖥️ IT Help Desk</h1>
-
-<p>
-Sistema de gerenciamento de chamados técnicos
-</p>
-
-
-<div class="acoes">
-
-<a class="botao" href="/chamado">
-Abrir chamado
-</a>
-
-<a class="botao" href="/login">
-Login
-</a>
-
-</div>
-
-</div>
-
+<body class="{% block classe_body %}{% endblock %}">
+{% block corpo %}{% endblock %}
 </body>
-
 </html>

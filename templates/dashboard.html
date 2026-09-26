@@ -1,98 +1,119 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base_app.html" %}
+{% import "_graficos.html" as g %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+{% block titulo %}Dashboard · Help Desk{% endblock %}
 
-    <title>Dashboard Help Desk</title>
+{% block conteudo %}
+<header class="pagina-cabecalho">
+    <div>
+        <p class="pagina-rotulo">Visão geral</p>
+        <h1 class="pagina-titulo">Dashboard</h1>
+    </div>
+    <nav class="seletor-periodo" aria-label="Período dos indicadores">
+        {% for chave, rotulo in periodos %}
+        <a href="{{ url_for('chamados.dashboard', periodo=chave) }}" {% if chave == periodo %}aria-current="true"{% endif %}>{{ rotulo }}</a>
+        {% endfor %}
+    </nav>
+</header>
 
-    <script nonce="{{ csp_nonce() }}">
-    // Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
-    // para não piscar no tema errado por uma fração de segundo. Lógica completa
-    // e comentada em static/js/tema.js — este trecho precisa ser inline e vir
-    // antes do <link> do CSS, senão o navegador já pintou a tela no tema padrão.
-    (function () {
-        var tema;
-        try {
-            tema = localStorage.getItem("tema-preferido");
-        } catch (erro) {
-            tema = null;
-        }
-        if (!tema) {
-            var prefereClaro = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-            tema = prefereClaro ? "light" : "dark";
-        }
-        document.documentElement.setAttribute("data-theme", tema);
-    })();
-    </script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="{{ url_for('static', filename='js/tema.js') }}"></script>
+<section class="kpis" aria-label="Indicadores do período">
+    <article class="cartao kpi">
+        <span class="kpi-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 5h16v14H4z"/><path d="M4 13h4l2 3h4l2-3h4"/></svg></span>
+        <p class="kpi-rotulo">Total de chamados</p>
+        <p class="kpi-valor">{{ kpis.total }}</p>
+        <p class="kpi-detalhe">criados no período</p>
+    </article>
+    <article class="cartao kpi">
+        <span class="kpi-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg></span>
+        <p class="kpi-rotulo">Resolvidos</p>
+        <p class="kpi-valor">{{ kpis.resolvidos }}</p>
+        <p class="kpi-detalhe">{{ kpis.pct_resolvidos }}% do total</p>
+    </article>
+    <article class="cartao kpi">
+        <span class="kpi-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>
+        <p class="kpi-rotulo">Tempo médio de resolução</p>
+        <p class="kpi-valor">{{ tempo_medio }}</p>
+        <p class="kpi-detalhe">por chamado resolvido no período</p>
+    </article>
+    <article class="cartao kpi">
+        <span class="kpi-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span>
+        <p class="kpi-rotulo">Em aberto</p>
+        <p class="kpi-valor">{{ kpis.em_aberto }}</p>
+        <p class="kpi-detalhe">{{ kpis.abertos }} abertos · {{ kpis.em_andamento }} em andamento</p>
+    </article>
+</section>
 
-</head>
+<div class="dashboard-grade">
+    <section class="cartao painel painel-largo" aria-labelledby="titulo-evolucao">
+        <div class="painel-cabecalho">
+            <div>
+                <h2 class="painel-titulo" id="titulo-evolucao">Evolução semanal</h2>
+                <p class="painel-subtitulo">Criados e resolvidos nas últimas {{ semanas|length }} semanas</p>
+            </div>
+        </div>
+        {% if teto_semanas %}
+        {{ g.grafico_linhas(semanas, linha_criados, linha_resolvidos) }}
+        <ul class="legenda">
+            <li><span class="legenda-cor serie-criados" aria-hidden="true"></span>Criados</li>
+            <li><span class="legenda-cor serie-resolvidos" aria-hidden="true"></span>Resolvidos</li>
+        </ul>
+        {{ g.tabela_semanas(semanas) }}
+        {% else %}
+        <p class="estado-vazio">Nenhum chamado nas últimas {{ semanas|length }} semanas.</p>
+        {% endif %}
+    </section>
 
+    <section class="cartao painel painel-estreito" aria-labelledby="titulo-status">
+        <div class="painel-cabecalho">
+            <div>
+                <h2 class="painel-titulo" id="titulo-status">Status</h2>
+                <p class="painel-subtitulo">Situação atual dos chamados do período</p>
+            </div>
+        </div>
+        {% if kpis.total %}
+        {{ g.grafico_empilhado(partes_status) }}
+        {{ g.tabela_rotulo_valor("Chamados por status", "Status", partes_status) }}
+        {% else %}
+        <p class="estado-vazio">Nenhum chamado neste período.</p>
+        {% endif %}
+    </section>
 
-<body>
+    <section class="cartao painel" aria-labelledby="titulo-setor">
+        <div class="painel-cabecalho">
+            <div>
+                <h2 class="painel-titulo" id="titulo-setor">Por setor</h2>
+                <p class="painel-subtitulo">Setores que mais abriram chamados</p>
+            </div>
+        </div>
+        {% if kpis.total %}
+        {{ g.grafico_barras(barras_setor) }}
+        {{ g.tabela_rotulo_valor("Chamados por setor", "Setor", barras_setor) }}
+        {% else %}
+        <p class="estado-vazio">Nenhum chamado neste período.</p>
+        {% endif %}
+    </section>
 
+    <section class="cartao painel" aria-labelledby="titulo-prioridade">
+        <div class="painel-cabecalho">
+            <div>
+                <h2 class="painel-titulo" id="titulo-prioridade">Por prioridade</h2>
+                <p class="painel-subtitulo">Distribuição da urgência no período</p>
+            </div>
+        </div>
+        {% if kpis.total %}
+        {{ g.grafico_donut(fatias_prioridade) }}
+        {{ g.tabela_rotulo_valor("Chamados por prioridade", "Prioridade", fatias_prioridade) }}
+        {% else %}
+        <p class="estado-vazio">Nenhum chamado neste período.</p>
+        {% endif %}
+    </section>
 
-<div class="container">
-
-
-<div class="usuario-logado">
-Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }})
-<div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button><button type="button" data-tema="ambar"></button></div>
-<form method="POST" action="/logout" class="form-sair"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="sair">Sair</button></form>
-</div>
-
-
-<h1>
-🖥 Dashboard Help Desk
-</h1>
-
-
-{% with mensagens = get_flashed_messages() %}
-{% if mensagens %}
-<p class="sucesso">{{ mensagens[0] }}</p>
-{% endif %}
-{% endwith %}
-
-
-<div class="cards">
-
-
-<div class="card">
-<h2>{{ total }}</h2>
-<p>📋 Total de Chamados</p>
-</div>
-
-
-<div class="card aberto">
-<h2>{{ abertos }}</h2>
-<p>🔴 Abertos</p>
-</div>
-
-
-<div class="card andamento">
-<h2>{{ andamento }}</h2>
-<p>🟡 Em andamento</p>
-</div>
-
-
-<div class="card resolvido">
-<h2>{{ resolvidos }}</h2>
-<p>🟢 Resolvidos</p>
-</div>
-
-
-</div>
-
-
-
-<h2 class="titulo-tabela">
-Últimos Chamados
-</h2>
-
-
+    <section class="cartao painel painel-inteiro" aria-labelledby="titulo-recentes">
+        <div class="painel-cabecalho">
+            <h2 class="painel-titulo" id="titulo-recentes">Chamados recentes</h2>
+            <a class="painel-link" href="{{ url_for('chamados.lista_chamados') }}">Ver todos</a>
+        </div>
+        {% if chamados %}
 <div class="tabela-rolavel">
     <table class="tabela-chamados">
 
@@ -213,64 +234,9 @@ Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario
 
 </table>
     </div>
-
-
-<div class="acoes">
-
-<a class="botao"
-href="/chamados">
-
-📋 Ver chamados
-
-</a>
-
-<a class="botao"
-href="/senha">
-
-🔑 Alterar senha
-
-</a>
-
-<a class="botao"
-href="/meu-token">
-
-🔗 Meu token de API
-
-</a>
-
-{% if usuario_logado.eh_tecnico %}
-
-    <a class="botao"
-    href="/meus-chamados">
-
-    🙋 Meus Chamados
-
-    </a>
-
-{% endif %}
-
-{% if usuario_logado.eh_admin %}
-
-<a class="botao"
-href="/admin/usuarios">
-
-🛠 Painel Admin
-
-</a>
-
-{% endif %}
-
+        {% else %}
+        <p class="estado-vazio">Nenhum chamado registrado ainda.</p>
+        {% endif %}
+    </section>
 </div>
-
-<footer class="rodape-app">
-    <span>v1.2.0</span>
-    <span aria-hidden="true">·</span>
-    <span>by <a href="https://github.com/DZ092" target="_blank" rel="noopener">Eduardo Jr. Coelho</a></span>
-</footer>
-
-</div>
-
-
-</body>
-
-</html>
+{% endblock %}
