@@ -1,0 +1,5 @@
+# GitHub Pages publica esta pasta com Jekyll. Os documentos de planejamento em
+# superpowers/ trazem trechos de template Jinja, que o Liquid do Jekyll tenta
+# interpretar e derruba o build. Por isso ficam fora do site.
+exclude:
+  - superpowers
