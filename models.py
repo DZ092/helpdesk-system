@@ -45,6 +45,27 @@ class Chamado(db.Model):
     # de outra pessoa. É None nos chamados criados antes desta coluna existir.
     codigo_acompanhamento_hash = db.Column(db.String(64), unique=True, nullable=True, index=True)
 
+    # Momento em que o chamado passou a "Resolvido" (UTC naive, como as demais
+    # datas). Volta a None se ele for reaberto. Só `definir_status` escreve
+    # aqui — é dela que o tempo médio de resolução do dashboard depende.
+    resolvido_em = db.Column(db.DateTime, nullable=True, index=True)
+
+    def definir_status(self, novo_status):
+        """Troca o status e mantém `resolvido_em` coerente com ele.
+
+        Único caminho para mudar o status de um chamado existente (tela e API
+        passam por aqui): decide quando o relógio de resolução para (passou a
+        Resolvido) e quando ele zera (reaberto). Repetir o mesmo status não
+        mexe na data.
+        """
+        if novo_status == self.status:
+            return
+        if novo_status == "Resolvido":
+            self.resolvido_em = obter_data_utc()
+        elif self.status == "Resolvido":
+            self.resolvido_em = None
+        self.status = novo_status
+
 
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)

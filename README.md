@@ -140,10 +140,10 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   maior. As tabelas ficam dentro de um container que rola sozinho quando o
   conteúdo não cabe, então nenhuma tela empurra a página inteira para o lado.
 
-- **Três temas de interface**  
-  Escuro (padrão — preto predominante, detalhes em branco e botões cinza
-  escuro), claro e âmbar, trocáveis a qualquer momento pelo seletor presente
-  em toda tela. As cores ficam em variáveis CSS (`--bg`, `--superficie`,
+- **Dois temas de interface**  
+  Escuro (padrão — fundo quase preto com acento azul) e claro, trocáveis a
+  qualquer momento pelo seletor presente em toda tela; sem escolha salva,
+  vale a preferência do sistema operacional. As cores ficam em variáveis CSS (`--bg`, `--superficie`,
   `--acento`, `--texto`, além das faixas de status) declaradas uma única vez
   no topo do `style.css`, que é o mesmo arquivo carregado por todas as
   páginas — então mudar uma cor ali repinta dashboard, histórico, painel
@@ -159,12 +159,12 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 170 testes em pytest, dividida em cinco arquivos: `test_app.py`
+  Suíte com 249 testes em pytest, dividida em onze arquivos: `test_app.py`
   (autenticação, controle de acesso por perfil, validação de formulários,
   proteção CSRF, troca de senha, captcha e login com Google), `test_rotas.py`
   (visita todas as telas e o ciclo completo de um chamado, pegando o tipo de
   quebra que uma refatoração causa sem violar nenhuma regra de negócio),
-  `test_api.py`, `test_armazenamento.py` e `test_relatorios.py`. Boa parte são
+  `test_api.py`, `test_armazenamento.py`, `test_relatorios.py`, `test_resolvido_em.py` (data de resolução e troca de status), `test_metricas.py` (indicadores do dashboard), `test_graficos.py` (geometria dos gráficos), `test_tema.py` (contraste da paleta e fim do tema âmbar), `test_topbar.py` (barra superior por perfil) e `test_dashboard.py` (KPIs, gráficos e período). Boa parte são
   testes de regressão, escritos para que falhas já corrigidas não voltem
   despercebidas. A suíte roda sozinha no GitHub Actions a cada push e a cada
   pull request para o `main` — o selo no topo deste README mostra o resultado
@@ -492,7 +492,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **170 passed**.
+Esperado: **249 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a

@@ -41,7 +41,7 @@
 
 <div class="usuario-logado">
 Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }})
-<div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button><button type="button" data-tema="ambar"></button></div>
+<div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button></div>
 <form method="POST" action="/logout" class="form-sair"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="sair">Sair</button></form>
 </div>
 

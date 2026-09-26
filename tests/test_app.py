@@ -139,7 +139,7 @@ def test_usuario_comum_nao_acessa_painel_admin(client, criar_usuario):
 
     resposta = client.get("/admin/usuarios", follow_redirects=True)
     assert "Painel Administrativo".encode() not in resposta.data
-    assert "Dashboard Help Desk".encode() in resposta.data
+    assert '<h1 class="pagina-titulo">Dashboard</h1>'.encode() in resposta.data
 
 
 def test_admin_acessa_painel_admin(client, criar_usuario):

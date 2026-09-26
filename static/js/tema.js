@@ -1,5 +1,8 @@
 /**
- * Alternância de tema claro/escuro/âmbar (issue #44, ampliado na #79).
+ * Alternância de tema claro/escuro (issue #44). O terceiro tema, "fim de
+ * tarde" (issue #79), saiu no visual novo (Fase 1): não combinava com o
+ * acento azul. Quem tinha essa escolha salva cai na regra abaixo, como quem
+ * nunca escolheu.
  *
  * Duas partes, de propósito separadas:
  *
@@ -10,32 +13,23 @@
  *
  * 2. O resto deste arquivo — o seletor de tema e o listener de clique — só
  *    existe nas páginas que têm o seletor (ver `configurarSeletorDeTema`).
- *    Desde a #79 isso inclui a tela de login/cadastro e a abertura pública
- *    de chamado, não só as telas com usuário logado: quem ainda não fez
- *    login também pode preferir o tema âmbar em vez do claro/escuro padrão.
  *
  * Prioridade de decisão, em ordem: escolha manual salva > preferência do
- * sistema operacional > escuro (mesma prioridade nas duas partes).
- *
- * Três temas em vez de dois: em vez de um botão único que alterna entre dois
- * estados, o seletor mostra as três opções de uma vez (lua, sol, pôr do
- * sol) — com três estados um ciclo de cliques exigiria memorizar quantos
- * cliques faltam para o tema desejado.
+ * sistema operacional > escuro (mesma prioridade nas duas partes). Valor
+ * salvo que não está em TEMAS conta como "sem escolha".
  */
 
 const CHAVE_TEMA = "tema-preferido";
-const TEMAS = ["dark", "light", "ambar"];
+const TEMAS = ["dark", "light"];
 
 const ICONE_POR_TEMA = {
     dark: "🌙",
     light: "☀️",
-    ambar: "🌇",
 };
 
 const NOME_POR_TEMA = {
     dark: "Tema escuro",
     light: "Tema claro",
-    ambar: "Tema âmbar (fim de tarde)",
 };
 
 function temaSalvo() {
@@ -96,8 +90,25 @@ function atualizarSeletor(tema) {
     });
 }
 
+/** Limpa um valor de tema inválido salvo no localStorage (ex.: o terceiro
+ * tema que existiu antes da Fase 1), pra páginas antigas não ficarem
+ * guardando esse lixo pra sempre — a leitura em temaSalvo() já ignora esse
+ * valor, isto só limpa o storage. */
+function limparTemaInvalidoSalvo() {
+    try {
+        const valor = localStorage.getItem(CHAVE_TEMA);
+        if (valor !== null && !TEMAS.includes(valor)) {
+            localStorage.removeItem(CHAVE_TEMA);
+        }
+    } catch (erro) {
+        // Sem localStorage não há o que limpar.
+    }
+}
+
 /** Chamada depois que o DOM carrega, só nas páginas que têm o seletor. */
 function configurarSeletorDeTema() {
+    limparTemaInvalidoSalvo();
+    aplicarTema(temaAtivo());
     const seletor = document.getElementById("seletor-tema");
     if (!seletor) {
         return;

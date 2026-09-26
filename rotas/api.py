@@ -179,7 +179,7 @@ def atualizar_status_chamado_api(id):
     if novo_status not in STATUS_CHAMADO:
         return jsonify(erro=f"status precisa ser um de: {', '.join(STATUS_CHAMADO)}"), 400
 
-    chamado.status = novo_status
+    chamado.definir_status(novo_status)
 
     if chamado.responsavel_id is None:
         chamado.responsavel_id = g.usuario_api.id

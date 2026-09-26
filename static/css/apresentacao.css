@@ -143,7 +143,7 @@ body.pagina-apresentacao {
 
 /* CARTÃO FLUTUANTE — cartão claro "pousado" por cima da foto, puxado pra
    cima com margem negativa pra sobrepor a borda inferior dela. A cor do
-   cartão é fixa nos três temas de propósito — ele existe pra contrastar
+   cartão é fixa nos dois temas de propósito — ele existe pra contrastar
    com uma fotografia, que também não muda de tema, então usa os tokens
    --cartao-hero-* definidos acima, não os tokens de tema. */
 .hero-cartao-flutuante {
@@ -161,7 +161,7 @@ body.pagina-apresentacao {
 .hero-cartao-linha {
     width: 40px;
     height: 3px;
-    background: var(--acento-forte);
+    background: var(--cartao-hero-acento);
     border-radius: 2px;
     margin: 18px 0 16px;
 }
@@ -172,7 +172,7 @@ body.pagina-apresentacao {
     gap: 8px;
     font-size: 0.8rem;
     font-weight: 700;
-    color: var(--acento-forte);
+    color: var(--cartao-hero-acento);
 }
 
 .bolinha-viva {
@@ -191,7 +191,7 @@ body.pagina-apresentacao {
 }
 
 .destaque-apresentacao {
-    color: var(--acento-forte);
+    color: var(--cartao-hero-acento);
 }
 
 .hero-apresentacao-sub {
@@ -212,7 +212,7 @@ body.pagina-apresentacao {
 }
 
 .hero-cartao-flutuante .botao-secundario:hover {
-    border-color: var(--acento-forte);
+    border-color: var(--cartao-hero-acento);
 }
 
 .link-secundario-apresentacao {
@@ -222,7 +222,7 @@ body.pagina-apresentacao {
 }
 
 .link-secundario-apresentacao a {
-    color: var(--acento-forte);
+    color: var(--cartao-hero-acento);
     font-weight: bold;
     text-decoration: none;
 }
@@ -594,7 +594,7 @@ body.pagina-apresentacao {
 /* FAIXA DE CTA — banda de largura cheia com fundo de cor sólida, em vez de
    uma seção sem contraste igual ao resto da página. */
 .faixa-cta {
-    background: var(--acento);
+    background: var(--acento-solido);
 }
 
 .faixa-cta-linha {
@@ -618,15 +618,15 @@ body.pagina-apresentacao {
 .faixa-cta-linha p {
     margin-top: 8px;
     color: var(--texto-botao);
-    opacity: 0.75;
     font-size: 0.95rem;
     max-width: 40ch;
 }
 
-/* Nos temas claro/âmbar --cta-superficie/--cta-texto só repetem --bg/--acento
-   de sempre. No escuro, --acento é cinza escuro e o botão ficaria invisível
-   sobre a própria faixa, por isso estes tokens existem — ver comentário
-   completo junto ao :root em style.css. */
+/* --cta-superficie/--cta-texto existem porque a faixa usa --acento-solido
+   como fundo sólido: se o botão reaproveitasse esse mesmo tom (como o
+   claro chegou a fazer), ficaria invisível sobre a própria faixa. Os dois
+   temas definem uma superfície e um texto próprios pro botão aqui — ver
+   os tokens junto ao :root em style.css. */
 .faixa-cta .botao {
     background: var(--cta-superficie);
     color: var(--cta-texto);

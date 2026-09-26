@@ -1,6 +1,6 @@
 /* ==============================
    TELAS DE AUTENTICAÇÃO (LOGIN E CADASTRO) - TOQUES EXCLUSIVOS
-   O tema em si já é global (style.css, ver [data-theme="light"]/[data-theme="ambar"]
+   O tema em si já é global (style.css, ver [data-theme="light"]
    lá). Estas telas também têm o seletor de tema (.seletor-tema, estilo e
    posicionamento globais em .container > .seletor-tema) — pensado para quem
    abre um chamado sem fazer login e nunca chega às telas internas onde o
