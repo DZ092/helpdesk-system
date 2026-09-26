@@ -1,0 +1,7 @@
+{# Sub-abas da administração (visual novo, Fase 2). A aba ativa vem do
+   endpoint da requisição, como na topbar. #}
+{% set endpoint_admin = request.endpoint or "" %}
+<nav class="abas-secundarias" aria-label="Seções da administração">
+    <a class="aba" href="{{ url_for('admin.admin_usuarios') }}" {% if endpoint_admin == 'admin.admin_usuarios' %}aria-current="page"{% endif %}>Usuários</a>
+    <a class="aba" href="{{ url_for('admin.admin_logs') }}" {% if endpoint_admin == 'admin.admin_logs' %}aria-current="page"{% endif %}>Logs</a>
+</nav>

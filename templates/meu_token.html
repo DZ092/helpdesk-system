@@ -1,111 +1,36 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base_app.html" %}
 
-<head>
+{% block titulo %}Meu token de API · Help Desk{% endblock %}
 
-<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+{% block conteudo %}
+<section class="cartao cartao-estreito" aria-labelledby="titulo-token">
+    <p class="pagina-rotulo">Sua conta</p>
+    <h1 class="pagina-titulo" id="titulo-token">Meu token de API</h1>
+    <p class="cartao-subtitulo">Usado por scripts e aplicativos externos para ler seus chamados sem passar pelo navegador</p>
 
-<title>Meu token de API - Help Desk</title>
+    {% if token_gerado %}
+    <p class="sucesso">Token gerado. Copie agora — ele só aparece esta vez, e gerar um novo substitui este.</p>
 
-<script nonce="{{ csp_nonce() }}">
-// Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
-// para não piscar no tema errado por uma fração de segundo. Lógica completa
-// e comentada em static/js/tema.js — este trecho precisa ser inline e vir
-// antes do <link> do CSS, senão o navegador já pintou a tela no tema padrão.
-(function () {
-    var tema;
-    try {
-        tema = localStorage.getItem("tema-preferido");
-    } catch (erro) {
-        tema = null;
-    }
-    if (!tema) {
-        var prefereClaro = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-        tema = prefereClaro ? "light" : "dark";
-    }
-    document.documentElement.setAttribute("data-theme", tema);
-})();
-</script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<script src="{{ url_for('static', filename='js/tema.js') }}"></script>
+    <p class="token-gerado">
+        <code>{{ token_gerado }}</code>
+        <button type="button" class="botao-copiar" id="botao-copiar-token" data-token="{{ token_gerado }}">Copiar</button>
+        <button type="button" class="botao-copiar" id="botao-baixar-token" data-token="{{ token_gerado }}">Baixar .txt</button>
+    </p>
 
-</head>
+    <p class="vazio">Envie-o no cabeçalho <code>Authorization: Bearer {{ token_gerado }}</code> das requisições à API.</p>
+    {% else %}
+    {% if tem_token %}
+    <p class="vazio">Você já tem um token gerado. O valor não pode ser mostrado de novo — gere um novo se precisar dele outra vez, o que invalida o atual.</p>
+    {% else %}
+    <p class="vazio">Você ainda não gerou nenhum token.</p>
+    {% endif %}
 
-
-<body>
-
-
-<div class="container">
-
-
-<div class="usuario-logado">
-Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }})
-<div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button></div>
-<form method="POST" action="/logout" class="form-sair"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="sair">Sair</button></form>
-</div>
-
-
-<h1>🔗 Meu token de API</h1>
-
-<p class="subtitulo">
-Usado por scripts e aplicativos externos para ler seus chamados sem passar
-pelo navegador
-</p>
-
-
-<a class="voltar" href="/dashboard">
-    ← Voltar ao Dashboard
-</a>
-
-
-{% if token_gerado %}
-
-<p class="sucesso">
-Token gerado. Copie agora — ele só aparece esta vez, e gerar um novo substitui
-este.
-</p>
-
-<p class="token-gerado">
-<code>{{ token_gerado }}</code>
-<button type="button" class="botao-copiar" id="botao-copiar-token" data-token="{{ token_gerado }}">Copiar</button>
-<button type="button" class="botao-copiar" id="botao-baixar-token" data-token="{{ token_gerado }}">Baixar .txt</button>
-</p>
-
-<p class="vazio">
-Envie-o no cabeçalho <code>Authorization: Bearer {{ token_gerado }}</code> das
-requisições à API.
-</p>
-
-{% else %}
-
-{% if tem_token %}
-<p class="vazio">
-Você já tem um token gerado. O valor não pode ser mostrado de novo — gere um
-novo se precisar dele outra vez, o que invalida o atual.
-</p>
-{% else %}
-<p class="vazio">
-Você ainda não gerou nenhum token.
-</p>
-{% endif %}
-
-<form method="POST" class="formulario">
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-<button class="botao" type="submit">
-
-{{ "Gerar novo token" if tem_token else "Gerar token" }}
-
-</button>
-
-</form>
-
-{% endif %}
-
-
-</div>
-
+    <form method="POST" class="formulario">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="botao" type="submit">{{ "Gerar novo token" if tem_token else "Gerar token" }}</button>
+    </form>
+    {% endif %}
+</section>
 
 <script nonce="{{ csp_nonce() }}">
 (function () {
@@ -156,7 +81,4 @@ Você ainda não gerou nenhum token.
     });
 })();
 </script>
-
-</body>
-
-</html>
+{% endblock %}
