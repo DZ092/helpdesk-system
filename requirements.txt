@@ -37,7 +37,7 @@ requests==2.34.2
 # wheel para o Python 3.14 nessa plataforma e compilar exigiria o PostgreSQL
 # instalado na máquina. No Render e no CI, que são Linux, ele entra normalmente.
 psycopg2-binary==2.9.10; sys_platform != "win32"
-SQLAlchemy==2.0.51
+SQLAlchemy==2.0.54
 tzdata==2026.4
 typing_extensions==4.16.0
 waitress==3.0.2
