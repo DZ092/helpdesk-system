@@ -159,12 +159,12 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 249 testes em pytest, dividida em onze arquivos: `test_app.py`
+  Suíte com 296 testes em pytest, dividida em dezesseis arquivos: `test_app.py`
   (autenticação, controle de acesso por perfil, validação de formulários,
   proteção CSRF, troca de senha, captcha e login com Google), `test_rotas.py`
   (visita todas as telas e o ciclo completo de um chamado, pegando o tipo de
   quebra que uma refatoração causa sem violar nenhuma regra de negócio),
-  `test_api.py`, `test_armazenamento.py`, `test_relatorios.py`, `test_resolvido_em.py` (data de resolução e troca de status), `test_metricas.py` (indicadores do dashboard), `test_graficos.py` (geometria dos gráficos), `test_tema.py` (contraste da paleta e fim do tema âmbar), `test_topbar.py` (barra superior por perfil) e `test_dashboard.py` (KPIs, gráficos e período). Boa parte são
+  `test_api.py`, `test_armazenamento.py`, `test_relatorios.py`, `test_resolvido_em.py` (data de resolução e troca de status), `test_metricas.py` (indicadores do dashboard), `test_graficos.py` (geometria dos gráficos), `test_tema.py` (contraste da paleta e fim do tema âmbar), `test_topbar.py` (barra superior por perfil), `test_dashboard.py` (KPIs, gráficos e período), `test_badges.py` (badges de status e prioridade), `test_listas_chamados.py` (lista geral e meus chamados), `test_detalhe_chamado.py` (detalhe e trilha de estado), `test_admin_paginas.py` (páginas da administração) e `test_conta_paginas.py` (token de API e troca de senha). Boa parte são
   testes de regressão, escritos para que falhas já corrigidas não voltem
   despercebidas. A suíte roda sozinha no GitHub Actions a cada push e a cada
   pull request para o `main` — o selo no topo deste README mostra o resultado
@@ -492,7 +492,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **249 passed**.
+Esperado: **296 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
