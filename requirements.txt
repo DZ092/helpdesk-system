@@ -27,7 +27,7 @@ MarkupSafe==3.0.3
 # do sistema operacional — ao contrário de alternativas como weasyprint, que
 # puxam Pango/Cairo e complicam tanto o Windows local quanto o Render.
 openpyxl==3.1.5
-reportlab==4.4.10
+reportlab==5.0.1
 python-dotenv==1.2.3
 # Só usada para chamar a API de verificação do Turnstile (seguranca.py) — o
 # cloudinary já traz essa biblioteca como dependência transitiva, mas
