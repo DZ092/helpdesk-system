@@ -10,7 +10,7 @@ Flask-Limiter==4.1.1
 Flask-Mail==0.10.0
 Flask-Migrate==4.1.0
 Flask-SQLAlchemy==3.1.1
-Flask-WTF==1.2.2
+Flask-WTF==1.3.0
 # O validador Email() do WTForms delega para esta biblioteca (issue #50) — sem
 # ela, qualquer FlaskForm com Email() levanta exceção no primeiro validate().
 email-validator==2.3.0
