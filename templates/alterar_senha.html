@@ -1,120 +1,38 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base_app.html" %}
 
-<head>
+{% block titulo %}Alterar senha · Help Desk{% endblock %}
 
-<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+{% block conteudo %}
+<section class="cartao cartao-estreito" aria-labelledby="titulo-senha">
+    <p class="pagina-rotulo">Sua conta</p>
+    <h1 class="pagina-titulo" id="titulo-senha">Alterar senha</h1>
+    <p class="cartao-subtitulo">Trocar a senha encerra as sessões abertas em outros dispositivos</p>
 
-<title>Alterar senha - Help Desk</title>
+    {% if erro %}
+    <p class="erro">{{ erro }}</p>
+    {% endif %}
 
-<script nonce="{{ csp_nonce() }}">
-// Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
-// para não piscar no tema errado por uma fração de segundo. Lógica completa
-// e comentada em static/js/tema.js — este trecho precisa ser inline e vir
-// antes do <link> do CSS, senão o navegador já pintou a tela no tema padrão.
-(function () {
-    var tema;
-    try {
-        tema = localStorage.getItem("tema-preferido");
-    } catch (erro) {
-        tema = null;
-    }
-    if (!tema) {
-        var prefereClaro = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-        tema = prefereClaro ? "light" : "dark";
-    }
-    document.documentElement.setAttribute("data-theme", tema);
-})();
-</script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<script src="{{ url_for('static', filename='js/tema.js') }}"></script>
+    <form method="POST" class="formulario" autocomplete="off">
+        {{ form.hidden_tag() }}
 
-</head>
+        <div class="campo">
+            {{ form.senha_atual.label }}
+            {{ form.senha_atual(autocomplete="current-password", required=True) }}
+        </div>
 
+        <div class="campo">
+            {{ form.nova_senha.label }}
+            {{ form.nova_senha(placeholder="Mínimo de 8 caracteres", minlength="8", maxlength="128", autocomplete="new-password", required=True) }}
+        </div>
 
-<body>
+        <div class="campo">
+            {{ form.confirmacao.label(text="Repita a nova senha") }}
+            {{ form.confirmacao(minlength="8", maxlength="128", autocomplete="new-password", required=True) }}
+        </div>
 
+        <p class="vazio">A senha precisa ter no mínimo 8 caracteres, misturar letras com números ou símbolos, e não pode conter seu nome nem seu e-mail.</p>
 
-<div class="container">
-
-
-<div class="usuario-logado">
-Olá, <strong>{{ usuario_logado.nome }}</strong> ({{ usuario_logado.tipo_usuario }})
-<div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button></div>
-<form method="POST" action="/logout" class="form-sair"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="sair">Sair</button></form>
-</div>
-
-
-<h1>🔑 Alterar senha</h1>
-
-<p class="subtitulo">
-Trocar a senha encerra as sessões abertas em outros dispositivos
-</p>
-
-
-<a class="voltar" href="/dashboard">
-    ← Voltar ao Dashboard
-</a>
-
-
-{% if erro %}
-<p class="erro">{{ erro }}</p>
-{% endif %}
-
-
-<form method="POST" class="formulario" autocomplete="off">
-{{ form.hidden_tag() }}
-
-
-<div class="campo">
-
-{{ form.senha_atual.label }}
-
-{{ form.senha_atual(autocomplete="current-password", required=True) }}
-
-</div>
-
-
-
-<div class="campo">
-
-{{ form.nova_senha.label }}
-
-{{ form.nova_senha(placeholder="Mínimo de 8 caracteres", minlength="8", maxlength="128", autocomplete="new-password", required=True) }}
-
-</div>
-
-
-
-<div class="campo">
-
-{{ form.confirmacao.label(text="Repita a nova senha") }}
-
-{{ form.confirmacao(minlength="8", maxlength="128", autocomplete="new-password", required=True) }}
-
-</div>
-
-
-<p class="vazio">
-A senha precisa ter no mínimo 8 caracteres, misturar letras com números ou
-símbolos, e não pode conter seu nome nem seu e-mail.
-</p>
-
-
-<button class="botao" type="submit">
-
-Alterar senha
-
-</button>
-
-
-</form>
-
-
-</div>
-
-
-</body>
-
-</html>
+        <button class="botao" type="submit">Alterar senha</button>
+    </form>
+</section>
+{% endblock %}

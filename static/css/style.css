@@ -1799,3 +1799,524 @@ body.app {
         transition: none;
     }
 }
+
+/* ==============================
+   PÁGINAS INTERNAS (visual novo, Fase 2) — listas, detalhe, admin e conta
+   Páginas que estendem base_app.html. Cor só por token; hover troca cor e
+   sombra, nada se desloca.
+   ============================== */
+
+/* BADGES — a bolinha herda a cor do texto do status (currentColor), então
+   acompanha os tokens de cada tema sem regra extra. Substitui os emoji. */
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+}
+
+.status::before {
+    content: "";
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.prioridade {
+    white-space: nowrap;
+}
+
+/* ESTRUTURA COMUM — pilha de cartões com espaçamento por gap, sem margem
+   solta entre blocos. */
+.pagina-pilha {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cartao-bloco {
+    min-width: 0;
+    padding: 20px;
+}
+
+.pagina-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.botao-contorno {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border: 1px solid var(--borda-forte);
+    border-radius: var(--raio-controle);
+    background: var(--superficie);
+    color: var(--texto);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.botao-contorno:hover {
+    background: var(--superficie-alt);
+    border-color: var(--acento);
+}
+
+/* FILTROS DA LISTA — busca em largura total; os demais campos se ajeitam em
+   quantas colunas couberem. */
+.filtros {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.filtros-campos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+}
+
+.filtro-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.filtro-campo label {
+    color: var(--texto-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.filtro-campo input,
+.filtro-campo select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-controle);
+    background: var(--superficie-alt);
+    color: var(--texto);
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.filtro-campo input::placeholder {
+    color: var(--texto-fraco);
+}
+
+.filtros-acoes {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* TABELAS DENTRO DE CARTÃO — alinhadas à esquerda, sem a margem de cima
+   que a tabela antiga usava para se afastar do título. */
+.cartao .tabela-rolavel {
+    margin-top: 0;
+}
+
+.cartao .tabela-chamados th,
+.cartao .tabela-chamados td {
+    text-align: left;
+}
+
+/* COLUNA "CHAMADO" — título com link e, embaixo, a descrição cortada numa
+   linha só. O texto inteiro continua no HTML (leitor de tela e busca da
+   página); só a exibição é cortada. */
+.chamado-resumo {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    max-width: 42ch;
+}
+
+.chamado-titulo {
+    color: var(--texto);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.chamado-titulo:hover {
+    color: var(--acento);
+    text-decoration: underline;
+}
+
+.chamado-descricao {
+    overflow: hidden;
+    color: var(--texto-muted);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* RODAPÉ DA LISTA — contagem de um lado, paginação do outro. */
+.lista-rodape {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.lista-rodape .paginacao {
+    flex-wrap: wrap;
+    margin-top: 0;
+}
+
+.pagina-link:hover {
+    border-color: var(--acento);
+}
+
+.botao-contorno:focus-visible,
+.chamado-titulo:focus-visible,
+.pagina-link:focus-visible,
+.limpar-filtro:focus-visible,
+.filtro-campo input:focus-visible,
+.filtro-campo select:focus-visible {
+    outline: 2px solid var(--acento);
+    outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+    .cartao .tabela-chamados td {
+        text-align: right;
+    }
+
+    .chamado-resumo {
+        max-width: 65%;
+        text-align: right;
+    }
+
+    .filtros-acoes .botao-filtro {
+        flex: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .botao-contorno {
+        transition: none;
+    }
+}
+
+/* DETALHE DO CHAMADO — coluna principal (descrição e histórico) e lateral
+   (estado atual e informações). Uma coluna só abaixo de 900px. */
+.trilha {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.trilha a {
+    color: var(--texto-muted);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.trilha a:hover {
+    color: var(--acento);
+    text-decoration: underline;
+}
+
+.detalhe-grade {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.detalhe-grade .painel-titulo {
+    margin-bottom: 12px;
+}
+
+.detalhe-grade .painel-cabecalho {
+    align-items: center;
+}
+
+.detalhe-grade .painel-cabecalho .painel-titulo {
+    margin-bottom: 0;
+}
+
+/* Histórico em linha do tempo: um trilho vertical com um ponto por
+   atualização. */
+.historico {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 0 0 8px;
+    padding: 0 0 0 20px;
+    border-left: 2px solid var(--borda);
+    list-style: none;
+}
+
+.historico-item {
+    position: relative;
+    padding: 14px;
+    border-radius: var(--raio-controle);
+    background: var(--superficie-alt);
+}
+
+.historico-item::before {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: -27px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--superficie);
+    border-radius: 50%;
+    background: var(--acento-solido);
+}
+
+.historico-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 12px;
+    margin-bottom: 6px;
+}
+
+.historico-cabecalho time {
+    color: var(--texto-fraco);
+    font-size: 13px;
+}
+
+.historico-mensagem {
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.descricao-detalhe {
+    overflow-wrap: anywhere;
+}
+
+/* Trilha de etapas do estado atual. A etapa atual ganha o marcador cheio
+   com anel; as já passadas, o marcador cheio; as futuras, só o contorno. */
+.etapas {
+    display: flex;
+    flex-direction: column;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.etapa {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding-bottom: 18px;
+}
+
+.etapa:last-child {
+    padding-bottom: 0;
+}
+
+.etapa:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 16px;
+    bottom: 0;
+    left: 6px;
+    width: 2px;
+    background: var(--borda);
+}
+
+.etapa-concluida:not(:last-child)::after {
+    background: var(--acento-solido);
+}
+
+.etapa-marcador {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    margin-top: 2px;
+    border: 2px solid var(--borda-forte);
+    border-radius: 50%;
+    background: var(--superficie);
+}
+
+.etapa-concluida .etapa-marcador {
+    border-color: var(--acento);
+    background: var(--acento-solido);
+}
+
+.etapa-atual .etapa-marcador {
+    border-color: var(--acento);
+    background: var(--acento-solido);
+    box-shadow: 0 0 0 4px var(--acento-suave);
+}
+
+.etapa-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.etapa-nome {
+    color: var(--texto-muted);
+    font-weight: 600;
+}
+
+.etapa-concluida .etapa-nome,
+.etapa-atual .etapa-nome {
+    color: var(--texto);
+}
+
+.etapa-atual .etapa-nome {
+    font-weight: 700;
+}
+
+.etapa-data {
+    color: var(--texto-fraco);
+    font-size: 13px;
+}
+
+.estado-acao {
+    margin-top: 20px;
+}
+
+.botao-largo {
+    width: 100%;
+}
+
+/* Informações em pares rótulo/valor, cada par numa linha. */
+.informacoes {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+.informacoes > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--borda);
+}
+
+.informacoes > div:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.informacoes dt {
+    color: var(--texto-muted);
+    font-size: 13px;
+}
+
+.informacoes dd {
+    margin: 0;
+    font-weight: 600;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.trilha a:focus-visible {
+    outline: 2px solid var(--acento);
+    outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+    .detalhe-grade {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* SUB-ABAS DA ADMINISTRAÇÃO — mesmo desenho das abas da topbar, abaixo do
+   título da página. */
+.abas-secundarias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 20px;
+}
+
+.abas-secundarias .aba {
+    padding: 7px 14px;
+    border-radius: var(--raio-pilula);
+    color: var(--texto-muted);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.abas-secundarias .aba:hover {
+    color: var(--texto);
+    background: var(--superficie-alt);
+}
+
+.abas-secundarias .aba[aria-current="page"] {
+    color: var(--texto);
+    background: var(--acento-suave);
+    box-shadow: inset 0 0 0 1px rgba(var(--acento-rgb), 0.35);
+}
+
+.abas-secundarias .aba:focus-visible {
+    outline: 2px solid var(--acento);
+    outline-offset: 2px;
+}
+
+.cartao .form-tipo-usuario {
+    justify-content: flex-start;
+}
+
+@media (max-width: 900px) {
+    .cartao .form-tipo-usuario {
+        justify-content: flex-end;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .abas-secundarias .aba {
+        transition: none;
+    }
+}
+
+/* PÁGINAS DA CONTA (token de API, alterar senha) — um cartão só, estreito e
+   centralizado. */
+.cartao-estreito {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 28px;
+}
+
+.cartao-estreito .pagina-titulo {
+    margin-bottom: 6px;
+}
+
+.cartao-subtitulo {
+    margin-bottom: 24px;
+    color: var(--texto-muted);
+}
+
+.cartao-estreito .token-gerado {
+    justify-content: flex-start;
+}
+
+.cartao-estreito .botao {
+    align-self: flex-start;
+}
+
+@media (max-width: 480px) {
+    .cartao-estreito {
+        padding: 20px;
+    }
+
+    .cartao-estreito .botao {
+        align-self: stretch;
+    }
+}
