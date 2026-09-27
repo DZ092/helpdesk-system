@@ -127,3 +127,230 @@ body.pagina-auth .botao-google svg {
         padding: 34px 26px;
     }
 }
+
+/* ==============================
+   LOGIN (visual novo) — tela dividida: painel da marca à esquerda e
+   formulário à direita; abaixo de 900px fica só o formulário, com a marca
+   no topo. Mesmos tokens das páginas internas. As duas classes no body
+   (pagina-auth + pagina-login) mantêm os ícones dos campos e o botão do
+   Google de cima, e esta regra desfaz a centralização do cartão antigo.
+   ============================== */
+body.pagina-auth.pagina-login {
+    display: block;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.login {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+.login-marca {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 40px 56px;
+    background: var(--superficie);
+    border-right: 1px solid var(--borda);
+}
+
+.login-marca-titulo {
+    max-width: 16ch;
+    margin: 0 0 28px;
+    color: var(--texto);
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-wrap: balance;
+}
+
+.login-destaques {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    color: var(--texto-muted);
+    list-style: none;
+}
+
+.login-destaques li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.login-destaques li::before {
+    content: "";
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--acento-solido);
+}
+
+.login-painel {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 32px;
+}
+
+.login-topo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.login-marca-compacta {
+    display: none;
+}
+
+.login-formulario {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+    padding: 32px 0;
+}
+
+body.pagina-login .login-titulo {
+    margin: 0 0 6px;
+    font-size: 28px;
+    text-align: left;
+}
+
+.login-subtitulo {
+    margin-bottom: 28px;
+    color: var(--texto-muted);
+}
+
+body.pagina-login .campo label {
+    color: var(--texto-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.campo-rotulo {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.link-discreto,
+.login-cadastro a {
+    color: var(--acento);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.link-discreto {
+    font-size: 13px;
+}
+
+.link-discreto:hover,
+.login-cadastro a:hover {
+    text-decoration: underline;
+}
+
+body.pagina-login .botao {
+    width: 100%;
+}
+
+.login-cadastro {
+    margin-top: 20px;
+    color: var(--texto-muted);
+    font-size: 14px;
+    text-align: center;
+}
+
+.login-sem-conta {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--borda);
+}
+
+body.pagina-login .login-sem-conta-titulo {
+    margin: 0 0 12px;
+    color: var(--texto-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.login-sem-conta-acoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.login-sem-conta-acoes .botao-contorno {
+    justify-content: center;
+}
+
+/* Rodapé: versão e assinatura, e embaixo a stack em tom bem apagado. */
+body.pagina-login .rodape-app {
+    flex-wrap: wrap;
+    margin-top: 0;
+}
+
+.login-rodape {
+    justify-content: flex-start;
+}
+
+.login-stack {
+    flex-basis: 100%;
+    color: var(--texto-fraco);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+}
+
+.login-rodape-compacto {
+    display: none;
+}
+
+.login-rodape-compacto .login-stack {
+    text-align: center;
+}
+
+.link-discreto:focus-visible,
+.login-cadastro a:focus-visible {
+    outline: 2px solid var(--acento);
+    outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+    .login {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .login-marca {
+        display: none;
+    }
+
+    .login-topo {
+        justify-content: space-between;
+    }
+
+    .login-marca-compacta {
+        display: inline-flex;
+    }
+
+    body.pagina-login .login-rodape-compacto {
+        display: flex;
+        padding-bottom: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-painel {
+        padding: 16px;
+    }
+
+    .login-sem-conta-acoes {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

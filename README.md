@@ -159,7 +159,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   leitura.
 
 - **Testes automatizados**  
-  Suíte com 296 testes em pytest, dividida em dezesseis arquivos: `test_app.py`
+  Suíte com 297 testes em pytest, dividida em dezesseis arquivos: `test_app.py`
   (autenticação, controle de acesso por perfil, validação de formulários,
   proteção CSRF, troca de senha, captcha e login com Google), `test_rotas.py`
   (visita todas as telas e o ciclo completo de um chamado, pegando o tipo de
@@ -492,7 +492,7 @@ pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Esperado: **296 passed**.
+Esperado: **297 passed**.
 
 Os testes rodam sempre contra um banco SQLite em memória e nunca tocam o
 `instance/chamados.db` de desenvolvimento — há inclusive uma trava que aborta a
