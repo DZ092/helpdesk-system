@@ -219,6 +219,19 @@ def test_telas_de_autenticacao_carregam_os_dois_css(client):
         assert "css/auth.css" in html
 
 
+def test_login_no_layout_novo(client):
+    """Tela dividida, sem emoji, com as mesmas rotas de apoio de antes."""
+    html = client.get("/login").get_data(as_text=True)
+
+    assert 'class="login-marca"' in html
+    assert "\U0001F510" not in html  # cadeado do título antigo
+    assert 'style="' not in html
+    assert '<form method="POST" class="formulario">' in html
+    for destino in ("/esqueci-senha", "/cadastro", "/chamado", "/chamado/acompanhar"):
+        assert f'href="{destino}"' in html
+    assert "Python · Flask · PostgreSQL" in html
+
+
 def test_telas_de_dados_nao_carregam_o_auth_css(client, criar_usuario):
     entrar_como_admin(client, criar_usuario)
     html = client.get("/dashboard").get_data(as_text=True)
