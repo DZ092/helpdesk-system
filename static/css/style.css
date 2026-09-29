@@ -2320,3 +2320,163 @@ body.app {
         align-self: stretch;
     }
 }
+
+/* ==============================
+   FASE 3 — FLUXO PÚBLICO E SEM LOGIN (abrir chamado, acompanhar, erro)
+   Complementa .cartao/.cartao-bloco/.cartao-estreito (Fase 1/2): quando a
+   mesma página é aberta por alguém sem conta, o conteúdo fica solto dentro
+   do .login-formulario do layout dividido (base_auth.html) em vez de dentro
+   de um cartão, então .bloco-publico é só espaçamento, sem fundo/borda
+   próprios — o cartão ali é o próprio painel do layout.
+   ============================== */
+.bloco-publico {
+    display: flex;
+    flex-direction: column;
+}
+
+.bloco-publico .pagina-titulo {
+    font-size: 24px;
+}
+
+/* Dois campos lado a lado (usuário/setor no "Abrir chamado"); empilha antes
+   da coluna do formulário ficar apertada. */
+.campo-dupla {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 560px) {
+    .campo-dupla {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Linha de apoio abaixo do formulário ("Já abriu um chamado?", "É da equipe
+   técnica?") — mesmo tom discreto do .dica-campo, mas para navegação, não
+   ajuda de campo. */
+.nota-apoio {
+    margin-top: 16px;
+    color: var(--texto-muted);
+    font-size: 14px;
+    text-align: center;
+}
+
+.nota-apoio a {
+    color: var(--acento);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.nota-apoio a:hover {
+    text-decoration: underline;
+}
+
+.nota-apoio:first-of-type {
+    margin-top: 20px;
+}
+
+/* Duas ações de mesmo peso lado a lado (confirmação de chamado: consultar /
+   abrir outro). Empilha em telas estreitas, como .login-sem-conta-acoes. */
+.acoes-lado-a-lado {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.acoes-lado-a-lado .botao-contorno {
+    justify-content: center;
+}
+
+@media (max-width: 480px) {
+    .acoes-lado-a-lado {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Acompanhar chamado (público): a pilha de cartões fica mais estreita quando
+   quem está vendo já está logado (a busca some assim que aparece o
+   resultado, então não precisa da largura cheia do conteúdo interno). */
+.coluna-estreita {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+/* Variante do .informacoes com mais respiro vertical, usada fora do cartão
+   de detalhe interno (acompanhamento público tem menos itens por seção). */
+.informacoes-espacadas > div {
+    padding: 12px 0;
+}
+
+.subtitulo-secao {
+    margin: 24px 0 8px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.subtitulo-secao:first-of-type {
+    margin-top: 20px;
+}
+
+/* Coluna mais larga que a padrão de 400px do login para formulários com
+   .campo-dupla ou ações lado a lado (Abrir chamado, Confirmação, Acompanhar). */
+.login-formulario-largo {
+    max-width: 480px;
+}
+
+/* Nota de apoio dentro do formulário (ex.: aviso de perfil no cadastro,
+   dica de spam no "esqueci senha") — mais perto do texto normal que o
+   .nota-apoio de navegação pós-formulário. */
+.auth-nota {
+    margin: -8px 0 4px;
+    color: var(--texto-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Stack técnica no rodapé das páginas públicas (vitrine): mesmo estilo do
+   .login-stack, nome próprio porque aqui o rodapé não tem as duas variantes
+   (cheia/compacta) do login. */
+.rodape-stack {
+    flex-basis: 100%;
+    color: var(--texto-fraco);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+}
+
+/* ==============================
+   FASE 3 — PÁGINA DE ERRO (404/500)
+   Cartão único centralizado, sem topbar nem layout dividido: erro.html
+   estende base.html direto. Mesmos tokens de cartao-estreito.
+   ============================== */
+.erro-pagina {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+}
+
+.erro-cartao {
+    width: 100%;
+    max-width: 440px;
+    padding: 40px 32px;
+    text-align: center;
+}
+
+.erro-codigo {
+    margin: 4px 0 12px;
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.erro-mensagem {
+    margin-bottom: 28px;
+    color: var(--texto-muted);
+}
+
+.erro-cartao .botao {
+    display: inline-flex;
+}

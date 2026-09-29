@@ -1,151 +1,62 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base_auth.html" %}
 
-<head>
+{% block titulo %}Cadastro · Help Desk{% endblock %}
 
-<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Cadastro - Help Desk</title>
-
-<script nonce="{{ csp_nonce() }}">
-// Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
-// para não piscar no tema errado por uma fração de segundo. Lógica completa
-// e comentada em static/js/tema.js — este trecho precisa ser inline e vir
-// antes do <link> do CSS, senão o navegador já pintou a tela no tema padrão.
-(function () {
-    var tema;
-    try {
-        tema = localStorage.getItem("tema-preferido");
-    } catch (erro) {
-        tema = null;
-    }
-    if (!tema) {
-        var prefereClaro = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-        tema = prefereClaro ? "light" : "dark";
-    }
-    document.documentElement.setAttribute("data-theme", tema);
-})();
-</script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<script src="{{ url_for('static', filename='js/tema.js') }}"></script>
+{% block head_extra %}{{ super() }}
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
 
-</head>
-
-
-<body class="pagina-auth">
-
-
-<div class="container">
-
-
-<div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button></div>
-
-
-
-<h1>📝 Criar Conta</h1>
-
-<p class="subtitulo">
-Cadastro de acesso ao sistema
-</p>
-
+{% block conteudo %}
+<h1 class="login-titulo">Criar conta</h1>
+<p class="login-subtitulo">Cadastro de acesso ao sistema</p>
 
 {% if erro %}
 <p class="erro">{{ erro }}</p>
 {% endif %}
 
-
 <form method="POST" class="formulario">
-{{ form.hidden_tag() }}
+    {{ form.hidden_tag() }}
 
+    <div class="campo">
+        {{ form.nome.label }}
+        <div class="campo-input">
+            <span class="icone-campo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
+            {{ form.nome(placeholder="Seu nome completo", autocomplete="name", required=True) }}
+        </div>
+    </div>
 
-<div class="campo">
+    <div class="campo">
+        {{ form.email.label }}
+        <div class="campo-input">
+            <span class="icone-campo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></span>
+            {{ form.email(placeholder="seuemail@exemplo.com", autocomplete="email", required=True) }}
+        </div>
+    </div>
 
-{{ form.nome.label }}
+    <div class="campo">
+        {{ form.senha.label }}
+        <div class="campo-input">
+            <span class="icone-campo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+            {{ form.senha(placeholder="Mínimo de 8 caracteres", minlength="8", autocomplete="new-password", required=True) }}
+        </div>
+    </div>
 
-<div class="campo-input">
-<span class="icone-campo" aria-hidden="true">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-</span>
-{{ form.nome(placeholder="Seu nome completo", required=True) }}
-</div>
+    <p class="auth-nota">Toda conta nova é criada com o perfil <strong>Usuário</strong>. Perfis de Técnico e Administrador são concedidos por um administrador no painel do sistema.</p>
 
-</div>
+    <div class="campo-turnstile">
+        <div class="cf-turnstile" data-sitekey="{{ config.TURNSTILE_SITE_KEY or '' }}"></div>
+    </div>
 
-
-
-<div class="campo">
-
-{{ form.email.label }}
-
-<div class="campo-input">
-<span class="icone-campo" aria-hidden="true">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
-</span>
-{{ form.email(placeholder="seuemail@exemplo.com", required=True) }}
-</div>
-
-</div>
-
-
-
-<div class="campo">
-
-{{ form.senha.label }}
-
-<div class="campo-input">
-<span class="icone-campo" aria-hidden="true">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-</span>
-{{ form.senha(placeholder="Mínimo de 8 caracteres", minlength="8", required=True) }}
-</div>
-
-</div>
-
-
-
-<p class="link-secundario">
-Toda conta nova é criada com o perfil <strong>Usuário</strong>. Perfis de Técnico e
-Administrador são concedidos por um administrador no painel do sistema.
-</p>
-
-
-
-<div class="campo-turnstile">
-<div class="cf-turnstile" data-sitekey="{{ config.TURNSTILE_SITE_KEY or '' }}"></div>
-</div>
-
-
-<button class="botao" type="submit">
-
-Cadastrar
-
-</button>
-
-
+    <button class="botao" type="submit">Cadastrar</button>
 </form>
-
 
 {% if config.GOOGLE_OAUTH_ENABLED %}
 <div class="divisor-auth">ou</div>
-
 <a href="/login/google" class="botao-secundario botao-google">
-<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.85 2.09-1.81 2.73v2.27h2.92c1.71-1.57 2.69-3.88 2.69-6.64z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.17l-2.92-2.27c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.71H.96v2.34C2.44 15.98 5.48 18 9 18z"/><path fill="#FBBC05" d="M3.97 10.71c-.18-.54-.28-1.11-.28-1.71s.1-1.17.28-1.71V4.95H.96C.35 6.17 0 7.55 0 9s.35 2.83.96 4.05l3.01-2.34z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.59-2.59C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.95l3.01 2.34C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
-Cadastrar com Google
+    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.85 2.09-1.81 2.73v2.27h2.92c1.71-1.57 2.69-3.88 2.69-6.64z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.17l-2.92-2.27c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.71H.96v2.34C2.44 15.98 5.48 18 9 18z"/><path fill="#FBBC05" d="M3.97 10.71c-.18-.54-.28-1.11-.28-1.71s.1-1.17.28-1.71V4.95H.96C.35 6.17 0 7.55 0 9s.35 2.83.96 4.05l3.01-2.34z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.59-2.59C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.95l3.01 2.34C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+    Cadastrar com Google
 </a>
 {% endif %}
 
-
-<div class="acoes-auth">
-<a href="/login" class="botao-secundario">Fazer login</a>
-</div>
-
-
-</div>
-
-
-</body>
-
-</html>
+<p class="login-cadastro">Já tem conta? <a href="/login">Entrar</a></p>
+{% endblock %}

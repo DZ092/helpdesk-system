@@ -1,197 +1,83 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base_app.html" if usuario_logado else "base_auth.html" %}
+{# Aberta a qualquer pessoa: quem está logado vê a topbar do app; quem não
+   está vê a tela dividida das páginas sem login. #}
 
-<head>
+{% block titulo %}Abrir chamado · Help Desk{% endblock %}
 
-<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Abrir Chamado</title>
-
-<script nonce="{{ csp_nonce() }}">
-// Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
-// para não piscar no tema errado por uma fração de segundo. Lógica completa
-// e comentada em static/js/tema.js — este trecho precisa ser inline e vir
-// antes do <link> do CSS, senão o navegador já pintou a tela no tema padrão.
-(function () {
-    var tema;
-    try {
-        tema = localStorage.getItem("tema-preferido");
-    } catch (erro) {
-        tema = null;
-    }
-    if (!tema) {
-        var prefereClaro = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-        tema = prefereClaro ? "light" : "dark";
-    }
-    document.documentElement.setAttribute("data-theme", tema);
-})();
-</script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-<script src="{{ url_for('static', filename='js/tema.js') }}"></script>
+{% block head_extra %}{{ super() }}
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
-</head>
-
-
-<body>
-
-
-<div class="container">
-
-
-<div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button></div>
-
-
-
-<h1>📋 Abrir Novo Chamado</h1>
-
-<p class="subtitulo">
-Informe os dados do problema técnico
-</p>
-
-
-{% with mensagens = get_flashed_messages() %}
-{% if mensagens %}
-<p class="sucesso">{{ mensagens[0] }}</p>
-{% endif %}
-{% endwith %}
-
-
-{% if erro %}
-<p class="erro">{{ erro }}</p>
-{% endif %}
-
-
-
-<form method="POST" class="formulario" id="form-chamado" enctype="multipart/form-data">
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-
-<div class="campo">
-
-<label>Usuário</label>
-
-<input 
-type="text"
-name="usuario"
-placeholder="Nome do usuário"
-required>
-
-</div>
-
-
-
-<div class="campo">
-
-<label>Setor</label>
-
-<input 
-type="text"
-name="setor"
-placeholder="Ex: TI, RH, Financeiro"
-required>
-
-</div>
-
-
-
-<div class="campo">
-
-<label>Título do problema</label>
-
-<input 
-type="text"
-name="titulo"
-placeholder="Título do problema"
-required>
-
-</div>
-
-
-
-<div class="campo">
-
-<label>Descrição</label>
-
-<textarea
-name="descricao"
-placeholder="Descreva o problema encontrado"
-rows="5"
-required></textarea>
-
-</div>
-
-
-
-<div class="campo">
-
-<label>Prioridade</label>
-
-<select name="prioridade" required>
-<option value="Baixa">Baixa</option>
-<option value="Média" selected>Média</option>
-<option value="Alta">Alta</option>
-<option value="Crítica">Crítica</option>
-</select>
-
-</div>
-
-
-
-<div class="campo">
-
-<label for="anexos">Anexar imagens (opcional)</label>
-
-<input
-type="file"
-id="anexos"
-name="anexos"
-accept="image/png,image/jpeg,image/webp"
-multiple>
-
-<p class="dica-campo">Até 5 imagens (PNG, JPG ou WEBP), 5 MB cada.</p>
-
-</div>
-
-
-
-<div class="campo-turnstile">
-<div class="cf-turnstile" data-sitekey="{{ config.TURNSTILE_SITE_KEY or '' }}"></div>
-</div>
-
-
-<button class="botao" type="submit" id="botao-enviar">
-
-🚀 Enviar chamado
-
-</button>
-
-
-</form>
-
-
-<p class="link-secundario">
-Já abriu um chamado? <a href="/chamado/acompanhar">Consulte pelo código</a>
-</p>
-
-<p class="link-secundario">
-É da equipe técnica? <a href="/login">Fazer login</a>
-</p>
-
-
-</div>
-
+{% endblock %}
+
+{% block largura_auth %}login-formulario-largo{% endblock %}
+
+{% block conteudo %}
+<section class="{% if usuario_logado %}cartao cartao-estreito{% else %}bloco-publico{% endif %}" aria-labelledby="titulo-chamado">
+    <p class="pagina-rotulo">Suporte técnico</p>
+    <h1 class="pagina-titulo" id="titulo-chamado">Abrir chamado</h1>
+    <p class="cartao-subtitulo">Informe os dados do problema técnico</p>
+
+    {% if erro %}
+    <p class="erro">{{ erro }}</p>
+    {% endif %}
+
+    <form method="POST" class="formulario" id="form-chamado" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="campo-dupla">
+            <div class="campo">
+                <label for="usuario">Usuário</label>
+                <input type="text" id="usuario" name="usuario" placeholder="Nome do usuário" required>
+            </div>
+            <div class="campo">
+                <label for="setor">Setor</label>
+                <input type="text" id="setor" name="setor" placeholder="Ex: TI, RH, Financeiro" required>
+            </div>
+        </div>
+
+        <div class="campo">
+            <label for="titulo">Título do problema</label>
+            <input type="text" id="titulo" name="titulo" placeholder="Resumo em poucas palavras" required>
+        </div>
+
+        <div class="campo">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" name="descricao" placeholder="Descreva o problema encontrado" rows="5" required></textarea>
+        </div>
+
+        <div class="campo">
+            <label for="prioridade">Prioridade</label>
+            <select id="prioridade" name="prioridade" required>
+                <option value="Baixa">Baixa</option>
+                <option value="Média" selected>Média</option>
+                <option value="Alta">Alta</option>
+                <option value="Crítica">Crítica</option>
+            </select>
+        </div>
+
+        <div class="campo">
+            <label for="anexos">Anexar imagens (opcional)</label>
+            <input type="file" id="anexos" name="anexos" accept="image/png,image/jpeg,image/webp" multiple>
+            <p class="dica-campo">Até 5 imagens (PNG, JPG ou WEBP), 5 MB cada.</p>
+        </div>
+
+        <div class="campo-turnstile">
+            <div class="cf-turnstile" data-sitekey="{{ config.TURNSTILE_SITE_KEY or '' }}"></div>
+        </div>
+
+        <button class="botao botao-largo" type="submit" id="botao-enviar">Enviar chamado</button>
+    </form>
+
+    <p class="nota-apoio">Já abriu um chamado? <a href="/chamado/acompanhar">Consulte pelo código</a></p>
+    {% if not usuario_logado %}
+    <p class="nota-apoio">É da equipe técnica? <a href="/login">Entrar</a></p>
+    {% endif %}
+</section>
 
 <script nonce="{{ csp_nonce() }}">
 document.getElementById("form-chamado").addEventListener("submit", function () {
     var botao = document.getElementById("botao-enviar");
     botao.disabled = true;
-    botao.textContent = "⏳ Enviando...";
+    botao.textContent = "Enviando…";
 });
 </script>
-
-
-</body>
-
-</html>
+{% endblock %}
