@@ -152,7 +152,7 @@ body.pagina-auth.pagina-login {
     flex-direction: column;
     justify-content: space-between;
     gap: 40px;
-    padding: 40px 56px;
+    padding: 40px 72px;
     background: var(--superficie);
     border-right: 1px solid var(--borda);
 }
