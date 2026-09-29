@@ -1,5 +1,6 @@
 {% extends "base_app.html" %}
 {% from "_badges.html" import badge_status, badge_prioridade %}
+{% from "_trilha.html" import trilha_estado %}
 
 {% block titulo %}Chamado #{{ chamado.id }} · Help Desk{% endblock %}
 
@@ -12,9 +13,6 @@
 {%- endmacro %}
 
 {% block conteudo %}
-{# Etapa atual da trilha: 0 = Aberto, 1 = Em andamento, 2 = Resolvido. Status
-   desconhecido conta como Resolvido, igual ao badge. #}
-{% set etapa_atual = {"Aberto": 0, "Em andamento": 1}.get(chamado.status, 2) %}
 
 <nav class="trilha" aria-label="Trilha de navegação">
     <a href="{{ url_for('chamados.lista_chamados') }}">← Chamados</a>
@@ -73,22 +71,7 @@
                 <h2 class="painel-titulo" id="titulo-estado">Estado atual</h2>
                 {{ badge_status(chamado.status) }}
             </div>
-            <ol class="etapas">
-                {% for nome in ["Aberto", "Em andamento", "Resolvido"] %}
-                {% set indice = loop.index0 %}
-                <li class="etapa{% if indice < etapa_atual %} etapa-concluida{% elif indice == etapa_atual %} etapa-atual{% endif %}"{% if indice == etapa_atual %} aria-current="step"{% endif %}>
-                    <span class="etapa-marcador" aria-hidden="true"></span>
-                    <span class="etapa-texto">
-                        <span class="etapa-nome">{{ nome }}</span>
-                        {% if indice == 0 %}
-                        <span class="etapa-data">{{ chamado.criado_em|data_local }}</span>
-                        {% elif indice == 2 and etapa_atual == 2 and chamado.resolvido_em %}
-                        <span class="etapa-data">{{ chamado.resolvido_em|data_local }}</span>
-                        {% endif %}
-                    </span>
-                </li>
-                {% endfor %}
-            </ol>
+            {{ trilha_estado(chamado) }}
 
             {% if usuario_logado.eh_tecnico and chamado.status != 'Resolvido' %}
             <form method="POST" action="/chamados/{{ chamado.id }}/status" class="estado-acao">

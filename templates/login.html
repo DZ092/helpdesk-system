@@ -1,63 +1,10 @@
-{% extends "base.html" %}
+{% extends "base_auth.html" %}
 
 {% block titulo %}Login · Help Desk{% endblock %}
 
-{% block head_extra %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
-{% endblock %}
-
-{% block classe_body %}pagina-auth pagina-login{% endblock %}
-
-{% macro marca() -%}
-<a class="topbar-marca" href="/">
-    <svg class="topbar-marca-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <rect x="3" y="4" width="18" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
-        <path d="M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M8.5 10.5l2.5 2.5 4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span>Help Desk</span>
-</a>
-{%- endmacro %}
-
-{% macro rodape(classe) -%}
-<footer class="rodape-app {{ classe }}">
-    <span>v1.2.0</span>
-    <span aria-hidden="true">·</span>
-    <span>by <a href="https://github.com/DZ092" target="_blank" rel="noopener">Eduardo Jr. Coelho</a></span>
-    <span class="login-stack">Python · Flask · PostgreSQL</span>
-</footer>
-{%- endmacro %}
-
-{% block corpo %}
-<div class="login">
-    <aside class="login-marca">
-        {{ marca() }}
-        <div>
-            <p class="login-marca-titulo">Chamados do registro à resolução.</p>
-            <ul class="login-destaques">
-                <li>Abertura em menos de um minuto, com ou sem conta</li>
-                <li>Status acompanhado do aberto ao resolvido</li>
-                <li>Histórico completo de cada atendimento</li>
-            </ul>
-        </div>
-        {{ rodape("login-rodape") }}
-    </aside>
-
-    <main class="login-painel">
-        <div class="login-topo">
-            <span class="login-marca-compacta">{{ marca() }}</span>
-            <div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button></div>
-        </div>
-
-        <div class="login-formulario">
+{% block conteudo %}
             <h1 class="login-titulo">Acesse sua conta</h1>
             <p class="login-subtitulo">Painel de suporte técnico</p>
-
-            {% with mensagens = get_flashed_messages() %}
-            {% if mensagens %}
-            <p class="sucesso">{{ mensagens[0] }}</p>
-            {% endif %}
-            {% endwith %}
 
             {% if erro %}
             <p class="erro">{{ erro }}</p>
@@ -109,9 +56,4 @@
                     <a class="botao-contorno" href="/chamado/acompanhar">Consultar pelo código</a>
                 </div>
             </section>
-        </div>
-
-        {{ rodape("login-rodape-compacto") }}
-    </main>
-</div>
 {% endblock %}

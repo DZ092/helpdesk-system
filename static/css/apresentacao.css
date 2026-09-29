@@ -21,84 +21,6 @@ body.pagina-apresentacao {
     --cartao-hero-texto-muted: #5c5346;
 }
 
-/* BARRA FIXA — grudada no topo ao rolar, com os links das seções. */
-.nav-apresentacao {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: var(--superficie);
-    border-bottom: 1px solid var(--borda);
-}
-
-.nav-apresentacao-linha {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 16px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    flex-wrap: wrap;
-}
-
-.marca-apresentacao {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 800;
-    font-size: 1.05rem;
-    color: var(--texto);
-    white-space: nowrap;
-}
-
-.ponto-marca {
-    width: 9px;
-    height: 9px;
-    border-radius: 2px;
-    background: var(--marca);
-}
-
-.nav-links-apresentacao {
-    display: flex;
-    gap: 26px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--texto-muted);
-}
-
-.nav-links-apresentacao a {
-    color: inherit;
-    text-decoration: none;
-}
-
-.nav-links-apresentacao a:hover {
-    color: var(--marca);
-}
-
-.nav-links-apresentacao a:focus-visible {
-    outline: 2px solid var(--marca);
-    outline-offset: 4px;
-    border-radius: 2px;
-}
-
-/* Marca no menu qual das duas páginas dedicadas (/como-funciona,
-   /recursos) está aberta no momento — sem isso as duas ficam com o mesmo
-   peso visual e não dá pra saber onde você está. */
-.nav-links-apresentacao a.ativo {
-    color: var(--marca);
-}
-
-.nav-direita {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-@media (max-width: 780px) {
-    .nav-links-apresentacao {
-        display: none;
-    }
-}
 
 /* HERO */
 .hero-apresentacao-wrap {
@@ -262,7 +184,7 @@ body.pagina-apresentacao {
 /* SEÇÕES — largura de conteúdo padrão, reaproveitada nas seções abaixo do
    hero. scroll-margin-top é o que faz o clique em "Como funciona"/"Recursos"
    da barra fixa parar no lugar certo: sem isso o navegador rola até o topo
-   exato da section, que fica escondido atrás da .nav-apresentacao (sticky). */
+   exato da section, que fica escondido atrás da .topbar (sticky). */
 .secao-apresentacao {
     max-width: 1080px;
     margin: 0 auto;

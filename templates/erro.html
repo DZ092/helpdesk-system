@@ -1,47 +1,16 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+{% block titulo %}{{ codigo }} · Help Desk{% endblock %}
 
-    <title>{{ codigo }} - Help Desk</title>
+{% block classe_body %}pagina-erro{% endblock %}
 
-    <script nonce="{{ csp_nonce() }}">
-    // Aplica o tema salvo (ou o do sistema operacional) antes do CSS carregar,
-    // para não piscar no tema errado por uma fração de segundo. Lógica completa
-    // e comentada em static/js/tema.js — este trecho precisa ser inline e vir
-    // antes do <link> do CSS, senão o navegador já pintou a tela no tema padrão.
-    (function () {
-        var tema;
-        try {
-            tema = localStorage.getItem("tema-preferido");
-        } catch (erro) {
-            tema = null;
-        }
-        if (!tema) {
-            var prefereClaro = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-            tema = prefereClaro ? "light" : "dark";
-        }
-        document.documentElement.setAttribute("data-theme", tema);
-    })();
-    </script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="{{ url_for('static', filename='js/tema.js') }}"></script>
-</head>
-
-<body>
-
-<div class="container">
-
-
-<div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button></div>
-
-    <h1>{{ codigo }}</h1>
-    <p class="subtitulo">{{ mensagem }}</p>
-    <a class="botao" href="/">Voltar ao início</a>
-</div>
-
-</body>
-
-</html>
+{% block corpo %}
+<main class="erro-pagina" id="conteudo">
+    <section class="cartao erro-cartao" aria-labelledby="titulo-erro">
+        <p class="pagina-rotulo">Erro {{ codigo }}</p>
+        <h1 class="erro-codigo" id="titulo-erro">{{ codigo }}</h1>
+        <p class="erro-mensagem">{{ mensagem }}</p>
+        <a class="botao" href="/">Voltar ao início</a>
+    </section>
+</main>
+{% endblock %}
