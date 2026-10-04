@@ -350,3 +350,18 @@ def test_adiciona_comentario_em_chamado_inexistente_retorna_404(client, criar_us
     )
 
     assert resposta.status_code == 404
+
+
+def test_api_aplica_rate_limit_por_ip():
+    from app import create_app
+    from rotas.api import LIMITE_API
+    from tests.conftest import CONFIG_DE_TESTE
+
+    aplicacao = create_app({**CONFIG_DE_TESTE, "RATELIMIT_ENABLED": True})
+    total = int(LIMITE_API.split()[0])
+
+    with aplicacao.test_client() as client:
+        codigos = [client.get("/api/v1/chamados").status_code for _ in range(total + 1)]
+
+    assert codigos[:total] == [401] * total
+    assert codigos[-1] == 429

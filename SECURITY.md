@@ -8,8 +8,8 @@ aplicadas apenas na versão mais recente da branch `main`.
 
 | Versão | Suportada |
 | ------ | --------- |
-| 1.2.x  | ✅        |
-| < 1.2  | ❌        |
+| 2.0.x  | ✅        |
+| < 2.0  | ❌        |
 
 ## Reportando uma vulnerabilidade
 
