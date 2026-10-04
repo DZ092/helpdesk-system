@@ -13,11 +13,18 @@ from flask import Blueprint, g, jsonify, request
 from auditoria import registrar_log
 from constantes import PRIORIDADES, STATUS_CHAMADO
 from emails import notificar_tecnicos_novo_chamado
-from extensions import db
+from extensions import db, limiter
 from models import Chamado, Comentario
 from seguranca import tecnico_api_required, token_api_required
 
+LIMITE_API = "60 per minute"
+
 api = Blueprint("api", __name__, url_prefix="/api/v1")
+
+# Rate limit por IP em todos os endpoints da API (issue #68, item de rate limit
+# geral): sem isso, um token vazado ou um script em loop martela o banco sem
+# nenhum freio.
+limiter.limit(LIMITE_API)(api)
 
 
 def _chamado_para_json(chamado):
