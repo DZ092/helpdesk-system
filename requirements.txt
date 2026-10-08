@@ -28,7 +28,7 @@ MarkupSafe==3.0.3
 # puxam Pango/Cairo e complicam tanto o Windows local quanto o Render.
 openpyxl==3.1.5
 reportlab==5.0.1
-python-dotenv==1.2.3
+python-dotenv==1.2.4
 # Só usada para chamar a API de verificação do Turnstile (seguranca.py) — o
 # cloudinary já traz essa biblioteca como dependência transitiva, mas
 # declarar direto evita depender de uma escolha interna de outro pacote.
