@@ -21,7 +21,7 @@ greenlet==3.5.6
 itsdangerous==2.2.0
 Jinja2==3.1.6
 Mako==1.4.3
-MarkupSafe==3.0.3
+MarkupSafe==3.0.4
 # Geração dos relatórios exportáveis em /chamados/exportar: openpyxl monta o
 # .xlsx, reportlab monta o .pdf. Nenhum dos dois depende de biblioteca nativa
 # do sistema operacional — ao contrário de alternativas como weasyprint, que
