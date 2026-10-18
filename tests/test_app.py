@@ -1115,6 +1115,7 @@ def test_login_google_linka_conta_local_existente_por_email(client, criar_usuari
 
     usuario_local = criar_usuario(email="ja-existe@teste.com")
     assert usuario_local.google_id is None
+    senha_antiga = usuario_local.senha
 
     client.application.config["GOOGLE_OAUTH_ENABLED"] = True
     token_falso = {"userinfo": _userinfo_google(email="ja-existe@teste.com", sub="55555")}
@@ -1141,6 +1142,9 @@ def test_login_google_linka_conta_local_existente_por_email(client, criar_usuari
         ).scalar_one()
         assert usuario_atualizado.id == usuario_local.id
         assert usuario_atualizado.google_id == "55555"
+        # Quem cadastrou o e-mail antes, sem provar a posse dele, não pode
+        # continuar entrando com a senha que escolheu.
+        assert usuario_atualizado.senha != senha_antiga
 
 
 def test_login_google_recusa_email_nao_verificado(client, monkeypatch):

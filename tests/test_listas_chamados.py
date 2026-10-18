@@ -167,3 +167,20 @@ def test_meus_chamados_vazio_mostra_orientacao(client, criar_usuario):
 
     assert "Você ainda não é responsável por nenhum chamado." in html
     assert 'class="tabela-chamados"' not in html
+
+
+def test_filtro_de_data_usa_o_dia_de_brasilia(client, criar_usuario):
+    """Um chamado aberto às 22h de Brasília fica gravado no dia seguinte em UTC
+    (01h). O filtro precisa enxergar o dia que a tela mostra, não o dia UTC."""
+    from datetime import datetime
+
+    _entrar(client, criar_usuario)
+    chamado = _chamado(titulo="Aberto tarde da noite")
+    chamado.criado_em = datetime(2026, 3, 10, 1, 0)  # 09/03 às 22h em Brasília
+    db.session.commit()
+
+    no_dia_local = client.get("/chamados?data_inicio=2026-03-09&data_fim=2026-03-09").get_data(as_text=True)
+    no_dia_utc = client.get("/chamados?data_inicio=2026-03-10&data_fim=2026-03-10").get_data(as_text=True)
+
+    assert "Aberto tarde da noite" in no_dia_local
+    assert "Aberto tarde da noite" not in no_dia_utc

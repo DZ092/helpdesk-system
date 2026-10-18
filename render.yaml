@@ -5,7 +5,7 @@ services:
     name: helpdesk-system
     runtime: python
     plan: free
-    region: oregon
+    region: ohio
     # O `flask db upgrade` aplica as migrações pendentes antes de o serviço
     # subir. Se uma migração falhar, o build falha e a versão anterior continua
     # no ar — que é exatamente o que se quer de um deploy que mexe no banco.
@@ -40,4 +40,18 @@ services:
       - key: CLOUDINARY_API_KEY
         sync: false
       - key: CLOUDINARY_API_SECRET
+        sync: false
+      # Domínio usado nos redirecionamentos HTTPS e nos links de redefinição de
+      # senha (ver `_forcar_https` em app.py). Sem ela, vale o padrão do código.
+      - key: HOST_CONFIAVEL
+        sync: false
+      # Opcionais: sem elas o captcha fica desligado (ver seguranca.py).
+      - key: TURNSTILE_SITE_KEY
+        sync: false
+      - key: TURNSTILE_SECRET_KEY
+        sync: false
+      # Opcionais: sem elas o botão "Entrar com Google" não aparece.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
         sync: false

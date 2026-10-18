@@ -176,11 +176,8 @@ def _registrar_ganchos(app):
         fazer coisas que abrem brecha: não deixar a página entrar num
         <iframe> de outro site (clickjacking), não tentar adivinhar o tipo de
         um arquivo servido (MIME sniffing) e não vazar a URL completa como
-        referrer para outro site. Content-Security-Policy fica de fora por
-        enquanto: os templates têm um <script> inline de propósito (evita
-        piscar no tema errado antes do CSS carregar — ver tema.js) e um CSP
-        correto exigiria nonce por requisição em cada um deles — capítulo
-        separado.
+        referrer para outro site. O Content-Security-Policy, mais abaixo,
+        completa o conjunto.
         """
         resposta.headers["X-Frame-Options"] = "DENY"
         resposta.headers["X-Content-Type-Options"] = "nosniff"

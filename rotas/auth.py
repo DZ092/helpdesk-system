@@ -86,6 +86,10 @@ def cadastro():
 
 
 @auth.route("/login", methods=["GET", "POST"])
+# O `throttle_login` conta erros por e-mail; sozinho, ele não freia quem testa
+# uma senha comum contra milhares de e-mails diferentes. Este limite por IP
+# cobre esse caso.
+@limiter.limit("10 per minute", methods=["POST"])
 def login():
     form = FormularioLogin()
     if form.validate_on_submit():
@@ -201,9 +205,22 @@ def callback_google():
             registrar_log("Cadastro de usuário", f"Novo usuário via Google: {usuario.email}")
             enviar_email_boas_vindas(usuario)
         else:
+            # O cadastro comum não confirma a posse do e-mail: qualquer pessoa
+            # pode ter criado esta conta com o e-mail de outra e uma senha que
+            # só ela conhece. Linkar mantendo essa senha entregaria ao autor do
+            # cadastro a conta de quem acabou de provar, pelo Google, ser o dono
+            # do e-mail. Por isso a senha vira aleatória no momento do link —
+            # o que também derruba as sessões abertas com ela (ver
+            # `impressao_sessao`). O dono real define outra pelo "Esqueci minha
+            # senha" se quiser voltar a entrar sem o Google.
             usuario.google_id = google_id
+            usuario.senha = generate_password_hash(secrets.token_urlsafe(32))
             db.session.commit()
             registrar_log("Conta linkada ao Google", f"Conta existente linkada: {usuario.email}")
+            flash(
+                "Sua conta foi ligada ao Google. A senha anterior deixou de valer; "
+                "para entrar sem o Google, use \"Esqueci minha senha\"."
+            )
 
     session.clear()
     session["usuario_id"] = usuario.id

@@ -1,6 +1,6 @@
 """Abertura, listagem, detalhe e atendimento dos chamados."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import Blueprint, Response, flash, redirect, render_template, request
 
@@ -8,7 +8,7 @@ import graficos
 import metricas
 from armazenamento import enviar_anexo, extensao_valida
 from auditoria import registrar_log
-from constantes import PERFIS_TECNICOS, PRIORIDADES, STATUS_CHAMADO
+from constantes import FUSO_EXIBICAO, PERFIS_TECNICOS, PRIORIDADES, STATUS_CHAMADO
 from emails import notificar_tecnicos_novo_chamado
 from extensions import db, limiter, ip_do_visitante
 from formularios import (
@@ -85,6 +85,16 @@ def _primeiro_erro(form):
     return None
 
 
+def _local_para_utc(momento):
+    """Converte uma data digitada no filtro (horário de Brasília) para UTC naive.
+
+    O banco grava em UTC e a tela exibe em Brasília (filtro `data_local`). Sem
+    a conversão, o dia do filtro era lido como dia UTC: um chamado aberto às
+    22h caía no filtro do dia seguinte.
+    """
+    return momento.replace(tzinfo=FUSO_EXIBICAO).astimezone(timezone.utc).replace(tzinfo=None)
+
+
 def query_chamados_filtrados(args):
     """Monta a consulta de `/chamados` a partir dos parâmetros da URL.
 
@@ -124,15 +134,15 @@ def query_chamados_filtrados(args):
 
     if data_inicio:
         try:
-            inicio = datetime.strptime(data_inicio, "%Y-%m-%d")
+            inicio = _local_para_utc(datetime.strptime(data_inicio, "%Y-%m-%d"))
             stmt = stmt.where(Chamado.criado_em >= inicio)
         except ValueError:
             pass
 
     if data_fim:
         try:
-            fim = datetime.strptime(data_fim, "%Y-%m-%d").replace(
-                hour=23, minute=59, second=59
+            fim = _local_para_utc(
+                datetime.strptime(data_fim, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
             )
             stmt = stmt.where(Chamado.criado_em <= fim)
         except ValueError:
