@@ -10,3 +10,6 @@ chamados.db
 *.7z
 .agents/
 skills-lock.json
+
+# Saídas locais do Claude Code
+Claude outputs/
