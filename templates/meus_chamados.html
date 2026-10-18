@@ -1,0 +1,59 @@
+{% extends "base_app.html" %}
+{% from "_badges.html" import badge_status, badge_prioridade %}
+
+{% block titulo %}Meus chamados · Help Desk{% endblock %}
+
+{% block conteudo %}
+<div class="pagina-cabecalho">
+    <div>
+        <p class="pagina-rotulo">Seu atendimento</p>
+        <h1 class="pagina-titulo">Meus chamados</h1>
+    </div>
+</div>
+
+<section class="cartao cartao-bloco" aria-label="Chamados sob sua responsabilidade">
+    {% if chamados %}
+    <div class="tabela-rolavel">
+        <table class="tabela-chamados">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Chamado</th>
+                    <th>Usuário</th>
+                    <th>Setor</th>
+                    <th>Prioridade</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chamado in chamados %}
+                <tr>
+                    <td data-label="ID">{{ chamado.id }}</td>
+                    <td data-label="Chamado" class="coluna-chamado">
+                        <div class="chamado-resumo">
+                            <a class="chamado-titulo" href="/chamados/{{ chamado.id }}">{{ chamado.titulo }}</a>
+                            <span class="chamado-descricao">{{ chamado.descricao }}</span>
+                        </div>
+                    </td>
+                    <td data-label="Usuário">{{ chamado.usuario }}</td>
+                    <td data-label="Setor">{{ chamado.setor }}</td>
+                    <td data-label="Prioridade">{{ badge_prioridade(chamado.prioridade) }}</td>
+                    <td data-label="Status">{{ badge_status(chamado.status) }}</td>
+                    <td data-label="Ação">
+                        {% if chamado.status == "Resolvido" %}
+                        <span class="acao acao-finalizado" title="Chamado finalizado">✓</span>
+                        {% else %}
+                        <a class="acao acao-texto" href="/chamados/{{ chamado.id }}">Ver detalhes</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="estado-vazio">Você ainda não é responsável por nenhum chamado. Assuma um chamado na lista geral para que ele apareça aqui.</p>
+    {% endif %}
+</section>
+{% endblock %}

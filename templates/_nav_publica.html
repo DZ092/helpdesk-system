@@ -1,0 +1,25 @@
+{# Barra das páginas públicas (vitrine): mesmo desenho da topbar do app —
+   marca, abas em pílula e o botão de entrar. A aba ativa vem do endpoint. #}
+{% set endpoint_publico = request.endpoint or "" %}
+<header class="topbar">
+    <div class="topbar-interna">
+        <a class="topbar-marca" href="/">
+            <svg class="topbar-marca-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <rect x="3" y="4" width="18" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M8.5 10.5l2.5 2.5 4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Help Desk</span>
+        </a>
+
+        <nav class="topbar-abas" aria-label="Navegação">
+            <a class="aba" href="/como-funciona" {% if endpoint_publico == 'chamados.como_funciona' %}aria-current="page"{% endif %}>Como funciona</a>
+            <a class="aba" href="/recursos" {% if endpoint_publico == 'chamados.recursos' %}aria-current="page"{% endif %}>Recursos</a>
+        </nav>
+
+        <div class="topbar-acoes">
+            <div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button></div>
+            <a class="botao-primario" href="/login">Acessar aplicação</a>
+        </div>
+    </div>
+</header>

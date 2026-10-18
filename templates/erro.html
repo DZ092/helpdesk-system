@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ codigo }} · Help Desk{% endblock %}
+
+{% block classe_body %}pagina-erro{% endblock %}
+
+{% block corpo %}
+<main class="erro-pagina" id="conteudo">
+    <section class="cartao erro-cartao" aria-labelledby="titulo-erro">
+        <p class="pagina-rotulo">Erro {{ codigo }}</p>
+        <h1 class="erro-codigo" id="titulo-erro">{{ codigo }}</h1>
+        <p class="erro-mensagem">{{ mensagem }}</p>
+        <a class="botao" href="/">Voltar ao início</a>
+    </section>
+</main>
+{% endblock %}

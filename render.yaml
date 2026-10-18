@@ -1,0 +1,43 @@
+# Infraestrutura como código: o Render lê este arquivo e configura o serviço
+# sozinho, em vez de você preencher os campos no painel a cada vez.
+services:
+  - type: web
+    name: helpdesk-system
+    runtime: python
+    plan: free
+    region: oregon
+    # O `flask db upgrade` aplica as migrações pendentes antes de o serviço
+    # subir. Se uma migração falhar, o build falha e a versão anterior continua
+    # no ar — que é exatamente o que se quer de um deploy que mexe no banco.
+    buildCommand: pip install -r requirements.txt && flask db upgrade
+    # O serve.py sobe o Waitress. O esquema já veio pronto do build.
+    startCommand: python serve.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.0"
+      # Diz ao comando `flask` do build onde está a fábrica da aplicação.
+      - key: FLASK_APP
+        value: app.py
+      # O Render injeta a porta em PORT; o serve.py já lê essa variável.
+      - key: HOST
+        value: 0.0.0.0
+      # Cookie de sessão só trafega por HTTPS em produção.
+      - key: SESSION_COOKIE_SECURE
+        value: "1"
+      # Preenchidas no painel, nunca no repositório.
+      - key: SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      # Opcionais: sem elas o upload de anexos fica desativado (ver
+      # armazenamento.py), mas o resto do sistema funciona normalmente.
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

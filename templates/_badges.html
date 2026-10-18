@@ -1,0 +1,26 @@
+{# Badges de status e prioridade (visual novo, Fase 2). Um lugar só para o
+   mapeamento valor → classe, usado pelo dashboard, pelas listas e pelo
+   detalhe. A bolinha colorida do status é CSS (.status::before), não emoji.
+   Valor fora da lista cai no mesmo padrão dos if/elif antigos: status vira
+   "Resolvido" e prioridade vira "Média". #}
+{% macro badge_status(status) -%}
+{%- if status == "Aberto" -%}
+<span class="status status-aberto">Aberto</span>
+{%- elif status == "Em andamento" -%}
+<span class="status status-andamento">Em andamento</span>
+{%- else -%}
+<span class="status status-resolvido">Resolvido</span>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro badge_prioridade(prioridade) -%}
+{%- if prioridade == "Baixa" -%}
+<span class="prioridade prioridade-baixa">Baixa</span>
+{%- elif prioridade == "Alta" -%}
+<span class="prioridade prioridade-alta">Alta</span>
+{%- elif prioridade == "Crítica" -%}
+<span class="prioridade prioridade-critica">Crítica</span>
+{%- else -%}
+<span class="prioridade prioridade-media">Média</span>
+{%- endif -%}
+{%- endmacro %}

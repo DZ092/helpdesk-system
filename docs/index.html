@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help Desk System - Eduardo Jr. Coelho</title>
+<meta name="description" content="Sistema web de gerenciamento de chamados técnicos desenvolvido em Flask, com controle de acesso por perfil, dashboard, API REST e 300 testes automatizados.">
+<style>
+/* Mesma identidade visual do app (static/css/style.css e apresentacao.css):
+   paleta escura preto/branco/cinza, nav fixo, hero em cartão com brilho de
+   marca (agora branco, não mais laranja), grade de recursos com divisórias
+   internas, citação em destaque e faixa de CTA sólida. Ao contrário do app,
+   esta página mantém a animação de movimento (deriva do glow do hero,
+   brilho seguindo o cursor, números contando, entrada da citação) — ela é
+   a vitrine pública no GitHub Pages, não a interface de trabalho do
+   sistema, então pode ser mais expressiva. */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap");
+
+:root {
+    --bg: #060606;
+    --bg-gradiente-topo: #121212;
+    --bg-gradiente-base: #000000;
+    --superficie: #151515;
+    --superficie-alt: #202020;
+    --borda: rgba(255, 255, 255, 0.12);
+    --texto: #f5f5f5;
+    --texto-muted: #b3b3b3;
+    --texto-fraco: #7a7a7a;
+    --marca: #ffffff;
+    --marca-rgb: 255, 255, 255;
+    --acento: #2b2b2b;
+    --acento-forte: #3f3f3f;
+    --acento-hover: #383838;
+    /* Texto sobre o botão de acento (cinza escuro) — precisa ser claro aqui,
+       ao contrário de --bg (quase preto), que era o que fazia sentido
+       quando o botão era um laranja claro. Ver mesmo token em style.css. */
+    --texto-botao: #ffffff;
+    /* Botão de dentro da faixa de CTA: com --acento cinza escuro, o botão
+       ficaria invisível sobre a própria faixa — aqui ele vira um "pop"
+       branco com texto escuro. Ver mesmo token em style.css. */
+    --cta-superficie: #ffffff;
+    --cta-superficie-hover: #e2e2e2;
+    --cta-texto: #101010;
+    --sucesso-solido: #3fae6c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(180deg, var(--bg-gradiente-topo), var(--bg-gradiente-base));
+    color: var(--texto);
+    line-height: 1.6;
+}
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+nav.topo {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--superficie);
+    border-bottom: 1px solid var(--borda);
+}
+
+.topo-linha {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.marca-topo { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.marca-topo .ponto { width: 9px; height: 9px; border-radius: 2px; background: var(--marca); }
+
+.botao {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 24px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.92rem;
+    border: 1px solid transparent;
+}
+
+.botao-primario { background: var(--acento); border-color: var(--acento-forte); color: var(--texto-botao); }
+.botao-primario:hover { background: var(--acento-hover); }
+.botao-secundario { background: transparent; color: var(--texto); border-color: var(--borda); }
+.botao-secundario:hover { border-color: var(--marca); }
+
+.botao-grande { padding: 18px 34px; font-size: 1.05rem; }
+.botao-pequeno { padding: 10px 20px; font-size: 0.85rem; }
+
+.hero-wrap { max-width: 1080px; margin: 0 auto; padding: 56px 32px 0; }
+
+.hero {
+    position: relative;
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: 20px;
+    padding: clamp(36px, 5vw, 64px);
+    overflow: hidden;
+    isolation: isolate;
+}
+
+@keyframes derivaAmbienteHero {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 1; }
+    50% { transform: translate(-4%, 3%) scale(1.12); opacity: 0.7; }
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    top: -140px;
+    right: -120px;
+    width: 380px;
+    height: 380px;
+    border-radius: 50%;
+    background: rgba(var(--marca-rgb), 0.16);
+    animation: derivaAmbienteHero 16s ease-in-out infinite;
+}
+
+.numero-inline { font-variant-numeric: tabular-nums; }
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--marca);
+    margin-bottom: 20px;
+}
+
+.bolinha-viva { width: 7px; height: 7px; border-radius: 50%; background: var(--sucesso-solido); }
+
+h1 {
+    font-size: clamp(2rem, 4.6vw, 3.1rem);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+    margin: 0 0 20px;
+    max-width: 18ch;
+}
+
+.subtitulo { font-size: 1.05rem; color: var(--texto-muted); max-width: 52ch; margin: 0 0 30px; }
+.cta { display: flex; gap: 14px; flex-wrap: wrap; justify-content: flex-start; }
+.aviso { margin-top: 18px; font-size: 0.85rem; color: var(--texto-fraco); }
+
+.regua {
+    margin-top: 40px;
+    padding-top: 26px;
+    border-top: 1px solid var(--borda);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+}
+
+.regua-item { display: flex; flex-direction: column; gap: 4px; }
+.regua-item .n { font-size: 1.6rem; font-weight: 800; color: var(--marca); line-height: 1; font-variant-numeric: tabular-nums; }
+.regua-item .l { font-size: 0.78rem; color: var(--texto-fraco); }
+
+section.secao { max-width: 1080px; margin: 0 auto; padding: 84px 32px; }
+
+.secao-cabecalho { max-width: 620px; margin: 0 auto 44px; text-align: center; }
+.eyebrow-secao { display: block; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--marca); margin-bottom: 12px; }
+h2 { font-size: clamp(1.5rem, 2.8vw, 2rem); font-weight: 800; margin: 0; text-align: center; }
+
+.grade-recursos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--borda);
+    border: 1px solid var(--borda);
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+@media (max-width: 900px) { .grade-recursos { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .grade-recursos { grid-template-columns: 1fr; } }
+
+.recurso { position: relative; overflow: hidden; background: var(--superficie); padding: 30px 26px; display: flex; flex-direction: column; gap: 10px; transition: background-color 0.2s ease; }
+.recurso:hover { background-color: var(--superficie-alt); }
+.recurso::after { content: ""; position: absolute; inset: 0; background: radial-gradient(220px circle at var(--brilho-x, 50%) var(--brilho-y, 50%), rgba(var(--marca-rgb), 0.14), transparent 70%); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+.recurso:hover::after { opacity: 1; }
+.recurso-rotulo { font-family: "JetBrains Mono", "Courier New", monospace; font-size: 0.75rem; color: var(--texto-fraco); text-transform: uppercase; letter-spacing: 0.03em; }
+.recurso h3 { font-size: 1rem; font-weight: 700; margin: 0; }
+.recurso p { font-size: 0.88rem; color: var(--texto-muted); margin: 0; line-height: 1.55; }
+
+.secao-citacao { background: var(--superficie-alt); border-top: 1px solid var(--borda); border-bottom: 1px solid var(--borda); }
+.citacao-cartao { max-width: 720px; margin: 0 auto; padding: 84px 32px; text-align: center; }
+.marca-aspas { font-size: 3.2rem; color: var(--marca); opacity: 0.5; line-height: 1; display: block; margin-bottom: 4px; }
+.citacao-cartao blockquote { margin: 0; font-size: clamp(1.15rem, 2.4vw, 1.5rem); line-height: 1.5; font-weight: 600; transition: opacity 0.5s ease 0.15s, transform 0.5s ease 0.15s; }
+.citacao-autor { margin-top: 24px; font-size: 0.88rem; color: var(--texto-fraco); transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s; }
+.citacao-autor b { color: var(--marca); }
+.marca-aspas { transition: opacity 0.5s ease 0.05s, transform 0.5s ease 0.05s; }
+.citacao-cartao.pronto-para-entrar .marca-aspas,
+.citacao-cartao.pronto-para-entrar blockquote,
+.citacao-cartao.pronto-para-entrar .citacao-autor { opacity: 0; transform: translateY(14px); }
+.citacao-cartao.em-cena blockquote,
+.citacao-cartao.em-cena .citacao-autor { opacity: 1; transform: none; }
+.citacao-cartao.em-cena .marca-aspas { opacity: 0.5; transform: none; }
+
+.faixa-cta { background: var(--acento); }
+.faixa-cta-linha { max-width: 1080px; margin: 0 auto; padding: 56px 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+.faixa-cta-linha h2 { color: var(--texto-botao); text-align: left; max-width: 30ch; }
+.faixa-cta-linha p { margin-top: 8px; color: var(--texto-botao); opacity: 0.75; font-size: 0.95rem; max-width: 40ch; }
+.faixa-cta .botao-primario { background: var(--cta-superficie); color: var(--cta-texto); border-color: var(--cta-superficie); }
+.faixa-cta .botao-primario:hover { background: var(--cta-superficie-hover); }
+
+.tecnologias { display: flex; flex-wrap: wrap; gap: 8px; }
+.tecnologias span { padding: 7px 13px; border-radius: 6px; background: var(--superficie-alt); border: 1px solid var(--borda); font-family: "JetBrains Mono", "Courier New", monospace; font-size: 0.82rem; color: var(--texto-muted); }
+
+footer { padding: 32px 0 56px; color: var(--texto-fraco); font-size: 0.88rem; }
+footer a { color: var(--texto-muted); }
+footer .stack { margin-top: 8px; font-size: 0.8rem; opacity: 0.85; }
+
+@media (max-width: 780px) { .nav-links { display: none; } }
+@media (max-width: 560px) { .regua { gap: 20px 24px; } .faixa-cta-linha { flex-direction: column; align-items: flex-start; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .hero::before { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topo">
+<div class="topo-linha">
+<div class="marca-topo"><span class="ponto"></span> Help Desk System</div>
+</div>
+</nav>
+
+<div class="hero-wrap">
+<header class="hero">
+<span class="eyebrow"><span class="bolinha-viva"></span> em produção, código aberto</span>
+<h1>Chamados de suporte, sem planilha e sem grupo de WhatsApp.</h1>
+<p class="subtitulo">
+Sistema web para gerenciamento de chamados técnicos, com controle de acesso
+por perfil, dashboard, API REST, anexos e testes automatizados.
+</p>
+<div class="cta">
+<a class="botao botao-primario botao-grande" href="https://helpdesk-system-cci1.onrender.com/login">Acessar aplicação</a>
+</div>
+<p class="aviso">
+Hospedada em plano gratuito: o primeiro carregamento pode levar cerca de um
+minuto enquanto o serviço acorda.
+</p>
+<div class="regua">
+<div class="regua-item"><span class="n">300</span><span class="l">testes automatizados</span></div>
+<div class="regua-item"><span class="n">3</span><span class="l">níveis de usuário</span></div>
+<div class="regua-item"><span class="n">2</span><span class="l">temas de interface</span></div>
+<div class="regua-item"><span class="n">100%</span><span class="l">CI verde antes do deploy</span></div>
+</div>
+</header>
+</div>
+
+<section class="secao">
+<div class="secao-cabecalho">
+<span class="eyebrow-secao">funcionalidades</span>
+<h2>Cada uma nasceu de um problema real de quem atende chamado no dia a dia.</h2>
+</div>
+<div class="grade-recursos">
+<div class="recurso"><span class="recurso-rotulo">acesso</span><h3>Perfis de acesso</h3><p>Controle de permissões para Usuário, Técnico e Administrador, relido do banco a cada requisição.</p></div>
+<div class="recurso"><span class="recurso-rotulo">painel</span><h3>Dashboard e histórico</h3><p>Indicadores de chamados abertos, em andamento e resolvidos, com busca, filtros e paginação.</p></div>
+<div class="recurso"><span class="recurso-rotulo">suporte</span><h3>Atendimento técnico</h3><p>Técnicos e administradores assumem chamados, atualizam status e registram comentários internos.</p></div>
+<div class="recurso"><span class="recurso-rotulo">e-mail</span><h3>Notificações automáticas</h3><p>Aviso automático para técnicos e administradores a cada novo chamado aberto.</p></div>
+<div class="recurso"><span class="recurso-rotulo">api</span><h3>API REST</h3><p>Listagem e detalhe de chamados via token pessoal, com os mesmos filtros e regras da interface.</p></div>
+<div class="recurso"><span class="recurso-rotulo">anexos</span><h3>Anexos e relatórios</h3><p>Upload de imagens via Cloudinary e exportação da listagem em Excel ou PDF.</p></div>
+<div class="recurso"><span class="recurso-rotulo">auditoria</span><h3>Registro de ações</h3><p>Data, hora e autor de cada ação importante, consultável pelo painel administrativo.</p></div>
+<div class="recurso"><span class="recurso-rotulo">qualidade</span><h3><span class="numero-inline">300</span> testes automatizados</h3><p>Suíte em pytest, rodando no GitHub Actions a cada push e pull request.</p></div>
+</div>
+</section>
+
+<section class="secao-citacao">
+<div class="citacao-cartao">
+<span class="marca-aspas">"</span>
+<blockquote>Sem planilha, sem grupo perdido: cada chamado com dono, prazo e histórico rastreável do início ao fim.</blockquote>
+<p class="citacao-autor"><b>Eduardo Jr. Coelho</b>, autor do projeto</p>
+</div>
+</section>
+
+<section class="secao">
+<div class="tecnologias">
+<span>Python</span><span>Flask</span><span>Flask-SQLAlchemy</span><span>Flask-WTF</span><span>Flask-Mail</span><span>Flask-Migrate</span><span>PostgreSQL</span><span>SQLite</span><span>Cloudinary</span><span>Pytest</span><span>GitHub Actions</span><span>Waitress</span>
+</div>
+</section>
+
+<section class="faixa-cta">
+<div class="faixa-cta-linha">
+<div>
+<h2>Pronto para organizar seus chamados?</h2>
+<p>Entre com sua conta e comece a usar agora.</p>
+</div>
+<a class="botao botao-primario botao-pequeno" href="https://helpdesk-system-cci1.onrender.com/login">Acessar aplicação</a>
+</div>
+</section>
+
+<footer>
+<div class="wrap">
+<p>Desenvolvido por <a href="https://github.com/DZ092">Eduardo Jr. Coelho</a>, projeto de portfólio, Análise e Desenvolvimento de Sistemas (UniCesumar).</p>
+<p class="stack">Stack: Python · Flask · SQLAlchemy · Flask-WTF · Flask-Mail · Flask-Migrate · PostgreSQL / SQLite · Cloudinary · Pytest · GitHub Actions · Waitress</p>
+</div>
+</footer>
+
+<script>
+/**
+ * Mesmos três toques de movimento das páginas do app (static/js/apresentacao.js):
+ * números contando, brilho seguindo o cursor nos cartões de recurso, e uma
+ * entrada mais elaborada só na citação. Fica inline aqui porque esta página
+ * é o espelho estático (GitHub Pages), sem servidor Flask por trás pra
+ * servir um arquivo .js separado.
+ */
+(function () {
+    "use strict";
+
+    var reduzMovimento = window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function contarAte(elemento) {
+        var textoOriginal = elemento.textContent.trim();
+        var valorFinal = parseInt(textoOriginal.replace(/[^\d]/g, ""), 10);
+        if (isNaN(valorFinal)) {
+            return;
+        }
+        var sufixo = textoOriginal.replace(/^[\d.,]+/, "");
+        var duracaoMs = 900;
+        var inicio = null;
+
+        function passo(agora) {
+            if (inicio === null) {
+                inicio = agora;
+            }
+            var progresso = Math.min((agora - inicio) / duracaoMs, 1);
+            var facilitado = 1 - Math.pow(1 - progresso, 3);
+            elemento.textContent = Math.round(valorFinal * facilitado) + sufixo;
+            if (progresso < 1) {
+                window.requestAnimationFrame(passo);
+            } else {
+                elemento.textContent = textoOriginal;
+            }
+        }
+        window.requestAnimationFrame(passo);
+    }
+
+    var numeros = document.querySelectorAll(".regua-item .n, .numero-inline");
+    if (numeros.length && "IntersectionObserver" in window && !reduzMovimento) {
+        var observadorNumeros = new IntersectionObserver(function (entradas) {
+            entradas.forEach(function (entrada) {
+                if (entrada.isIntersecting) {
+                    contarAte(entrada.target);
+                    observadorNumeros.unobserve(entrada.target);
+                }
+            });
+        }, { threshold: 0.6 });
+        numeros.forEach(function (numero) {
+            observadorNumeros.observe(numero);
+        });
+    }
+
+    var grupoRecursos = document.querySelector(".grade-recursos");
+    if (grupoRecursos && !reduzMovimento) {
+        grupoRecursos.addEventListener("pointermove", function (evento) {
+            var cartao = evento.target.closest(".recurso");
+            if (!cartao) {
+                return;
+            }
+            var retangulo = cartao.getBoundingClientRect();
+            cartao.style.setProperty("--brilho-x", (evento.clientX - retangulo.left) + "px");
+            cartao.style.setProperty("--brilho-y", (evento.clientY - retangulo.top) + "px");
+        });
+    }
+
+    var citacao = document.querySelector(".citacao-cartao");
+    if (citacao && "IntersectionObserver" in window && !reduzMovimento) {
+        citacao.classList.add("pronto-para-entrar");
+        var observadorCitacao = new IntersectionObserver(function (entradas) {
+            entradas.forEach(function (entrada) {
+                if (entrada.isIntersecting) {
+                    entrada.target.classList.remove("pronto-para-entrar");
+                    entrada.target.classList.add("em-cena");
+                    observadorCitacao.unobserve(entrada.target);
+                }
+            });
+        }, { threshold: 0.35 });
+        observadorCitacao.observe(citacao);
+    }
+})();
+</script>
+</body>
+</html>

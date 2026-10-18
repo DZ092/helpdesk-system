@@ -1,0 +1,23 @@
+{# Trilha de estado do chamado (Aberto → Em andamento → Resolvido), usada no
+   detalhe e no acompanhamento público. Etapa atual: 0 = Aberto, 1 = Em
+   andamento, 2 = Resolvido; status desconhecido conta como Resolvido, igual ao
+   badge. A data de resolução só aparece quando o chamado está resolvido. #}
+{% macro trilha_estado(chamado) -%}
+{% set etapa_atual = {"Aberto": 0, "Em andamento": 1}.get(chamado.status, 2) %}
+<ol class="etapas">
+    {% for nome in ["Aberto", "Em andamento", "Resolvido"] %}
+    {% set indice = loop.index0 %}
+    <li class="etapa{% if indice < etapa_atual %} etapa-concluida{% elif indice == etapa_atual %} etapa-atual{% endif %}"{% if indice == etapa_atual %} aria-current="step"{% endif %}>
+        <span class="etapa-marcador" aria-hidden="true"></span>
+        <span class="etapa-texto">
+            <span class="etapa-nome">{{ nome }}</span>
+            {% if indice == 0 %}
+            <span class="etapa-data">{{ chamado.criado_em|data_local }}</span>
+            {% elif indice == 2 and etapa_atual == 2 and chamado.resolvido_em %}
+            <span class="etapa-data">{{ chamado.resolvido_em|data_local }}</span>
+            {% endif %}
+        </span>
+    </li>
+    {% endfor %}
+</ol>
+{%- endmacro %}

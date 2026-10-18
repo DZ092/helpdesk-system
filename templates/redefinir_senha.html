@@ -1,0 +1,48 @@
+{% extends "base_auth.html" %}
+
+{% block titulo %}Redefinir senha · Help Desk{% endblock %}
+
+{% block conteudo %}
+{% if motivo %}
+<h1 class="login-titulo">Link inválido</h1>
+<p class="erro">
+    {% if motivo == "expirado" %}
+    Este link expirou. Os links de redefinição valem por 1 hora.
+    {% elif motivo == "usado" %}
+    Este link já foi usado. A senha da conta mudou desde que ele foi enviado.
+    {% else %}
+    Este link não é válido. Confira se ele foi copiado por inteiro.
+    {% endif %}
+</p>
+<p class="login-cadastro"><a href="/esqueci-senha">Pedir um link novo</a></p>
+{% else %}
+<h1 class="login-titulo">Nova senha</h1>
+<p class="login-subtitulo">Olá, {{ nome }} — escolha a senha que passará a valer</p>
+
+{% if erro %}
+<p class="erro">{{ erro }}</p>
+{% endif %}
+
+<form method="POST" class="formulario">
+    {{ form.hidden_tag() }}
+
+    <div class="campo">
+        {{ form.nova_senha.label }}
+        <div class="campo-input">
+            <span class="icone-campo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+            {{ form.nova_senha(placeholder="Mínimo de 8 caracteres", autocomplete="new-password", required=True) }}
+        </div>
+    </div>
+
+    <div class="campo">
+        {{ form.confirmacao.label(text="Confirme a nova senha") }}
+        <div class="campo-input">
+            <span class="icone-campo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+            {{ form.confirmacao(placeholder="Repita a nova senha", autocomplete="new-password", required=True) }}
+        </div>
+    </div>
+
+    <button class="botao" type="submit">Redefinir senha</button>
+</form>
+{% endif %}
+{% endblock %}

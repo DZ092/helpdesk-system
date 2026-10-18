@@ -1,0 +1,214 @@
+{% extends "base_app.html" %}
+{% import "_graficos.html" as g %}
+{% from "_badges.html" import badge_status, badge_prioridade %}
+
+{% block titulo %}Dashboard · Help Desk{% endblock %}
+
+{% block conteudo %}
+<header class="pagina-cabecalho">
+    <div>
+        <p class="pagina-rotulo">Visão geral</p>
+        <h1 class="pagina-titulo">Dashboard</h1>
+    </div>
+    <nav class="seletor-periodo" aria-label="Período dos indicadores">
+        {% for chave, rotulo in periodos %}
+        <a href="{{ url_for('chamados.dashboard', periodo=chave) }}" {% if chave == periodo %}aria-current="true"{% endif %}>{{ rotulo }}</a>
+        {% endfor %}
+    </nav>
+</header>
+
+<section class="kpis" aria-label="Indicadores do período">
+    <article class="cartao kpi">
+        <span class="kpi-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 5h16v14H4z"/><path d="M4 13h4l2 3h4l2-3h4"/></svg></span>
+        <p class="kpi-rotulo">Total de chamados</p>
+        <p class="kpi-valor">{{ kpis.total }}</p>
+        <p class="kpi-detalhe">criados no período</p>
+    </article>
+    <article class="cartao kpi">
+        <span class="kpi-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg></span>
+        <p class="kpi-rotulo">Resolvidos</p>
+        <p class="kpi-valor">{{ kpis.resolvidos }}</p>
+        <p class="kpi-detalhe">{{ kpis.pct_resolvidos }}% do total</p>
+    </article>
+    <article class="cartao kpi">
+        <span class="kpi-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>
+        <p class="kpi-rotulo">Tempo médio de resolução</p>
+        <p class="kpi-valor">{{ tempo_medio }}</p>
+        <p class="kpi-detalhe">por chamado resolvido no período</p>
+    </article>
+    <article class="cartao kpi">
+        <span class="kpi-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span>
+        <p class="kpi-rotulo">Em aberto</p>
+        <p class="kpi-valor">{{ kpis.em_aberto }}</p>
+        <p class="kpi-detalhe">{{ kpis.abertos }} abertos · {{ kpis.em_andamento }} em andamento</p>
+    </article>
+</section>
+
+<div class="dashboard-grade">
+    <section class="cartao painel painel-largo" aria-labelledby="titulo-evolucao">
+        <div class="painel-cabecalho">
+            <div>
+                <h2 class="painel-titulo" id="titulo-evolucao">Evolução semanal</h2>
+                <p class="painel-subtitulo">Criados e resolvidos nas últimas {{ semanas|length }} semanas</p>
+            </div>
+        </div>
+        {% if teto_semanas %}
+        {{ g.grafico_linhas(semanas, linha_criados, linha_resolvidos) }}
+        <ul class="legenda">
+            <li><span class="legenda-cor serie-criados" aria-hidden="true"></span>Criados</li>
+            <li><span class="legenda-cor serie-resolvidos" aria-hidden="true"></span>Resolvidos</li>
+        </ul>
+        {{ g.tabela_semanas(semanas) }}
+        {% else %}
+        <p class="estado-vazio">Nenhum chamado nas últimas {{ semanas|length }} semanas.</p>
+        {% endif %}
+    </section>
+
+    <section class="cartao painel painel-estreito" aria-labelledby="titulo-status">
+        <div class="painel-cabecalho">
+            <div>
+                <h2 class="painel-titulo" id="titulo-status">Status</h2>
+                <p class="painel-subtitulo">Situação atual dos chamados do período</p>
+            </div>
+        </div>
+        {% if kpis.total %}
+        {{ g.grafico_empilhado(partes_status) }}
+        {{ g.tabela_rotulo_valor("Chamados por status", "Status", partes_status) }}
+        {% else %}
+        <p class="estado-vazio">Nenhum chamado neste período.</p>
+        {% endif %}
+    </section>
+
+    <section class="cartao painel" aria-labelledby="titulo-setor">
+        <div class="painel-cabecalho">
+            <div>
+                <h2 class="painel-titulo" id="titulo-setor">Por setor</h2>
+                <p class="painel-subtitulo">Setores que mais abriram chamados</p>
+            </div>
+        </div>
+        {% if kpis.total %}
+        {{ g.grafico_barras(barras_setor) }}
+        {{ g.tabela_rotulo_valor("Chamados por setor", "Setor", barras_setor) }}
+        {% else %}
+        <p class="estado-vazio">Nenhum chamado neste período.</p>
+        {% endif %}
+    </section>
+
+    <section class="cartao painel" aria-labelledby="titulo-prioridade">
+        <div class="painel-cabecalho">
+            <div>
+                <h2 class="painel-titulo" id="titulo-prioridade">Por prioridade</h2>
+                <p class="painel-subtitulo">Distribuição da urgência no período</p>
+            </div>
+        </div>
+        {% if kpis.total %}
+        {{ g.grafico_donut(fatias_prioridade) }}
+        {{ g.tabela_rotulo_valor("Chamados por prioridade", "Prioridade", fatias_prioridade) }}
+        {% else %}
+        <p class="estado-vazio">Nenhum chamado neste período.</p>
+        {% endif %}
+    </section>
+
+    <section class="cartao painel painel-inteiro" aria-labelledby="titulo-recentes">
+        <div class="painel-cabecalho">
+            <h2 class="painel-titulo" id="titulo-recentes">Chamados recentes</h2>
+            <a class="painel-link" href="{{ url_for('chamados.lista_chamados') }}">Ver todos</a>
+        </div>
+        {% if chamados %}
+<div class="tabela-rolavel">
+    <table class="tabela-chamados">
+
+
+<thead>
+<tr>
+
+<th>ID</th>
+<th>Usuário</th>
+<th>Título</th>
+<th>Prioridade</th>
+<th>Status</th>
+<th>Ações</th>
+
+</tr>
+</thead>
+
+<tbody>
+
+
+{% for chamado in chamados %}
+
+<tr>
+
+<td data-label="ID">{{ chamado.id }}</td>
+
+<td data-label="Usuário">
+{{ chamado.usuario }}
+</td>
+
+
+<td data-label="Título">
+{{ chamado.titulo }}
+</td>
+
+
+<td data-label="Prioridade">
+
+{{ badge_prioridade(chamado.prioridade) }}
+
+</td>
+
+
+<td data-label="Status">
+
+
+{{ badge_status(chamado.status) }}
+
+
+</td>
+
+
+<td data-label="Ações">
+
+{% if usuario_logado.eh_tecnico %}
+
+    {% if chamado.status == "Aberto" %}
+
+    <a class="acao" href="/chamados/{{ chamado.id }}" title="Iniciar atendimento">
+    ▶
+    </a>
+
+    {% elif chamado.status == "Em andamento" %}
+
+    <a class="acao" href="/chamados/{{ chamado.id }}" title="Marcar como resolvido">
+    ✓
+    </a>
+
+    {% else %}
+
+    <span class="acao acao-finalizado" title="Chamado finalizado">✓</span>
+
+    {% endif %}
+
+{% else %}
+
+    <span class="finalizado">—</span>
+
+{% endif %}
+
+</td>
+
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+    </div>
+        {% else %}
+        <p class="estado-vazio">Nenhum chamado registrado ainda.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

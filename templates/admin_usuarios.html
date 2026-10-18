@@ -1,0 +1,80 @@
+{% extends "base_app.html" %}
+
+{% block titulo %}Usuários · Administração · Help Desk{% endblock %}
+
+{% block conteudo %}
+{# O rótulo é exibido em caixa alta pelo CSS; o texto fica em "Painel
+   Administrativo" porque é por ele que os testes de permissão reconhecem
+   esta página. #}
+<div class="pagina-cabecalho">
+    <div>
+        <p class="pagina-rotulo">Painel Administrativo</p>
+        <h1 class="pagina-titulo">Administração</h1>
+    </div>
+</div>
+
+{% include "_abas_admin.html" %}
+
+<section class="cartao cartao-bloco" aria-label="Usuários cadastrados">
+    <div class="tabela-rolavel">
+        <table class="tabela-chamados">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Perfil</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td data-label="ID">{{ usuario.id }}</td>
+                    <td data-label="Nome">{{ usuario.nome }}</td>
+                    <td data-label="E-mail">{{ usuario.email }}</td>
+                    <td data-label="Perfil">
+                        <form method="POST" action="/admin/usuarios/{{ usuario.id }}/tipo" class="form-tipo-usuario">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <select name="tipo_usuario" aria-label="Perfil de {{ usuario.nome }}">
+                                <option value="Usuário" {% if usuario.tipo_usuario == "Usuário" %}selected{% endif %}>Usuário</option>
+                                <option value="Técnico" {% if usuario.tipo_usuario == "Técnico" %}selected{% endif %}>Técnico</option>
+                                <option value="Administrador" {% if usuario.tipo_usuario == "Administrador" %}selected{% endif %}>Administrador</option>
+                            </select>
+                            <button class="botao-filtro" type="submit">Salvar</button>
+                        </form>
+                    </td>
+                    <td data-label="Ações">
+                        {% if usuario.id != usuario_logado.id %}
+                        {# O nome vai num data-attribute e é lido pelo JS.
+                           Interpolar direto dentro do onsubmit permitia que um
+                           nome com aspas escapasse da string e virasse código. #}
+                        <form method="POST"
+                              action="/admin/usuarios/{{ usuario.id }}/excluir"
+                              class="form-excluir"
+                              data-nome="{{ usuario.nome }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="botao-perigo" type="submit">Excluir</button>
+                        </form>
+                        {% else %}
+                        <span class="finalizado">Você</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script nonce="{{ csp_nonce() }}">
+document.querySelectorAll(".form-excluir").forEach(function (form) {
+    form.addEventListener("submit", function (evento) {
+        var nome = form.dataset.nome;
+        if (!confirm("Tem certeza que deseja excluir " + nome + "?")) {
+            evento.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

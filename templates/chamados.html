@@ -1,0 +1,169 @@
+{% extends "base_app.html" %}
+{% from "_badges.html" import badge_status, badge_prioridade %}
+
+{% block titulo %}Chamados · Help Desk{% endblock %}
+
+{% block conteudo %}
+<div class="pagina-cabecalho">
+    <div>
+        <p class="pagina-rotulo">Operação de suporte</p>
+        <h1 class="pagina-titulo">Chamados</h1>
+    </div>
+    {% if usuario_logado.eh_tecnico %}
+    <div class="pagina-acoes">
+        <a class="botao-contorno" href="{{ url_for('chamados.exportar_chamados', **dict(request.args, formato='excel')) }}">Exportar Excel</a>
+        <a class="botao-contorno" href="{{ url_for('chamados.exportar_chamados', **dict(request.args, formato='pdf')) }}">Exportar PDF</a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="pagina-pilha">
+    <section class="cartao cartao-bloco" aria-label="Filtros">
+        <form method="GET" action="/chamados" class="filtros">
+            <div class="filtro-campo">
+                <label for="filtro-busca">Buscar</label>
+                <input type="text" id="filtro-busca" name="busca" placeholder="Buscar por título..." value="{{ busca }}">
+            </div>
+            <div class="filtros-campos">
+                <div class="filtro-campo">
+                    <label for="filtro-status">Status</label>
+                    <select id="filtro-status" name="status">
+                        <option value="">Todos os status</option>
+                        <option value="Aberto" {% if status_filtro == "Aberto" %}selected{% endif %}>Aberto</option>
+                        <option value="Em andamento" {% if status_filtro == "Em andamento" %}selected{% endif %}>Em andamento</option>
+                        <option value="Resolvido" {% if status_filtro == "Resolvido" %}selected{% endif %}>Resolvido</option>
+                    </select>
+                </div>
+                <div class="filtro-campo">
+                    <label for="filtro-prioridade">Prioridade</label>
+                    <select id="filtro-prioridade" name="prioridade">
+                        <option value="">Todas as prioridades</option>
+                        <option value="Baixa" {% if prioridade_filtro == "Baixa" %}selected{% endif %}>Baixa</option>
+                        <option value="Média" {% if prioridade_filtro == "Média" %}selected{% endif %}>Média</option>
+                        <option value="Alta" {% if prioridade_filtro == "Alta" %}selected{% endif %}>Alta</option>
+                        <option value="Crítica" {% if prioridade_filtro == "Crítica" %}selected{% endif %}>Crítica</option>
+                    </select>
+                </div>
+                <div class="filtro-campo">
+                    <label for="filtro-setor">Setor</label>
+                    <select id="filtro-setor" name="setor">
+                        <option value="">Todos os setores</option>
+                        {% for setor in setores %}
+                        <option value="{{ setor }}" {% if setor_filtro == setor %}selected{% endif %}>{{ setor }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filtro-campo">
+                    <label for="filtro-responsavel">Responsável</label>
+                    <select id="filtro-responsavel" name="responsavel">
+                        <option value="">Todos os responsáveis</option>
+                        <option value="nenhum" {% if responsavel_filtro == "nenhum" %}selected{% endif %}>Aguardando atribuição</option>
+                        {% for tecnico in tecnicos %}
+                        <option value="{{ tecnico.id }}" {% if responsavel_filtro == tecnico.id|string %}selected{% endif %}>{{ tecnico.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filtro-campo">
+                    <label for="filtro-data-inicio">De</label>
+                    <input type="date" id="filtro-data-inicio" name="data_inicio" value="{{ data_inicio }}">
+                </div>
+                <div class="filtro-campo">
+                    <label for="filtro-data-fim">Até</label>
+                    <input type="date" id="filtro-data-fim" name="data_fim" value="{{ data_fim }}">
+                </div>
+            </div>
+            <div class="filtros-acoes">
+                <button class="botao-filtro" type="submit">Aplicar</button>
+                <a href="/chamados" class="limpar-filtro">Limpar</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="cartao cartao-bloco" aria-label="Lista de chamados">
+        {% if chamados %}
+        <div class="tabela-rolavel">
+            <table class="tabela-chamados">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Chamado</th>
+                        <th>Usuário</th>
+                        <th>Setor</th>
+                        <th>Prioridade</th>
+                        <th>Status</th>
+                        <th>Responsável</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for chamado in chamados %}
+                    <tr>
+                        <td data-label="ID">{{ chamado.id }}</td>
+                        <td data-label="Chamado" class="coluna-chamado">
+                            <div class="chamado-resumo">
+                                <a class="chamado-titulo" href="/chamados/{{ chamado.id }}">{{ chamado.titulo }}</a>
+                                <span class="chamado-descricao">{{ chamado.descricao }}</span>
+                            </div>
+                        </td>
+                        <td data-label="Usuário">{{ chamado.usuario }}</td>
+                        <td data-label="Setor">{{ chamado.setor }}</td>
+                        <td data-label="Prioridade">{{ badge_prioridade(chamado.prioridade) }}</td>
+                        <td data-label="Status">{{ badge_status(chamado.status) }}</td>
+                        <td data-label="Responsável">
+                            {% if chamado.responsavel %}
+                            {{ chamado.responsavel.nome }}
+                            {% else %}
+                            <span class="finalizado">Aguardando atribuição</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Ação">
+                            {% if usuario_logado.eh_tecnico %}
+                                {% if chamado.status == "Aberto" %}
+                                <a class="acao" href="/chamados/{{ chamado.id }}" title="Iniciar atendimento">▶</a>
+                                {% elif chamado.status == "Em andamento" %}
+                                <a class="acao" href="/chamados/{{ chamado.id }}" title="Marcar como resolvido">✓</a>
+                                {% else %}
+                                <span class="acao acao-finalizado" title="Chamado finalizado">✓</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="finalizado">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if paginacao.total > 0 %}
+        <div class="lista-rodape">
+            <p class="vazio">Mostrando {{ chamados|length }} de {{ paginacao.total }} chamado(s) — página {{ paginacao.page }} de {{ paginacao.pages }}</p>
+            {% if paginacao.pages > 1 %}
+            <nav class="paginacao" aria-label="Páginas">
+                {% if paginacao.has_prev %}
+                <a class="pagina-link" href="{{ url_for('chamados.lista_chamados', **dict(request.args, pagina=paginacao.prev_num)) }}">← Anterior</a>
+                {% endif %}
+                {% for numero in paginacao.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if numero %}
+                        {% if numero == paginacao.page %}
+                        <span class="pagina-atual" aria-current="page">{{ numero }}</span>
+                        {% else %}
+                        <a class="pagina-link" href="{{ url_for('chamados.lista_chamados', **dict(request.args, pagina=numero)) }}">{{ numero }}</a>
+                        {% endif %}
+                    {% else %}
+                    <span class="pagina-reticencias">…</span>
+                    {% endif %}
+                {% endfor %}
+                {% if paginacao.has_next %}
+                <a class="pagina-link" href="{{ url_for('chamados.lista_chamados', **dict(request.args, pagina=paginacao.next_num)) }}">Próxima →</a>
+                {% endif %}
+            </nav>
+            {% endif %}
+        </div>
+        {% else %}
+        <p class="estado-vazio">Nenhum chamado encontrado com os filtros selecionados.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

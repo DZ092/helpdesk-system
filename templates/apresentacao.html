@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block titulo %}Help Desk · Sistema de chamados técnicos{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/apresentacao.css') }}">
+<script src="{{ url_for('static', filename='js/apresentacao.js') }}" defer></script>
+{% endblock %}
+
+{% block classe_body %}pagina-apresentacao{% endblock %}
+
+{% block corpo %}
+{% include "_nav_publica.html" %}
+
+<main id="conteudo">
+<header class="hero-apresentacao-wrap">
+
+<div class="hero-foto-area">
+<img class="hero-foto" src="{{ url_for('static', filename='img/hero-apresentacao.jpg') }}" alt="Mesa de trabalho com notebook em frente a uma janela com vista para a cidade">
+</div>
+
+<div class="hero-cartao-flutuante">
+
+<div class="eyebrow-apresentacao"><span class="bolinha-viva"></span> em produção, código aberto</div>
+
+<h1>Chamados de suporte, sem planilha e sem grupo de WhatsApp.</h1>
+
+<div class="hero-cartao-linha"></div>
+
+<p class="hero-apresentacao-sub">
+Sistema de gerenciamento de chamados técnicos com controle por perfil,
+histórico completo e API própria, pensado para equipes que hoje resolvem
+suporte no improviso.
+</p>
+
+<div class="acoes acoes-apresentacao">
+<a class="botao" href="/login">Acessar aplicação</a>
+</div>
+
+</div>
+
+<div class="hero-regua">
+<div class="hero-regua-item"><span class="n">300</span><span class="l">testes automatizados</span></div>
+<div class="hero-regua-item"><span class="n">3</span><span class="l">níveis de usuário</span></div>
+<div class="hero-regua-item"><span class="n">2</span><span class="l">temas de interface</span></div>
+<div class="hero-regua-item"><span class="n">100%</span><span class="l">CI verde antes do deploy</span></div>
+</div>
+
+</header>
+
+
+<section class="secao-apresentacao" id="explore-mais">
+
+<div class="secao-cabecalho-apresentacao">
+<span class="eyebrow-secao-apresentacao">explore</span>
+<h2>Quer saber mais?</h2>
+</div>
+
+<div class="grade-links-apresentacao">
+
+<a class="cartao-link-apresentacao" href="/como-funciona">
+<span class="recurso-rotulo">passo a passo</span>
+<h3>Como funciona</h3>
+<p>O caminho de um chamado do momento em que é aberto até ser resolvido, em três etapas.</p>
+<span class="cartao-link-seta">Ver como funciona</span>
+</a>
+
+<a class="cartao-link-apresentacao" href="/recursos">
+<span class="recurso-rotulo">funcionalidades</span>
+<h3>Recursos</h3>
+<p>Perfis de acesso, anexos, exportação, notificações, auditoria e API: o que dá pra fazer dentro do sistema.</p>
+<span class="cartao-link-seta">Ver recursos</span>
+</a>
+
+</div>
+
+</section>
+
+
+<section class="secao-citacao">
+<div class="citacao-cartao">
+<span class="marca-aspas">"</span>
+<blockquote>Sem planilha, sem grupo perdido: cada chamado com dono, prazo e histórico rastreável do início ao fim.</blockquote>
+<p class="citacao-autor"><b>Eduardo Jr. Coelho</b>, autor do projeto</p>
+</div>
+</section>
+
+
+<section class="faixa-cta">
+<div class="faixa-cta-linha">
+<div>
+<h2>Pronto para organizar seus chamados?</h2>
+<p>Entre com sua conta e comece a usar agora.</p>
+</div>
+<a class="botao botao-pequeno" href="/login">Acessar aplicação</a>
+</div>
+</section>
+</main>
+
+{% include "_rodape_publico.html" %}
+{% endblock %}

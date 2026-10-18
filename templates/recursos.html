@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block titulo %}Recursos · Help Desk{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/apresentacao.css') }}">
+<script src="{{ url_for('static', filename='js/apresentacao.js') }}" defer></script>
+{% endblock %}
+
+{% block classe_body %}pagina-apresentacao{% endblock %}
+
+{% block corpo %}
+{% include "_nav_publica.html" %}
+
+<main id="conteudo">
+<section class="secao-apresentacao secao-apresentacao-topo" id="recursos">
+
+<div class="secao-cabecalho-apresentacao">
+<span class="eyebrow-secao-apresentacao">recursos</span>
+<h2>O que dá pra fazer dentro do Help Desk.</h2>
+</div>
+
+<div class="lista-recursos">
+
+<div class="recurso-apresentacao">
+<span class="recurso-rotulo">perfis</span>
+<h3>Três níveis de acesso</h3>
+<p>Usuário, técnico e administrador enxergam telas diferentes: quem abre um chamado não vê o painel de quem resolve.</p>
+</div>
+
+<div class="recurso-apresentacao">
+<span class="recurso-rotulo">anexos</span>
+<h3>Print e foto direto no chamado</h3>
+<p>Upload de imagem guardado no Cloudinary, sem depender de espaço em disco do próprio servidor.</p>
+</div>
+
+<div class="recurso-apresentacao">
+<span class="recurso-rotulo">exportação</span>
+<h3>Planilha e PDF sob demanda</h3>
+<p>A listagem filtrada vira arquivo Excel ou PDF com um clique. A exportação para Excel também bloqueia célula que começaria com fórmula.</p>
+</div>
+
+<div class="recurso-apresentacao">
+<span class="recurso-rotulo">notificações</span>
+<h3>E-mail automático</h3>
+<p>Técnicos e administradores são avisados a cada chamado novo, num envio assíncrono que não trava a tela de quem está abrindo.</p>
+</div>
+
+<div class="recurso-apresentacao">
+<span class="recurso-rotulo">auditoria</span>
+<h3>Log de ações sensíveis</h3>
+<p>Cadastro, login, mudança de status e exclusão de conta ficam registrados com autor e data, visíveis no painel administrativo.</p>
+</div>
+
+<div class="recurso-apresentacao">
+<span class="recurso-rotulo">api</span>
+<h3>Acesso via token pessoal</h3>
+<p>Consulta de chamados por script ou sistema externo, autenticada por token, sem precisar do cookie de sessão do navegador.</p>
+</div>
+
+</div>
+
+<div class="recurso-destaque">
+<span class="recurso-rotulo">qualidade</span>
+<h3><span class="numero-inline">300</span> testes automatizados</h3>
+<p>Cada regra de negócio nova entra acompanhada de teste. A suíte inteira roda no CI antes de qualquer deploy.</p>
+</div>
+
+</section>
+</main>
+
+{% include "_rodape_publico.html" %}
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base_app.html" %}
+{% from "_badges.html" import badge_status, badge_prioridade %}
+{% from "_trilha.html" import trilha_estado %}
+
+{% block titulo %}Chamado #{{ chamado.id }} · Help Desk{% endblock %}
+
+{% macro galeria(anexos) -%}
+<div class="galeria-anexos">
+    {% for anexo in anexos %}
+    <a href="{{ anexo.url }}" target="_blank" rel="noopener" title="{{ anexo.nome_original }}"><img src="{{ anexo.url }}" alt="{{ anexo.nome_original }}" loading="lazy"></a>
+    {% endfor %}
+</div>
+{%- endmacro %}
+
+{% block conteudo %}
+
+<nav class="trilha" aria-label="Trilha de navegação">
+    <a href="{{ url_for('chamados.lista_chamados') }}">← Chamados</a>
+</nav>
+
+<div class="pagina-cabecalho">
+    <div>
+        <p class="pagina-rotulo">Chamado #{{ chamado.id }}</p>
+        <h1 class="pagina-titulo">{{ chamado.titulo }}</h1>
+    </div>
+</div>
+
+<div class="detalhe-grade">
+    <div class="pagina-pilha">
+        <section class="cartao cartao-bloco" aria-labelledby="titulo-descricao">
+            <h2 class="painel-titulo" id="titulo-descricao">Descrição</h2>
+            <p class="descricao-detalhe">{{ chamado.descricao }}</p>
+            {% if anexos_chamado %}{{ galeria(anexos_chamado) }}{% endif %}
+        </section>
+
+        <section class="cartao cartao-bloco" aria-labelledby="titulo-historico">
+            <h2 class="painel-titulo" id="titulo-historico">Histórico</h2>
+            {% if comentarios %}
+            <ol class="historico">
+                {% for comentario in comentarios %}
+                <li class="historico-item">
+                    <div class="historico-cabecalho">
+                        <strong>{{ comentario.autor.nome }}</strong>
+                        <time>{{ comentario.criado_em|data_local }}</time>
+                    </div>
+                    <p class="historico-mensagem">{{ comentario.mensagem }}</p>
+                    {% if comentario.anexos %}{{ galeria(comentario.anexos) }}{% endif %}
+                </li>
+                {% endfor %}
+            </ol>
+            {% else %}
+            <p class="estado-vazio">Ainda não há atualizações neste chamado.</p>
+            {% endif %}
+
+            {% if usuario_logado.eh_tecnico %}
+            <form method="POST" action="/chamados/{{ chamado.id }}/comentarios" class="formulario formulario-comentario" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label for="mensagem">Adicionar atualização</label>
+                <textarea id="mensagem" name="mensagem" rows="4" placeholder="Descreva o que foi feito ou o próximo passo..." required></textarea>
+                <label for="anexos-comentario">Anexar imagens (opcional)</label>
+                <input type="file" id="anexos-comentario" name="anexos" accept="image/png,image/jpeg,image/webp" multiple>
+                <button class="botao" type="submit">Adicionar atualização</button>
+            </form>
+            {% endif %}
+        </section>
+    </div>
+
+    <aside class="pagina-pilha" aria-label="Estado e informações do chamado">
+        <section class="cartao cartao-bloco" aria-labelledby="titulo-estado">
+            <div class="painel-cabecalho">
+                <h2 class="painel-titulo" id="titulo-estado">Estado atual</h2>
+                {{ badge_status(chamado.status) }}
+            </div>
+            {{ trilha_estado(chamado) }}
+
+            {% if usuario_logado.eh_tecnico and chamado.status != 'Resolvido' %}
+            <form method="POST" action="/chamados/{{ chamado.id }}/status" class="estado-acao">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% if chamado.status == 'Aberto' %}
+                <input type="hidden" name="status" value="Em andamento">
+                <button class="botao botao-largo" type="submit">Iniciar atendimento</button>
+                {% else %}
+                <input type="hidden" name="status" value="Resolvido">
+                <button class="botao botao-sucesso botao-largo" type="submit">Marcar como resolvido</button>
+                {% endif %}
+            </form>
+            {% endif %}
+        </section>
+
+        <section class="cartao cartao-bloco" aria-labelledby="titulo-informacoes">
+            <h2 class="painel-titulo" id="titulo-informacoes">Informações</h2>
+            <dl class="informacoes">
+                <div><dt>Solicitante</dt><dd>{{ chamado.usuario }}</dd></div>
+                <div><dt>Setor</dt><dd>{{ chamado.setor }}</dd></div>
+                <div><dt>Prioridade</dt><dd>{{ badge_prioridade(chamado.prioridade) }}</dd></div>
+                <div><dt>Responsável</dt><dd>{{ chamado.responsavel.nome if chamado.responsavel else 'Aguardando atribuição' }}</dd></div>
+                <div><dt>Aberto em</dt><dd>{{ chamado.criado_em|data_local }}</dd></div>
+                <div><dt>Última atualização</dt><dd>{{ chamado.atualizado_em|data_local }}</dd></div>
+            </dl>
+        </section>
+    </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base_app.html" %}
+
+{% block titulo %}Meu token de API · Help Desk{% endblock %}
+
+{% block conteudo %}
+<section class="cartao cartao-estreito" aria-labelledby="titulo-token">
+    <p class="pagina-rotulo">Sua conta</p>
+    <h1 class="pagina-titulo" id="titulo-token">Meu token de API</h1>
+    <p class="cartao-subtitulo">Usado por scripts e aplicativos externos para ler seus chamados sem passar pelo navegador</p>
+
+    {% if token_gerado %}
+    <p class="sucesso">Token gerado. Copie agora — ele só aparece esta vez, e gerar um novo substitui este.</p>
+
+    <p class="token-gerado">
+        <code>{{ token_gerado }}</code>
+        <button type="button" class="botao-copiar" id="botao-copiar-token" data-token="{{ token_gerado }}">Copiar</button>
+        <button type="button" class="botao-copiar" id="botao-baixar-token" data-token="{{ token_gerado }}">Baixar .txt</button>
+    </p>
+
+    <p class="vazio">Envie-o no cabeçalho <code>Authorization: Bearer {{ token_gerado }}</code> das requisições à API.</p>
+    {% else %}
+    {% if tem_token %}
+    <p class="vazio">Você já tem um token gerado. O valor não pode ser mostrado de novo — gere um novo se precisar dele outra vez, o que invalida o atual.</p>
+    {% else %}
+    <p class="vazio">Você ainda não gerou nenhum token.</p>
+    {% endif %}
+
+    <form method="POST" class="formulario">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="botao" type="submit">{{ "Gerar novo token" if tem_token else "Gerar token" }}</button>
+    </form>
+    {% endif %}
+</section>
+
+<script nonce="{{ csp_nonce() }}">
+(function () {
+    var botao = document.getElementById("botao-copiar-token");
+    if (!botao) {
+        return;
+    }
+    var textoOriginal = botao.textContent;
+    botao.addEventListener("click", function () {
+        var token = botao.getAttribute("data-token");
+        function avisar() {
+            botao.textContent = "Copiado!";
+            botao.classList.add("copiado");
+            setTimeout(function () {
+                botao.textContent = textoOriginal;
+                botao.classList.remove("copiado");
+            }, 2000);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(token).then(avisar, function () {
+                window.prompt("Copie o token:", token);
+            });
+        } else {
+            window.prompt("Copie o token:", token);
+        }
+    });
+})();
+
+(function () {
+    // Baixa o token como .txt local — mesma ideia do botao de copiar: o
+    // token so existe nesta resposta, entao quem preferir guardar um
+    // arquivo em vez de colar em algum lugar tambem tem essa opcao.
+    var botao = document.getElementById("botao-baixar-token");
+    if (!botao) {
+        return;
+    }
+    botao.addEventListener("click", function () {
+        var token = botao.getAttribute("data-token");
+        var blob = new Blob([token], { type: "text/plain" });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.href = url;
+        link.download = "token-api-helpdesk.txt";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    });
+})();
+</script>
+{% endblock %}

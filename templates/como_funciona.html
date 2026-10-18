@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block titulo %}Como funciona · Help Desk{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/apresentacao.css') }}">
+<script src="{{ url_for('static', filename='js/apresentacao.js') }}" defer></script>
+{% endblock %}
+
+{% block classe_body %}pagina-apresentacao{% endblock %}
+
+{% block corpo %}
+{% include "_nav_publica.html" %}
+
+<main id="conteudo">
+<section class="secao-apresentacao secao-apresentacao-topo" id="como-funciona">
+<div class="secao-cabecalho-apresentacao">
+<span class="eyebrow-secao-apresentacao">como funciona</span>
+<h2>Do problema ao chamado resolvido, em três passos.</h2>
+</div>
+
+<div class="cartao-passos">
+<div class="passo-apresentacao">
+<span class="passo-num">01</span>
+<h3>Abra o chamado</h3>
+<p>Com ou sem login. Quem só precisa relatar um problema pontual não é obrigado a criar conta.</p>
+</div>
+<div class="passo-apresentacao">
+<span class="passo-num">02</span>
+<h3>Acompanhe o andamento</h3>
+<p>Status, prioridade e responsável visíveis a qualquer momento, pelo código do chamado ou pelo painel.</p>
+</div>
+<div class="passo-apresentacao">
+<span class="passo-num">03</span>
+<h3>Resolva com histórico</h3>
+<p>Comentários, anexos e auditoria ficam registrados, nada se perde entre um atendente e outro.</p>
+</div>
+</div>
+</section>
+</main>
+
+{% include "_rodape_publico.html" %}
+{% endblock %}

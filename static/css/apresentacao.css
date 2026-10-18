@@ -1,0 +1,605 @@
+/* ==============================
+   PÁGINA DE APRESENTAÇÃO (issue #85) - TOQUES EXCLUSIVOS. O tema em si já é
+   global (style.css). Aqui ficam só as regras específicas desta tela: barra
+   fixa no topo, hero com foto e cartão flutuante, grade de recursos com
+   divisórias internas (como uma ficha técnica), citação em destaque e faixa
+   de CTA com fundo sólido.
+
+   Sistema visual (redesign "profissional", 2026): sem glow/blob decorativo,
+   sem spotlight seguindo o cursor, sem animação de "revelar ao rolar" — o
+   conteúdo já nasce visível. Cards e cartões seguem a mesma escala de raio
+   de borda do resto do app (--raio-superficie, ver style.css).
+   ============================== */
+
+body.pagina-apresentacao {
+    background: linear-gradient(180deg, var(--bg-gradiente-topo) 0%, var(--bg-gradiente-base) 100%);
+    /* Cor fixa do cartão que flutua sobre a foto do hero — ver comentário
+       acima de .hero-cartao-flutuante sobre por que não usa os tokens de
+       tema. */
+    --cartao-hero-bg: #f6f1ea;
+    --cartao-hero-texto: #221d16;
+    --cartao-hero-texto-muted: #5c5346;
+}
+
+
+/* HERO */
+.hero-apresentacao-wrap {
+    position: relative;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 56px 32px 0;
+}
+
+/* FOTO DO HERO — degradê escuro por cima garante leitura do que vem depois
+   e integra a foto ao fundo escuro do resto da página. */
+.hero-foto-area {
+    position: relative;
+    z-index: 1;
+    border-radius: var(--raio-superficie);
+    overflow: hidden;
+    box-shadow: 0 1px 2px var(--sombra-linha);
+}
+
+/* Zoom lento e contínuo na foto (22s, vai e volta) — técnica de fotografia
+   de movimento, não efeito de "revelar seção": fica ligado o tempo todo. */
+@keyframes zoomLentoHero {
+    from { transform: scale(1); }
+    to { transform: scale(1.06); }
+}
+
+.hero-foto {
+    display: block;
+    width: 100%;
+    height: clamp(280px, 40vw, 480px);
+    object-fit: cover;
+    filter: saturate(0.9) brightness(0.85);
+    animation: zoomLentoHero 22s ease-in-out infinite alternate;
+}
+
+.hero-foto-area::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(8, 12, 11, 0) 40%, rgba(8, 12, 11, 0.6) 100%);
+}
+
+/* CARTÃO FLUTUANTE — cartão claro "pousado" por cima da foto, puxado pra
+   cima com margem negativa pra sobrepor a borda inferior dela. A cor do
+   cartão é fixa nos dois temas de propósito — ele existe pra contrastar
+   com uma fotografia, que também não muda de tema, então usa os tokens
+   --cartao-hero-* definidos acima, não os tokens de tema. */
+.hero-cartao-flutuante {
+    position: relative;
+    z-index: 2;
+    margin: -64px clamp(16px, 6vw, 56px) 0;
+    max-width: 480px;
+    background: var(--cartao-hero-bg);
+    color: var(--cartao-hero-texto);
+    border-radius: var(--raio-superficie);
+    padding: clamp(26px, 4vw, 40px);
+    box-shadow: 0 1px 2px var(--sombra-linha), 0 8px 20px -12px rgba(0, 0, 0, 0.35);
+}
+
+.hero-cartao-linha {
+    width: 40px;
+    height: 3px;
+    background: var(--cartao-hero-acento);
+    border-radius: 2px;
+    margin: 18px 0 16px;
+}
+
+.eyebrow-apresentacao {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--cartao-hero-acento);
+}
+
+.bolinha-viva {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--sucesso-solido-forte);
+}
+
+.hero-cartao-flutuante h1 {
+    font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+    line-height: 1.18;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--cartao-hero-texto);
+}
+
+.destaque-apresentacao {
+    color: var(--cartao-hero-acento);
+}
+
+.hero-apresentacao-sub {
+    margin-top: 0;
+    font-size: 0.98rem;
+    color: var(--cartao-hero-texto-muted);
+    line-height: 1.6;
+}
+
+.acoes-apresentacao {
+    margin-top: 24px;
+    justify-content: flex-start;
+}
+
+.hero-cartao-flutuante .botao-secundario {
+    color: var(--cartao-hero-texto);
+    border-color: rgba(15, 15, 12, 0.18);
+}
+
+.hero-cartao-flutuante .botao-secundario:hover {
+    border-color: var(--cartao-hero-acento);
+}
+
+.link-secundario-apresentacao {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: var(--cartao-hero-texto-muted);
+}
+
+.link-secundario-apresentacao a {
+    color: var(--cartao-hero-acento);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.link-secundario-apresentacao a:hover {
+    text-decoration: underline;
+}
+
+.hero-regua {
+    margin-top: 48px;
+    padding-top: 26px;
+    border-top: 1px solid var(--borda);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+}
+
+.hero-regua-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hero-regua-item .n {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--marca);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.hero-regua-item .l {
+    font-size: 0.78rem;
+    color: var(--texto-fraco);
+}
+
+/* SEÇÕES — largura de conteúdo padrão, reaproveitada nas seções abaixo do
+   hero. scroll-margin-top é o que faz o clique em "Como funciona"/"Recursos"
+   da barra fixa parar no lugar certo: sem isso o navegador rola até o topo
+   exato da section, que fica escondido atrás da .topbar (sticky). */
+.secao-apresentacao {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 84px 32px;
+    scroll-margin-top: 88px;
+}
+
+/* Nas páginas dedicadas (/como-funciona, /recursos), a seção é o primeiro
+   elemento depois da nav fixa — sem o hero acima, precisa de mais respiro
+   no topo pra não colar na barra. */
+.secao-apresentacao-topo {
+    padding-top: 64px;
+}
+
+.secao-cabecalho-apresentacao {
+    max-width: 620px;
+    margin: 0 auto 44px;
+    text-align: center;
+}
+
+.eyebrow-secao-apresentacao {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--marca);
+    margin-bottom: 12px;
+}
+
+.secao-cabecalho-apresentacao h2 {
+    font-size: clamp(1.5rem, 2.8vw, 2rem);
+    font-weight: 800;
+    color: var(--texto);
+    text-align: center;
+}
+
+.secao-cabecalho-apresentacao p {
+    margin-top: 12px;
+    color: var(--texto-muted);
+    font-size: 0.98rem;
+}
+
+/* COMO FUNCIONA — os três passos vivem dentro de um único cartão, lado a
+   lado no desktop e divididos por linhas internas, em vez de uma lista
+   solta empilhada. */
+.cartao-passos {
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-superficie);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.passo-apresentacao {
+    position: relative;
+    overflow: hidden;
+    padding: 32px 28px;
+    border-left: 1px solid var(--borda);
+    transition: background-color 0.15s ease;
+}
+
+.passo-apresentacao:first-child {
+    border-left: none;
+}
+
+.passo-apresentacao:hover {
+    background-color: var(--superficie-alt);
+}
+
+/* Losango sobre a divisória entre os passos: reforça visualmente que é uma
+   sequência (1 leva ao 2, que leva ao 3) sem depender de uma seta no texto. */
+.passo-apresentacao:not(:first-child)::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -6px;
+    width: 11px;
+    height: 11px;
+    background: var(--superficie);
+    border-top: 1px solid var(--borda);
+    border-right: 1px solid var(--borda);
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.passo-num {
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--marca);
+    display: block;
+    margin-bottom: 14px;
+}
+
+.passo-apresentacao h3 {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--texto);
+    margin-bottom: 8px;
+}
+
+.passo-apresentacao p {
+    font-size: 0.9rem;
+    color: var(--texto-muted);
+    line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+    .cartao-passos {
+        grid-template-columns: 1fr;
+    }
+
+    .passo-apresentacao {
+        border-left: none;
+        border-top: 1px solid var(--borda);
+    }
+
+    .passo-apresentacao:first-child {
+        border-top: none;
+    }
+
+    .passo-apresentacao:not(:first-child)::before {
+        display: none;
+    }
+}
+
+/* RECURSOS — grade de cartões, 3 colunas × 2 linhas para os 6 recursos "de
+   prateleira". Formato deliberadamente diferente do "como funciona": aquela
+   seção é uma SEQUÊNCIA (3 passos, em grid lado a lado, porque a ordem
+   importa); esta é um INVENTÁRIO de funcionalidades independentes. Fixo em
+   3 colunas (não auto-fit): com 6 itens dá 2 linhas cheias, sem sobra — o
+   7º item (qualidade/testes) saiu da grade e virou o .recurso-destaque logo
+   abaixo. */
+.lista-recursos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--borda);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-superficie);
+    overflow: hidden;
+}
+
+.recurso-apresentacao {
+    position: relative;
+    background: var(--superficie);
+    padding: 30px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: background-color 0.15s ease;
+}
+
+.recurso-apresentacao:hover {
+    background-color: var(--superficie-alt);
+}
+
+.recurso-rotulo {
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 0.75rem;
+    color: var(--acento-legivel);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.recurso-apresentacao h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--texto);
+}
+
+.recurso-apresentacao p {
+    font-size: 0.9rem;
+    color: var(--texto-muted);
+    line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+    .lista-recursos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .lista-recursos {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* RECURSO EM DESTAQUE — "testes automatizados" solto, centralizado e um
+   pouco maior que os cartões da grade acima, porque é prova de qualidade
+   do projeto todo, não só mais um item do inventário. Mesma linguagem
+   visual (rótulo monoespaçado, superfície, borda), só que com borda na cor
+   de marca e texto maior. */
+.recurso-destaque {
+    max-width: 420px;
+    margin: 20px auto 0;
+    background: var(--superficie);
+    border: 1px solid var(--marca);
+    border-radius: var(--raio-superficie);
+    padding: 36px 34px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.numero-inline {
+    font-variant-numeric: tabular-nums;
+}
+
+.recurso-destaque .recurso-rotulo {
+    color: var(--marca);
+}
+
+.recurso-destaque h3 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--texto);
+}
+
+.recurso-destaque p {
+    font-size: 0.95rem;
+    color: var(--texto-muted);
+    line-height: 1.55;
+}
+
+/* EXPLORE MAIS — na home, "Como funciona" e "Recursos" viraram só dois
+   cartões de chamada para as páginas próprias (/como-funciona, /recursos).
+   Cada cartão é um link inteiro, não só o texto "Ver mais →". */
+.grade-links-apresentacao {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.cartao-link-apresentacao {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-superficie);
+    padding: 28px 26px;
+    text-decoration: none;
+    transition: border-color 0.15s ease;
+}
+
+.cartao-link-apresentacao:hover {
+    border-color: var(--marca);
+}
+
+.cartao-link-apresentacao:focus-visible {
+    outline: 2px solid var(--marca);
+    outline-offset: 3px;
+}
+
+.cartao-link-apresentacao h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--texto);
+}
+
+.cartao-link-apresentacao p {
+    font-size: 0.92rem;
+    color: var(--texto-muted);
+    line-height: 1.55;
+}
+
+.cartao-link-seta {
+    margin-top: auto;
+    padding-top: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--marca);
+}
+
+@media (max-width: 640px) {
+    .grade-links-apresentacao {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* CITAÇÃO — nota de verdade do autor sobre por que o projeto existe, no
+   mesmo formato visual de destaque central que uma landing page usaria
+   para um depoimento, mas sem inventar depoimento de cliente nenhum. */
+.secao-citacao {
+    background: var(--superficie-alt);
+    border-top: 1px solid var(--borda);
+    border-bottom: 1px solid var(--borda);
+}
+
+.citacao-cartao {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 84px 32px;
+    text-align: center;
+}
+
+.marca-aspas {
+    font-size: 3.2rem;
+    color: var(--marca);
+    opacity: 0.5;
+    line-height: 1;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.citacao-cartao blockquote {
+    margin: 0;
+    font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+    line-height: 1.5;
+    font-weight: 600;
+    color: var(--texto);
+}
+
+.citacao-autor {
+    margin-top: 24px;
+    font-size: 0.88rem;
+    color: var(--texto-fraco);
+}
+
+.citacao-autor b {
+    color: var(--marca);
+    font-weight: 700;
+}
+
+/* FAIXA DE CTA — banda de largura cheia com fundo de cor sólida, em vez de
+   uma seção sem contraste igual ao resto da página. */
+.faixa-cta {
+    background: var(--acento-solido);
+}
+
+.faixa-cta-linha {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 56px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.faixa-cta-linha h2 {
+    font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+    font-weight: 800;
+    color: var(--texto-botao);
+    max-width: 30ch;
+}
+
+.faixa-cta-linha p {
+    margin-top: 8px;
+    color: var(--texto-botao);
+    font-size: 0.95rem;
+    max-width: 40ch;
+}
+
+/* --cta-superficie/--cta-texto existem porque a faixa usa --acento-solido
+   como fundo sólido: se o botão reaproveitasse esse mesmo tom (como o
+   claro chegou a fazer), ficaria invisível sobre a própria faixa. Os dois
+   temas definem uma superfície e um texto próprios pro botão aqui — ver
+   os tokens junto ao :root em style.css. */
+.faixa-cta .botao {
+    background: var(--cta-superficie);
+    color: var(--cta-texto);
+    border-color: var(--cta-superficie);
+    flex: none;
+}
+
+.faixa-cta .botao:hover {
+    background: var(--cta-superficie-hover);
+    border-color: var(--cta-superficie-hover);
+}
+
+/* Botão menor da faixa de CTA — mesmo padrão do docs/index.html: destaque
+   forte no hero, um segundo botão discreto no fim da página. */
+.botao-pequeno {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+}
+
+.rodape-apresentacao {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 28px 32px 40px;
+}
+
+/* Desliga a única animação contínua que resta na página (zoom da foto do
+   hero) para quem pediu menos movimento no sistema operacional. */
+@media (prefers-reduced-motion: reduce) {
+    .hero-foto {
+        animation: none;
+    }
+}
+
+/* RESPONSIVO */
+@media (max-width: 560px) {
+    .hero-regua {
+        gap: 20px 24px;
+    }
+
+    .acoes-apresentacao {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .faixa-cta-linha {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .faixa-cta .botao {
+        width: 100%;
+        text-align: center;
+    }
+}

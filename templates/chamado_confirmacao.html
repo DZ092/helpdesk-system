@@ -1,0 +1,53 @@
+{% extends "base_app.html" if usuario_logado else "base_auth.html" %}
+
+{% block titulo %}Chamado enviado · Help Desk{% endblock %}
+
+{% block largura_auth %}login-formulario-largo{% endblock %}
+
+{% block conteudo %}
+<section class="{% if usuario_logado %}cartao cartao-estreito{% else %}bloco-publico{% endif %}" aria-labelledby="titulo-confirmacao">
+    <p class="pagina-rotulo">Suporte técnico</p>
+    <h1 class="pagina-titulo" id="titulo-confirmacao">Chamado enviado com sucesso</h1>
+    <p class="cartao-subtitulo">Nossa equipe vai analisar em breve</p>
+
+    <p>Guarde o código abaixo: é a única forma de consultar o andamento deste chamado depois, sem precisar criar conta.</p>
+
+    <p class="token-gerado">
+        <code>{{ codigo_acompanhamento }}</code>
+        <button type="button" class="botao-copiar" id="botao-copiar-codigo" data-token="{{ codigo_acompanhamento }}">Copiar</button>
+    </p>
+
+    <div class="acoes-lado-a-lado">
+        <a class="botao-contorno" href="/chamado/acompanhar">Consultar com o código</a>
+        <a class="botao-contorno" href="/chamado">Abrir outro chamado</a>
+    </div>
+</section>
+
+<script nonce="{{ csp_nonce() }}">
+(function () {
+    var botao = document.getElementById("botao-copiar-codigo");
+    if (!botao) {
+        return;
+    }
+    var textoOriginal = botao.textContent;
+    botao.addEventListener("click", function () {
+        var codigo = botao.getAttribute("data-token");
+        function avisar() {
+            botao.textContent = "Copiado!";
+            botao.classList.add("copiado");
+            setTimeout(function () {
+                botao.textContent = textoOriginal;
+                botao.classList.remove("copiado");
+            }, 2000);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(codigo).then(avisar, function () {
+                window.prompt("Copie o código:", codigo);
+            });
+        } else {
+            window.prompt("Copie o código:", codigo);
+        }
+    });
+})();
+</script>
+{% endblock %}

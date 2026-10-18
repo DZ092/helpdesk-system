@@ -1,0 +1,95 @@
+{# Gráficos SVG do dashboard (visual novo, Fase 1). A geometria chega pronta
+   de graficos.py; aqui só se imprime. Tamanho e posição vão como atributo
+   SVG, nunca style="…" (o CSP bloqueia). Cada gráfico tem role="img" com um
+   resumo em aria-label; os números exatos vão numa tabela .sr-only. Cor sempre
+   por classe: .fatia-* define --cor-fatia no CSS. #}
+
+{% macro grafico_linhas(semanas, linha_criados, linha_resolvidos) %}
+<svg class="grafico grafico-linhas" viewBox="0 0 600 220" role="img"
+     aria-label="Chamados criados e resolvidos por semana, nas últimas {{ semanas|length }} semanas">
+    {% for y, valor in linha_criados.grade %}
+    <line class="grafico-grade" x1="24" x2="576" y1="{{ y }}" y2="{{ y }}"/>
+    <text class="grafico-eixo" x="0" y="{{ y }}" dominant-baseline="middle">{{ valor }}</text>
+    {% endfor %}
+    <polyline class="serie serie-criados" points="{{ linha_criados.pontos }}"/>
+    <polyline class="serie serie-resolvidos" points="{{ linha_resolvidos.pontos }}"/>
+    {% for x, y in linha_criados.marcas %}<circle class="marca serie-criados" cx="{{ x }}" cy="{{ y }}" r="3.5"/>{% endfor %}
+    {% for x, y in linha_resolvidos.marcas %}<circle class="marca serie-resolvidos" cx="{{ x }}" cy="{{ y }}" r="3.5"/>{% endfor %}
+    {% for semana in semanas %}
+    <text class="grafico-eixo" x="{{ linha_criados.marcas[loop.index0][0] }}" y="212" text-anchor="middle">{{ semana.inicio.strftime("%d/%m") }}</text>
+    {% endfor %}
+</svg>
+{% endmacro %}
+
+{% macro grafico_empilhado(partes) %}
+{% set classes = {"Aberto": "aberto", "Em andamento": "andamento", "Resolvido": "resolvido"} %}
+<svg class="grafico grafico-empilhado" viewBox="0 0 100 10" preserveAspectRatio="none" role="img"
+     aria-label="Chamados por status: {% for parte in partes %}{{ parte.rotulo }} {{ parte.valor }}{% if not loop.last %}, {% endif %}{% endfor %}">
+    {% for parte in partes %}{% if parte.valor %}
+    <rect class="fatia-{{ classes[parte.rotulo] }}" x="{{ parte.x_pct }}" y="0" width="{{ parte.largura_pct }}" height="10"/>
+    {% endif %}{% endfor %}
+</svg>
+<ul class="legenda">
+    {% for parte in partes %}
+    <li><span class="legenda-cor fatia-{{ classes[parte.rotulo] }}" aria-hidden="true"></span>{{ parte.rotulo }} <strong>{{ parte.valor }}</strong></li>
+    {% endfor %}
+</ul>
+{% endmacro %}
+
+{% macro grafico_barras(barras) %}
+<div class="grafico grafico-barras" role="img"
+     aria-label="Chamados por setor: {% for barra in barras %}{{ barra.rotulo }} {{ barra.valor }}{% if not loop.last %}, {% endif %}{% endfor %}">
+    {% for barra in barras %}
+    <div class="barra-linha">
+        <span class="barra-rotulo">{{ barra.rotulo }}</span>
+        <svg class="barra-trilho" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <rect class="barra-fundo" x="0" y="0" width="100" height="8"/>
+            <rect class="barra-valor" x="0" y="0" width="{{ barra.pct }}" height="8"/>
+        </svg>
+        <span class="barra-numero">{{ barra.valor }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro grafico_donut(fatias) %}
+{% set classes = {"Baixa": "baixa", "Média": "media", "Alta": "alta", "Crítica": "critica"} %}
+<div class="donut-bloco">
+    <svg class="grafico grafico-donut" viewBox="0 0 100 100" role="img"
+         aria-label="Chamados por prioridade: {% for fatia in fatias %}{{ fatia.rotulo }} {{ fatia.valor }}{% if not loop.last %}, {% endif %}{% endfor %}">
+        <circle class="donut-trilho" cx="50" cy="50" r="40"/>
+        {% for fatia in fatias %}{% if fatia.valor %}
+        <circle class="donut-fatia fatia-{{ classes[fatia.rotulo] }}" cx="50" cy="50" r="40"
+                stroke-dasharray="{{ fatia.dasharray }}" stroke-dashoffset="{{ fatia.dashoffset }}"
+                transform="rotate(-90 50 50)"/>
+        {% endif %}{% endfor %}
+        <text class="donut-total" x="50" y="47" text-anchor="middle" dominant-baseline="middle">{{ fatias | sum(attribute="valor") }}</text>
+        <text class="donut-legenda-total" x="50" y="61" text-anchor="middle" dominant-baseline="middle">chamados</text>
+    </svg>
+    <ul class="legenda legenda-vertical">
+        {% for fatia in fatias %}
+        <li><span class="legenda-cor fatia-{{ classes[fatia.rotulo] }}" aria-hidden="true"></span>{{ fatia.rotulo }} <strong>{{ fatia.valor }}</strong></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endmacro %}
+
+{% macro tabela_rotulo_valor(legenda, cabecalho, itens) %}
+<table class="sr-only">
+    <caption>{{ legenda }}</caption>
+    <thead><tr><th scope="col">{{ cabecalho }}</th><th scope="col">Chamados</th></tr></thead>
+    <tbody>
+    {% for item in itens %}<tr><td>{{ item.rotulo }}</td><td>{{ item.valor }}</td></tr>{% endfor %}
+    </tbody>
+</table>
+{% endmacro %}
+
+{% macro tabela_semanas(semanas) %}
+<table class="sr-only">
+    <caption>Chamados criados e resolvidos por semana</caption>
+    <thead><tr><th scope="col">Semana de</th><th scope="col">Criados</th><th scope="col">Resolvidos</th></tr></thead>
+    <tbody>
+    {% for semana in semanas %}<tr><td>{{ semana.inicio.strftime("%d/%m/%Y") }}</td><td>{{ semana.criados }}</td><td>{{ semana.resolvidos }}</td></tr>{% endfor %}
+    </tbody>
+</table>
+{% endmacro %}

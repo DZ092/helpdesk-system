@@ -1,0 +1,70 @@
+{% extends "base_app.html" if usuario_logado else "base_auth.html" %}
+{% from "_badges.html" import badge_status, badge_prioridade %}
+{% from "_trilha.html" import trilha_estado %}
+
+{% block titulo %}Acompanhar chamado · Help Desk{% endblock %}
+
+{% block largura_auth %}login-formulario-largo{% endblock %}
+
+{% block conteudo %}
+<div class="pagina-pilha {% if usuario_logado %}coluna-estreita{% endif %}">
+    <section class="{% if usuario_logado %}cartao cartao-bloco{% else %}bloco-publico{% endif %}" aria-labelledby="titulo-acompanhar">
+        <p class="pagina-rotulo">Suporte técnico</p>
+        <h1 class="pagina-titulo" id="titulo-acompanhar">Acompanhar chamado</h1>
+        <p class="cartao-subtitulo">Informe o código de acompanhamento recebido na abertura</p>
+
+        {% if erro %}
+        <p class="erro">{{ erro }}</p>
+        {% endif %}
+
+        <form method="POST" class="formulario">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="campo">
+                {{ form.codigo.label }}
+                {{ form.codigo(placeholder="Cole aqui o código recebido") }}
+            </div>
+            <button class="botao botao-largo" type="submit">Consultar chamado</button>
+        </form>
+    </section>
+
+    {% if chamado %}
+    <section class="cartao cartao-bloco" aria-labelledby="titulo-resultado">
+        <div class="painel-cabecalho">
+            <div>
+                <p class="pagina-rotulo">Chamado #{{ chamado.id }}</p>
+                <h2 class="painel-titulo" id="titulo-resultado">{{ chamado.titulo }}</h2>
+            </div>
+            {{ badge_status(chamado.status) }}
+        </div>
+
+        {{ trilha_estado(chamado) }}
+
+        <dl class="informacoes informacoes-espacadas">
+            <div><dt>Setor</dt><dd>{{ chamado.setor }}</dd></div>
+            <div><dt>Prioridade</dt><dd>{{ badge_prioridade(chamado.prioridade) }}</dd></div>
+            <div><dt>Aberto em</dt><dd>{{ chamado.criado_em|data_local }}</dd></div>
+            <div><dt>Última atualização</dt><dd>{{ chamado.atualizado_em|data_local }}</dd></div>
+        </dl>
+
+        <h3 class="subtitulo-secao">Descrição</h3>
+        <p class="descricao-detalhe">{{ chamado.descricao }}</p>
+
+        <h3 class="subtitulo-secao">Histórico</h3>
+        {% if comentarios %}
+        <ol class="historico">
+            {% for comentario in comentarios %}
+            <li class="historico-item">
+                <div class="historico-cabecalho"><time>{{ comentario.criado_em|data_local }}</time></div>
+                <p class="historico-mensagem">{{ comentario.mensagem }}</p>
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <p class="estado-vazio">Ainda não há atualizações neste chamado.</p>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <p class="nota-apoio"><a href="/chamado">Abrir um novo chamado</a></p>
+</div>
+{% endblock %}

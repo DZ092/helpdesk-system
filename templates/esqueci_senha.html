@@ -1,0 +1,41 @@
+{% extends "base_auth.html" %}
+
+{% block titulo %}Esqueci minha senha · Help Desk{% endblock %}
+
+{% block head_extra %}{{ super() }}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endblock %}
+
+{% block conteudo %}
+<h1 class="login-titulo">Esqueci minha senha</h1>
+<p class="login-subtitulo">Informe seu e-mail e enviaremos um link para criar uma nova senha</p>
+
+{% if enviado %}
+<p class="sucesso">Se houver uma conta com esse e-mail, o link de redefinição já está a caminho. Ele vale por 1 hora.</p>
+<p class="auth-nota">Não recebeu? Confira a caixa de spam antes de pedir de novo.</p>
+{% else %}
+{% if erro %}
+<p class="erro">{{ erro }}</p>
+{% endif %}
+
+<form method="POST" class="formulario">
+    {{ form.hidden_tag() }}
+
+    <div class="campo">
+        {{ form.email.label(text="E-mail da conta") }}
+        <div class="campo-input">
+            <span class="icone-campo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></span>
+            {{ form.email(placeholder="seuemail@exemplo.com", autocomplete="email", required=True) }}
+        </div>
+    </div>
+
+    <div class="campo-turnstile">
+        <div class="cf-turnstile" data-sitekey="{{ config.TURNSTILE_SITE_KEY or '' }}"></div>
+    </div>
+
+    <button class="botao" type="submit">Enviar link de redefinição</button>
+</form>
+{% endif %}
+
+<p class="login-cadastro">Lembrou a senha? <a href="/login">Entrar</a></p>
+{% endblock %}

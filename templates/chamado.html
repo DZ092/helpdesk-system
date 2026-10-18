@@ -1,0 +1,83 @@
+{% extends "base_app.html" if usuario_logado else "base_auth.html" %}
+{# Aberta a qualquer pessoa: quem está logado vê a topbar do app; quem não
+   está vê a tela dividida das páginas sem login. #}
+
+{% block titulo %}Abrir chamado · Help Desk{% endblock %}
+
+{% block head_extra %}{{ super() }}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endblock %}
+
+{% block largura_auth %}login-formulario-largo{% endblock %}
+
+{% block conteudo %}
+<section class="{% if usuario_logado %}cartao cartao-estreito{% else %}bloco-publico{% endif %}" aria-labelledby="titulo-chamado">
+    <p class="pagina-rotulo">Suporte técnico</p>
+    <h1 class="pagina-titulo" id="titulo-chamado">Abrir chamado</h1>
+    <p class="cartao-subtitulo">Informe os dados do problema técnico</p>
+
+    {% if erro %}
+    <p class="erro">{{ erro }}</p>
+    {% endif %}
+
+    <form method="POST" class="formulario" id="form-chamado" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="campo-dupla">
+            <div class="campo">
+                <label for="usuario">Usuário</label>
+                <input type="text" id="usuario" name="usuario" placeholder="Nome do usuário" required>
+            </div>
+            <div class="campo">
+                <label for="setor">Setor</label>
+                <input type="text" id="setor" name="setor" placeholder="Ex: TI, RH, Financeiro" required>
+            </div>
+        </div>
+
+        <div class="campo">
+            <label for="titulo">Título do problema</label>
+            <input type="text" id="titulo" name="titulo" placeholder="Resumo em poucas palavras" required>
+        </div>
+
+        <div class="campo">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" name="descricao" placeholder="Descreva o problema encontrado" rows="5" required></textarea>
+        </div>
+
+        <div class="campo">
+            <label for="prioridade">Prioridade</label>
+            <select id="prioridade" name="prioridade" required>
+                <option value="Baixa">Baixa</option>
+                <option value="Média" selected>Média</option>
+                <option value="Alta">Alta</option>
+                <option value="Crítica">Crítica</option>
+            </select>
+        </div>
+
+        <div class="campo">
+            <label for="anexos">Anexar imagens (opcional)</label>
+            <input type="file" id="anexos" name="anexos" accept="image/png,image/jpeg,image/webp" multiple>
+            <p class="dica-campo">Até 5 imagens (PNG, JPG ou WEBP), 5 MB cada.</p>
+        </div>
+
+        <div class="campo-turnstile">
+            <div class="cf-turnstile" data-sitekey="{{ config.TURNSTILE_SITE_KEY or '' }}"></div>
+        </div>
+
+        <button class="botao botao-largo" type="submit" id="botao-enviar">Enviar chamado</button>
+    </form>
+
+    <p class="nota-apoio">Já abriu um chamado? <a href="/chamado/acompanhar">Consulte pelo código</a></p>
+    {% if not usuario_logado %}
+    <p class="nota-apoio">É da equipe técnica? <a href="/login">Entrar</a></p>
+    {% endif %}
+</section>
+
+<script nonce="{{ csp_nonce() }}">
+document.getElementById("form-chamado").addEventListener("submit", function () {
+    var botao = document.getElementById("botao-enviar");
+    botao.disabled = true;
+    botao.textContent = "Enviando…";
+});
+</script>
+{% endblock %}

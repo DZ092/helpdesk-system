@@ -1,0 +1,70 @@
+{% extends "base_app.html" %}
+
+{% block titulo %}Logs · Administração · Help Desk{% endblock %}
+
+{% block conteudo %}
+<div class="pagina-cabecalho">
+    <div>
+        <p class="pagina-rotulo">Painel Administrativo</p>
+        <h1 class="pagina-titulo">Administração</h1>
+    </div>
+</div>
+
+{% include "_abas_admin.html" %}
+
+<section class="cartao cartao-bloco" aria-label="Logs de auditoria">
+    {% if logs %}
+    <div class="tabela-rolavel">
+        <table class="tabela-chamados">
+            <thead>
+                <tr>
+                    <th>Data/Hora</th>
+                    <th>Usuário</th>
+                    <th>Ação</th>
+                    <th>Detalhes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td data-label="Data/Hora">{{ log.criado_em|data_local("%d/%m/%Y %H:%M") }}</td>
+                    <td data-label="Usuário">{{ log.usuario_nome }}</td>
+                    <td data-label="Ação">{{ log.acao }}</td>
+                    <td data-label="Detalhes">{{ log.detalhes or "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if paginacao.total > 0 %}
+    <div class="lista-rodape">
+        <p class="vazio">Mostrando {{ logs|length }} de {{ paginacao.total }} registro(s) — página {{ paginacao.page }} de {{ paginacao.pages }}</p>
+        {% if paginacao.pages > 1 %}
+        <nav class="paginacao" aria-label="Páginas">
+            {% if paginacao.has_prev %}
+            <a class="pagina-link" href="{{ url_for('admin.admin_logs', pagina=paginacao.prev_num) }}">← Anterior</a>
+            {% endif %}
+            {% for numero in paginacao.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if numero %}
+                    {% if numero == paginacao.page %}
+                    <span class="pagina-atual" aria-current="page">{{ numero }}</span>
+                    {% else %}
+                    <a class="pagina-link" href="{{ url_for('admin.admin_logs', pagina=numero) }}">{{ numero }}</a>
+                    {% endif %}
+                {% else %}
+                <span class="pagina-reticencias">…</span>
+                {% endif %}
+            {% endfor %}
+            {% if paginacao.has_next %}
+            <a class="pagina-link" href="{{ url_for('admin.admin_logs', pagina=paginacao.next_num) }}">Próxima →</a>
+            {% endif %}
+        </nav>
+        {% endif %}
+    </div>
+    {% else %}
+    <p class="estado-vazio">Nenhum registro de auditoria encontrado.</p>
+    {% endif %}
+</section>
+{% endblock %}

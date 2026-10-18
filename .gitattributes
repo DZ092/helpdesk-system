@@ -1,0 +1,16 @@
+# Normaliza o fim de linha: LF no repositório, nativo no disco de cada um.
+# Evita que o mesmo arquivo apareça como totalmente alterado ao trocar de
+# sistema operacional.
+* text=auto
+
+# Binários não podem ser normalizados — a conversão corromperia o conteúdo.
+*.db binary
+*.7z binary
+*.zip binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.mp4 binary

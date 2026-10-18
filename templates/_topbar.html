@@ -1,0 +1,47 @@
+{# Barra superior das páginas internas (visual novo, Fase 1). A aba ativa é
+   decidida aqui mesmo, pelo endpoint da requisição — nenhuma página precisa
+   passar variável para isso. #}
+{% set endpoint = request.endpoint or "" %}
+<header class="topbar">
+    <div class="topbar-interna">
+        <a class="topbar-marca" href="{{ url_for('chamados.dashboard') }}">
+            <svg class="topbar-marca-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <rect x="3" y="4" width="18" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M8.5 10.5l2.5 2.5 4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Help Desk</span>
+        </a>
+
+        <nav class="topbar-abas" aria-label="Navegação principal">
+            <a class="aba" href="{{ url_for('chamados.dashboard') }}" {% if endpoint == 'chamados.dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+            <a class="aba" href="{{ url_for('chamados.lista_chamados') }}" {% if endpoint in ('chamados.lista_chamados', 'chamados.detalhe_chamado') %}aria-current="page"{% endif %}>Chamados</a>
+            {% if usuario_logado.eh_tecnico %}
+            <a class="aba" href="{{ url_for('chamados.meus_chamados') }}" {% if endpoint == 'chamados.meus_chamados' %}aria-current="page"{% endif %}>Meus chamados</a>
+            {% endif %}
+            {% if usuario_logado.eh_admin %}
+            <a class="aba" href="{{ url_for('admin.admin_usuarios') }}" {% if endpoint.startswith('admin.') %}aria-current="page"{% endif %}>Admin</a>
+            {% endif %}
+        </nav>
+
+        <div class="topbar-acoes">
+            <a class="botao-primario" href="{{ url_for('chamados.chamado') }}">+ Novo chamado</a>
+            <div id="seletor-tema" class="seletor-tema"><button type="button" data-tema="dark"></button><button type="button" data-tema="light"></button></div>
+            <details class="menu-usuario">
+                <summary aria-label="Menu de {{ usuario_logado.nome }}">
+                    <span class="menu-usuario-inicial" aria-hidden="true">{{ usuario_logado.nome[:1] | upper }}</span>
+                    <span class="menu-usuario-nome">{{ usuario_logado.nome }}</span>
+                </summary>
+                <div class="menu-usuario-painel">
+                    <p class="menu-usuario-perfil">{{ usuario_logado.tipo_usuario }}</p>
+                    <a href="{{ url_for('auth.alterar_senha') }}">Alterar senha</a>
+                    <a href="{{ url_for('auth.meu_token') }}">Meu token de API</a>
+                    <form method="POST" action="{{ url_for('auth.logout') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">Sair</button>
+                    </form>
+                </div>
+            </details>
+        </div>
+    </div>
+</header>

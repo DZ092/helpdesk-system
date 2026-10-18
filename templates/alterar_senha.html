@@ -1,0 +1,38 @@
+{% extends "base_app.html" %}
+
+{% block titulo %}Alterar senha · Help Desk{% endblock %}
+
+{% block conteudo %}
+<section class="cartao cartao-estreito" aria-labelledby="titulo-senha">
+    <p class="pagina-rotulo">Sua conta</p>
+    <h1 class="pagina-titulo" id="titulo-senha">Alterar senha</h1>
+    <p class="cartao-subtitulo">Trocar a senha encerra as sessões abertas em outros dispositivos</p>
+
+    {% if erro %}
+    <p class="erro">{{ erro }}</p>
+    {% endif %}
+
+    <form method="POST" class="formulario" autocomplete="off">
+        {{ form.hidden_tag() }}
+
+        <div class="campo">
+            {{ form.senha_atual.label }}
+            {{ form.senha_atual(autocomplete="current-password", required=True) }}
+        </div>
+
+        <div class="campo">
+            {{ form.nova_senha.label }}
+            {{ form.nova_senha(placeholder="Mínimo de 8 caracteres", minlength="8", maxlength="128", autocomplete="new-password", required=True) }}
+        </div>
+
+        <div class="campo">
+            {{ form.confirmacao.label(text="Repita a nova senha") }}
+            {{ form.confirmacao(minlength="8", maxlength="128", autocomplete="new-password", required=True) }}
+        </div>
+
+        <p class="vazio">A senha precisa ter no mínimo 8 caracteres, misturar letras com números ou símbolos, e não pode conter seu nome nem seu e-mail.</p>
+
+        <button class="botao" type="submit">Alterar senha</button>
+    </form>
+</section>
+{% endblock %}
