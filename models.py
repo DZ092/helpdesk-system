@@ -36,7 +36,18 @@ class Chamado(db.Model):
     responsavel_id = db.Column(
         db.Integer, db.ForeignKey("usuario.id"), nullable=True, index=True
     )
-    responsavel = db.relationship("Usuario", backref="chamados_responsaveis")
+    responsavel = db.relationship(
+        "Usuario", foreign_keys=[responsavel_id], backref="chamados_responsaveis"
+    )
+
+    # Conta que abriu o chamado, quando ele foi aberto por alguém logado (tela
+    # ou API). É None nos chamados abertos sem login pelo formulário público e
+    # nos criados antes desta coluna existir: esses só a equipe técnica vê, e
+    # quem abriu acompanha pelo código de acompanhamento. É esta coluna que
+    # decide o que um perfil Usuário enxerga (ver `escopo_de_chamados` em
+    # seguranca.py).
+    autor_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=True, index=True)
+    autor = db.relationship("Usuario", foreign_keys=[autor_id], backref="chamados_abertos")
 
     # Hash do código de acompanhamento público (ver `gerar_codigo_acompanhamento`
     # em seguranca.py), nunca o código em si — mesmo raciocínio do token de API

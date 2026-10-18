@@ -26,7 +26,7 @@
         <div class="campo-dupla">
             <div class="campo">
                 <label for="usuario">Usuário</label>
-                <input type="text" id="usuario" name="usuario" placeholder="Nome do usuário" required>
+                <input type="text" id="usuario" name="usuario" placeholder="Nome do usuário"{% if usuario_logado %} value="{{ usuario_logado.nome }}"{% endif %} required>
             </div>
             <div class="campo">
                 <label for="setor">Setor</label>

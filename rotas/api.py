@@ -15,7 +15,7 @@ from constantes import PRIORIDADES, STATUS_CHAMADO
 from emails import notificar_tecnicos_novo_chamado
 from extensions import db, limiter
 from models import Chamado, Comentario
-from seguranca import tecnico_api_required, token_api_required
+from seguranca import escopo_de_chamados, pode_ver_chamado, tecnico_api_required, token_api_required
 
 LIMITE_API = "60 per minute"
 
@@ -39,6 +39,7 @@ def _chamado_para_json(chamado):
         "criado_em": chamado.criado_em.isoformat() + "Z",
         "atualizado_em": chamado.atualizado_em.isoformat() + "Z",
         "responsavel_id": chamado.responsavel_id,
+        "autor_id": chamado.autor_id,
     }
 
 
@@ -57,8 +58,8 @@ def _comentario_para_json(comentario):
 def listar_chamados():
     """Lista chamados com os mesmos filtros da tela `/chamados`, em JSON.
 
-    A visibilidade é a mesma da tela: qualquer usuário autenticado enxerga
-    todos os chamados, não só os próprios — não é uma API "meus chamados".
+    A visibilidade é a mesma da tela (ver `escopo_de_chamados`): a equipe
+    técnica enxerga todos os chamados; um perfil Usuário, só os que abriu.
     """
     status_filtro = request.args.get("status", "")
     prioridade_filtro = request.args.get("prioridade", "")
@@ -67,6 +68,10 @@ def listar_chamados():
     por_pagina = min(request.args.get("por_pagina", 15, type=int) or 15, 100)
 
     stmt = db.select(Chamado)
+
+    escopo = escopo_de_chamados(g.usuario_api)
+    if escopo is not None:
+        stmt = stmt.where(escopo)
 
     if status_filtro:
         if status_filtro not in STATUS_CHAMADO:
@@ -98,7 +103,8 @@ def listar_chamados():
 @token_api_required
 def detalhe_chamado(id):
     chamado = db.session.get(Chamado, id)
-    if chamado is None:
+    # Mesmo 404 para "não existe" e "não é seu", como na tela.
+    if chamado is None or not pode_ver_chamado(g.usuario_api, chamado):
         return jsonify(erro="Chamado não encontrado."), 404
 
     comentarios = (
@@ -158,6 +164,7 @@ def abrir_chamado():
         descricao=descricao,
         status="Aberto",
         prioridade=prioridade,
+        autor_id=g.usuario_api.id,
     )
     db.session.add(novo_chamado)
     db.session.commit()

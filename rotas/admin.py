@@ -70,7 +70,9 @@ def admin_excluir_usuario(id):
 
     possui_chamados = (
         db.session.execute(
-            db.select(db.func.count(Chamado.id)).where(Chamado.responsavel_id == usuario.id)
+            db.select(db.func.count(Chamado.id)).where(
+                db.or_(Chamado.responsavel_id == usuario.id, Chamado.autor_id == usuario.id)
+            )
         ).scalar_one()
         > 0
     )

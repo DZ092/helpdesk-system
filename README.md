@@ -50,7 +50,7 @@ Este projeto foi desenvolvido para compor meu portfólio durante os estudos no c
   Listagem dos últimos chamados cadastrados diretamente no dashboard.
 
 - **Histórico de chamados**  
-  Visualização de todos os chamados registrados no sistema, com paginação (15 chamados por página).
+  Lista de chamados com paginação (15 por página). Técnicos e administradores veem todos os chamados; o perfil Usuário vê só os que ele mesmo abriu logado.
 
 - **Busca e filtros**  
   Pesquisa por título e filtragem dos chamados por status, prioridade, setor, responsável e período (data inicial/final).
@@ -557,7 +557,7 @@ nunca fica a meio caminho de uma versão que não entrou.
 
 | Perfil | Permissões |
 |---|---|
-| **Usuário** | Visualiza o dashboard e o histórico de chamados e troca a própria senha, mas não pode assumir chamados, alterar status ou adicionar comentários internos |
+| **Usuário** | Vê o dashboard, a lista e o detalhe só dos chamados que ele mesmo abriu logado, e troca a própria senha. Não pode assumir chamados, alterar status ou adicionar comentários internos |
 | **Técnico** | Visualiza todos os chamados, assume atendimentos, altera status, adiciona comentários internos e acessa "Meus Chamados" |
 | **Administrador** | Possui as mesmas permissões operacionais do Técnico e pode administrar usuários e consultar os logs de auditoria pelo painel administrativo |
 
