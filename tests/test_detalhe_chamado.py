@@ -7,6 +7,19 @@ from extensions import db
 from models import Chamado
 
 SENHA = "senha-de-teste"
+
+
+def _id_da_conta(email):
+    """Id da conta de teste com esse e-mail, ou None se ela não foi criada.
+
+    Um perfil Usuário só enxerga os chamados que ele mesmo abriu (ver
+    `escopo_de_chamados`). Os chamados destes testes nascem no nome da conta
+    Usuário do teste, quando ela existe, para a tela continuar mostrando o
+    que o teste quer verificar.
+    """
+    from models import Usuario
+
+    return db.session.execute(db.select(Usuario.id).where(Usuario.email == email)).scalar_one_or_none()
 EMOJIS_DE_STATUS = ("🔴", "🟡", "🟢")
 ETAPA = re.compile(r'<li class="(etapa[^"]*)"( aria-current="step")?>')
 
@@ -21,6 +34,7 @@ def _entrar(client, criar_usuario, tipo="Usuário"):
 def _chamado(status="Aberto", resolvido_em=None):
     chamado = Chamado(
         usuario="Maria",
+        autor_id=_id_da_conta("usuario@teste.com"),
         setor="Financeiro",
         titulo="Computador não liga",
         descricao="Tela preta ao ligar",

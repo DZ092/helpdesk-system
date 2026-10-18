@@ -4,6 +4,19 @@ from extensions import db
 from models import Chamado, Comentario
 
 
+def _id_da_conta(email):
+    """Id da conta de teste com esse e-mail, ou None se ela não foi criada.
+
+    Um perfil Usuário só enxerga os chamados que ele mesmo abriu (ver
+    `escopo_de_chamados`). Os chamados destes testes nascem no nome da conta
+    Usuário do teste, quando ela existe, para a tela continuar mostrando o
+    que o teste quer verificar.
+    """
+    from models import Usuario
+
+    return db.session.execute(db.select(Usuario.id).where(Usuario.email == email)).scalar_one_or_none()
+
+
 def _criar_chamado(**extra):
     dados = dict(
         usuario="Maria",
@@ -12,6 +25,7 @@ def _criar_chamado(**extra):
         descricao="Tela preta ao ligar",
         status="Aberto",
         prioridade="Alta",
+        autor_id=_id_da_conta("fulano@teste.com"),
     )
     dados.update(extra)
     chamado = Chamado(**dados)

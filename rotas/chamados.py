@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from flask import Blueprint, Response, flash, redirect, render_template, request
+from flask import Blueprint, Response, abort, flash, redirect, render_template, request
 
 import graficos
 import metricas
@@ -21,8 +21,10 @@ from models import Anexo, Chamado, Comentario, Usuario, obter_data_utc
 from relatorios import gerar_excel, gerar_pdf
 from seguranca import (
     chamado_do_codigo_acompanhamento,
+    escopo_de_chamados,
     gerar_codigo_acompanhamento,
     login_required,
+    pode_ver_chamado,
     tecnico_required,
     usuario_atual,
     verificar_turnstile,
@@ -95,7 +97,7 @@ def _local_para_utc(momento):
     return momento.replace(tzinfo=FUSO_EXIBICAO).astimezone(timezone.utc).replace(tzinfo=None)
 
 
-def query_chamados_filtrados(args):
+def query_chamados_filtrados(args, escopo=None):
     """Monta a consulta de `/chamados` a partir dos parâmetros da URL.
 
     Compartilhada com a exportação (ver `relatorios.py`): o relatório precisa
@@ -111,6 +113,9 @@ def query_chamados_filtrados(args):
     data_fim = args.get("data_fim", "")
 
     stmt = db.select(Chamado)
+
+    if escopo is not None:
+        stmt = stmt.where(escopo)
 
     if busca:
         stmt = stmt.where(Chamado.titulo.ilike(f"%{busca}%"))
@@ -182,13 +187,20 @@ def dashboard():
     periodo = metricas.chave_de_periodo_valida(request.args.get("periodo"))
     desde = metricas.inicio_do_periodo(periodo, agora)
 
-    indicadores = metricas.kpis(desde)
-    semanas = metricas.evolucao_semanal(agora)
+    # Um perfil Usuário vê os números só dos chamados dele (ver
+    # `escopo_de_chamados`); a equipe técnica vê o sistema inteiro.
+    escopo = escopo_de_chamados(usuario_atual())
+
+    indicadores = metricas.kpis(desde, escopo)
+    semanas = metricas.evolucao_semanal(agora, escopo=escopo)
     # As duas séries dividem a mesma escala, senão as linhas não se comparam.
     teto_semanas = max([s["criados"] for s in semanas] + [s["resolvidos"] for s in semanas])
 
+    recentes = db.select(Chamado).order_by(Chamado.id.desc()).limit(5)
+    if escopo is not None:
+        recentes = recentes.where(escopo)
     chamados_recentes = (
-        db.session.execute(db.select(Chamado).order_by(Chamado.id.desc()).limit(5))
+        db.session.execute(recentes)
         .scalars()
         .all()
     )
@@ -203,9 +215,9 @@ def dashboard():
         teto_semanas=teto_semanas,
         linha_criados=graficos.linha([s["criados"] for s in semanas], teto=teto_semanas),
         linha_resolvidos=graficos.linha([s["resolvidos"] for s in semanas], teto=teto_semanas),
-        partes_status=graficos.empilhada(metricas.por_status(desde)),
-        barras_setor=graficos.barras(metricas.por_setor(desde)),
-        fatias_prioridade=graficos.donut(metricas.por_prioridade(desde)),
+        partes_status=graficos.empilhada(metricas.por_status(desde, escopo)),
+        barras_setor=graficos.barras(metricas.por_setor(desde, escopo=escopo)),
+        fatias_prioridade=graficos.donut(metricas.por_prioridade(desde, escopo)),
         chamados=chamados_recentes,
     )
 
@@ -229,6 +241,10 @@ def chamado():
         if prioridade not in PRIORIDADES:
             prioridade = "Média"
 
+        # Aberto por alguém logado, o chamado fica ligado à conta e aparece
+        # nas telas dela; sem login, só o código de acompanhamento dá acesso.
+        autor = usuario_atual()
+
         novo_chamado = Chamado(
             usuario=usuario,
             setor=setor,
@@ -236,6 +252,7 @@ def chamado():
             descricao=descricao,
             status="Aberto",
             prioridade=prioridade,
+            autor_id=autor.id if autor else None,
         )
         db.session.add(novo_chamado)
         db.session.commit()
@@ -310,7 +327,8 @@ def lista_chamados():
     data_fim = request.args.get("data_fim", "")
     pagina = request.args.get("pagina", 1, type=int)
 
-    stmt = query_chamados_filtrados(request.args)
+    escopo = escopo_de_chamados(usuario_atual())
+    stmt = query_chamados_filtrados(request.args, escopo)
 
     paginacao = db.paginate(stmt, page=pagina, per_page=15, error_out=False)
     chamados = paginacao.items
@@ -325,8 +343,13 @@ def lista_chamados():
         .all()
     )
 
+    # O filtro de setor também respeita o escopo: listar os setores de todo
+    # mundo entregaria um pedaço do que o perfil Usuário não deve ver.
+    consulta_setores = db.select(Chamado.setor).distinct().order_by(Chamado.setor)
+    if escopo is not None:
+        consulta_setores = consulta_setores.where(escopo)
     setores = (
-        db.session.execute(db.select(Chamado.setor).distinct().order_by(Chamado.setor))
+        db.session.execute(consulta_setores)
         .scalars()
         .all()
     )
@@ -397,6 +420,11 @@ def exportar_chamados():
 @login_required
 def detalhe_chamado(id):
     chamado = db.get_or_404(Chamado, id)
+
+    # 404, não 403: responder "existe mas não é seu" confirmaria quais
+    # números de chamado existem.
+    if not pode_ver_chamado(usuario_atual(), chamado):
+        abort(404)
 
     comentarios = (
         db.session.execute(

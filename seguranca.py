@@ -111,6 +111,25 @@ def admin_required(f):
     return decorated_function
 
 
+def escopo_de_chamados(usuario):
+    """Cláusula que limita os chamados aos que `usuario` pode ver, ou None.
+
+    None significa "todos": é o caso da equipe técnica, que atende qualquer
+    chamado. Um perfil Usuário vê só os que ele mesmo abriu logado — o
+    cadastro é público, então sem esse corte qualquer visitante que criasse
+    uma conta leria os chamados, nomes e atualizações de todo mundo. Tela,
+    dashboard e API usam esta mesma regra.
+    """
+    if usuario.eh_tecnico:
+        return None
+    return Chamado.autor_id == usuario.id
+
+
+def pode_ver_chamado(usuario, chamado):
+    """Versão de `escopo_de_chamados` para um chamado já carregado."""
+    return usuario.eh_tecnico or chamado.autor_id == usuario.id
+
+
 def validar_forca_senha(senha, usuario=None):
     """Devolve uma mensagem de erro, ou None se a senha for aceitável.
 
